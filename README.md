@@ -1,1 +1,1 @@
-# SymbolicIndexingInterface
+# SymbolicIndexingInterface.jl
