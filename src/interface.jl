@@ -8,7 +8,8 @@ function independent_variables end
 """
 $(TYPEDSIGNATURES)
 
-Check if the given sym is an independent variable in the given system.
+Check if the given sym is an independent variable in the given system. Defaults
+to `false` if not implemented for the given system/container type.
 """
 function is_indep_sym end
 
@@ -29,7 +30,8 @@ function state_sym_to_index end
 """
 $(TYPEDSIGNATURES)
 
-Check if the given sym is a state variable in the given system.
+Check if the given sym is a state variable in the given system. Defaults
+to `false` if not implemented for the given system/container type.
 """
 function is_state_sym end
 
@@ -50,6 +52,7 @@ function param_sym_to_index end
 """
 $(TYPEDSIGNATURES)
 
-Check if the given sym is a parameter variable in the given system.
+Check if the given sym is a parameter variable in the given system. Defaults
+to `false` if not implemented for the given system/container type.
 """
 function is_param_sym end
