@@ -1,0 +1,7 @@
+[deps]
+SymbolicIndexingInterface = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+
+[compat]
+Documenter = "0.27"
+SymbolicIndexingInterface = "0.1"
