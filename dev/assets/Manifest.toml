@@ -2,7 +2,7 @@
 
 julia_version = "1.8.3"
 manifest_format = "2.0"
-project_hash = "12e300f7efbb9eb0deffbd17e95c56bbbf6658ca"
+project_hash = "173c79c0633b714963498692e2c235b9b5c61a46"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -99,7 +99,7 @@ uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 deps = ["DocStringExtensions"]
 path = "/home/runner/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl"
 uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
-version = "0.1.1"
+version = "0.2.1"
 
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
