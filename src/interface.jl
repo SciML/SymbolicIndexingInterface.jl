@@ -16,7 +16,7 @@ if the given `sym` exists in the iterable returned by `independent_variables`.
 function is_indep_sym end
 
 function is_indep_sym(store, sym)
-    any(isequal(Symbol(sym)), Symbol(x) for x in independent_variables(store))
+    any(isequal(Symbol(sym)), Symbol.(independent_variables(store)))
 end
 
 """
@@ -38,7 +38,7 @@ symbol in the iterable returned by `states` which matches the given `sym`. Retur
 function state_sym_to_index end
 
 function state_sym_to_index(store, sym)
-    findfirst(isequal(Symbol(sym)), Symbol(x) for x in states(store))
+    findfirst(isequal(Symbol(sym)), Symbol.(states(store)))
 end
 
 """
