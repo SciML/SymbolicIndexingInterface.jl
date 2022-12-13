@@ -1,5 +1,7 @@
 # Interface Functions
 
+Default methods cast all symbols to `Symbol` before comparing.
+
 ```@docs
 independent_variables
 is_indep_sym
