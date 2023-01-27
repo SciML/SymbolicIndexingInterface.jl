@@ -81,3 +81,33 @@ to checking if the value returned by `param_sym_to_index` is not `nothing`.
 function is_param_sym end
 
 is_param_sym(store, sym) = !isnothing(param_sym_to_index(store, sym))
+
+"""
+$(TYPEDSIGNATURES)
+
+Get an iterable over the observed variables for the given system. Default to an empty
+vector.
+"""
+function observed end
+
+observed(::Any) = []
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if the given sym is an observed variable in the given system. Default
+to checking if the value returned by `observed_sym_to_index` is not `nothing`.
+"""
+function is_observed_sym end
+
+is_observed_sym(store, sym) = !isnothing(observed_sym_to_index(store, sym))
+
+"""
+$(TYPEDSIGNATURES)
+
+Return a list of the dependent state variables of an observed variable. Default to returning
+an empty list.
+"""
+function get_state_dependencies end
+
+get_state_dependencies(store, sym) = []
