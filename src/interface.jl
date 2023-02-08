@@ -85,8 +85,8 @@ is_param_sym(store, sym) = !isnothing(param_sym_to_index(store, sym))
 """
 $(TYPEDSIGNATURES)
 
-Get an iterable over the observed variables for the given system. Default to an empty
-vector.
+Get an iterable over the observed variable expressions for the given system.
+Default to an empty vector.
 """
 function observed end
 
@@ -101,6 +101,19 @@ to checking if the value returned by `observed_sym_to_index` is not `nothing`.
 function is_observed_sym end
 
 is_observed_sym(store, sym) = !isnothing(observed_sym_to_index(store, sym))
+
+"""
+$(TYPEDSIGNATURES)
+
+Find the index of the given sym in the given system. Default to the index of the first
+symbol in the iterable returned by `states` which matches the given `sym`. Return
+`nothing` if the given `sym` does not match.
+"""
+function observed_sym_to_index end
+
+function observed_sym_to_index(store, sym)
+    findfirst(isequal(Symbol(sym)), Symbol.(map(o -> o.lhs, observed(store))))
+end
 
 """
 $(TYPEDSIGNATURES)

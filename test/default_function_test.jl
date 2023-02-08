@@ -10,4 +10,4 @@ using SymbolicIndexingInterface, Test
 @test !is_observed_sym(nothing, :a)
 @test isnothing(state_sym_to_index(nothing, :a))
 @test isnothing(param_sym_to_index(nothing, :a))
-@test get_state_dependencies(nothing) == []
+@test get_state_dependencies(nothing, :a) == []
