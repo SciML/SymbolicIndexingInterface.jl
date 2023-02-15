@@ -124,3 +124,30 @@ an empty list.
 function get_state_dependencies end
 
 get_state_dependencies(store, sym) = []
+
+"""
+$(TYPEDSIGNATURES)
+
+Return a list of the dependent observed variables of an observed variable. Default to returning
+an empty list.
+"""
+function get_observed_dependencies end
+
+get_observed_dependencies(store, sym) = []
+
+"""
+$(TYPEDSIGNATURES)
+
+Return a list of the dependent state variables of all observed equations of the system.
+Default to returning an empty list.
+"""
+function get_deps_of_observed end
+
+function get_deps_of_observed(store)
+    obs = observed(store)
+    deps = mapreduce(vcat, obs, init = []) do eq
+        get_state_dependencies(sys, eq.lhs)
+    end |> unique
+
+    return deps
+end
