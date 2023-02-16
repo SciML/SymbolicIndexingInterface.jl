@@ -146,7 +146,7 @@ function get_deps_of_observed end
 function get_deps_of_observed(store)
     obs = observed(store)
     deps = mapreduce(vcat, obs, init = []) do eq
-        get_state_dependencies(sys, eq.lhs)
+        get_state_dependencies(store, eq.lhs)
     end |> unique
 
     return deps
