@@ -112,7 +112,7 @@ symbol in the iterable returned by `states` which matches the given `sym`. Retur
 function observed_sym_to_index end
 
 function observed_sym_to_index(store, sym)
-    findfirst(isequal(Symbol(sym)), Symbol.(map(o -> o.lhs, observed(store))))
+    findfirst(o -> isequal(sym, o.lhs), observed(store))
 end
 
 """
