@@ -31,6 +31,15 @@ states(::Any) = []
 """
 $(TYPEDSIGNATURES)
 
+Get an iterable over the unknown states for the given system. Default to an empty vector.
+"""
+function unknown_states end
+
+unknown_states(::Any) = []
+
+"""
+$(TYPEDSIGNATURES)
+
 Find the index of the given sym in the given system. Default to the index of the first
 symbol in the iterable returned by `states` which matches the given `sym`. Return
 `nothing` if the given `sym` does not match.
@@ -38,6 +47,7 @@ symbol in the iterable returned by `states` which matches the given `sym`. Retur
 function state_sym_to_index end
 
 function state_sym_to_index(store, sym)
+    @show "why"
     findfirst(isequal(Symbol(sym)), Symbol.(states(store)))
 end
 
