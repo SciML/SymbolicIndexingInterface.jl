@@ -47,7 +47,6 @@ symbol in the iterable returned by `states` which matches the given `sym`. Retur
 function state_sym_to_index end
 
 function state_sym_to_index(store, sym)
-    @show "why"
     findfirst(isequal(Symbol(sym)), Symbol.(states(store)))
 end
 
