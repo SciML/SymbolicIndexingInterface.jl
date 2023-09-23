@@ -8,8 +8,9 @@ include("pages.jl")
 makedocs(sitename = "SymbolicIndexingInterface.jl",
          authors = "Chris Rackauckas",
          modules = [SymbolicIndexingInterface],
-         clean = true, doctest = false,
-         format = Documenter.HTML(analytics = "UA-90474609-3",
+         clean = true, doctest = false, linkcheck = true,
+         warnonly = [:missing_docs],
+         format = Documenter.HTML(
                                   assets = ["assets/favicon.ico"],
                                   canonical = "https://docs.sciml.ai/SymbolicIndexingInterface/stable/"),
          pages = pages)
