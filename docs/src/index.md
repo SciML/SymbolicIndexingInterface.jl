@@ -1,7 +1,7 @@
 # SymbolicIndexingInterface.jl: Arrays of Arrays and Even Deeper
 
 SymbolicIndexingInterface.jl is a set of interface functions for handling containers
-of symbolic variables. It also contains one such container: `SymbolCache`.
+of symbolic variables.
 
 ## Installation
 
