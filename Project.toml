@@ -3,8 +3,18 @@ uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
 authors = ["Aayush Sabharwal <aayush.sabharwal@gmail.com> and contributors"]
 version = "0.3.0"
 
+[weakdeps]
+Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
+SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
+
+[extensions]
+SymbolicIndexingInterfaceSymbolicsExt = "Symbolics"
+SymbolicIndexingInterfaceSymbolicUtilsExt = "SymbolicUtils"
+
 [compat]
 julia = "1"
+Symbolics = "5.10"
+SymbolicUtils = "1.4"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
