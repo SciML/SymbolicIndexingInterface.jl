@@ -2,7 +2,7 @@
 
 julia_version = "1.9.3"
 manifest_format = "2.0"
-project_hash = "173c79c0633b714963498692e2c235b9b5c61a46"
+project_hash = "9354c36f3bfbb4ea7a0139a22569311ae176c664"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -105,7 +105,7 @@ uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 [[deps.SymbolicIndexingInterface]]
 path = "/home/runner/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl"
 uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
-version = "0.2.2"
+version = "0.3.0"
 
 [[deps.TOML]]
 deps = ["Dates"]
