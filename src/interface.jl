@@ -1,60 +1,74 @@
 """
-    isvariable(sys, sym)
+    is_variable(sys, sym)
 
 Check whether the given `sym` is a variable in `sys`.
 """
-function isvariable end
+function is_variable end
 
 """
-    variableindex(sys, sym)
+    has_static_variable(sys)
 
-Return the index of the given variable `sym` in `sys`, or `nothing` otherwise.
+Check whether the variables in `sys` are stable across time.
 """
-function variableindex end
+function has_static_variable end
 
 """
-    isparameter(sys, sym)
+    variable_index(sys, sym, [i])
+
+Return the index of the given variable `sym` in `sys`, or `nothing` otherwise. If
+[`has_static_variable`](@ref) is `false`, this accepts the current timestep as an
+additional parameter `i`.
+"""
+function variable_index end
+
+"""
+    is_parameter(sys, sym)
 
 Check whether the given `sym` is a parameter in `sys`.
 """
-function isparameter end
+function is_parameter end
 
 """
-    parameterindex(sys, sym)
+    parameter_index(sys, sym)
 
 Return the index of the given parameter `sym` in `sys`, or `nothing` otherwise.
 """
-function parameterindex end
+function parameter_index end
 
 """
-    isindependent_variable(sys, sym)
+    is_independent_variable(sys, sym)
 
 Check whether the given `sym` is an independent variable in `sys`.
 """
-function isindependent_variable end
+function is_independent_variable end
 
 """
-    isobserved(sys, sym)
+    is_observed(sys, sym)
 
 Check whether the given `sym` is an observed value in `sys`.
 """
-function isobserved end
+function is_observed end
 
 """
-    observed(sys, sym)
+    observed(sys, sym, [symbolic_states])
 
 Return the observed function of the given `sym` in `sys`. The returned function should
-accept a timeseries if `sys` has an independent variable, and return the observed 
-values for the given `sym`.
+have the signature `(u, p) -> [values...]` where `u` and `p` is the current state and
+parameter vector. If `istimedependent(sys) == true`, the function should accept
+the current time `t` as its third parameter. If `has_static_variable(sys) == false` then
+`observed` must accept a third parameter `symbolic_states` indicating the order of symbolic
+variables in `u`.
+
+See also: [`is_time_dependent`](@ref), [`has_static_variable`](@ref)
 """
 function observed end
 
 """
-    istimedependent(sys)
+    is_time_dependent(sys)
 
 Check if `sys` has time as (one of) its independent variables.
 """
-function istimedependent end
+function is_time_dependent end
 
 """
     constant_structure(sys)

@@ -1,10 +1,10 @@
 module SymbolicIndexingInterface
 
-export Symbolic, NotSymbolic
+export Symbolic, NotSymbolic, issymbolic
 include("trait.jl")
 
-export issymbolic, isvariable, variableindex, isparameter, parameterindex,
-    isindependent_variable, isobserved, observed, istimedependent, constant_structure
+export is_variable, has_static_variable, variable_index, is_parameter, parameter_index,
+    is_independent_variable, is_observed, observed, is_time_dependent, constant_structure
 include("interface.jl")
 
 @static if !isdefined(Base, :get_extension)
