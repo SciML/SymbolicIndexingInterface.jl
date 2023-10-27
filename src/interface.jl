@@ -43,6 +43,13 @@ Check whether the given `sym` is an independent variable in `sys`.
 function is_independent_variable end
 
 """
+    current_state(sys, i)
+
+Return a vector of symbols representing the state variables at timestep `i`.
+"""
+function current_state end
+
+"""
     is_observed(sys, sym)
 
 Check whether the given `sym` is an observed value in `sys`.
@@ -50,14 +57,12 @@ Check whether the given `sym` is an observed value in `sys`.
 function is_observed end
 
 """
-    observed(sys, sym, [symbolic_states])
+    observed(sys, sym)
 
 Return the observed function of the given `sym` in `sys`. The returned function should
 have the signature `(u, p) -> [values...]` where `u` and `p` is the current state and
 parameter vector. If `istimedependent(sys) == true`, the function should accept
-the current time `t` as its third parameter. If `has_static_variable(sys) == false` then
-`observed` must accept a third parameter `symbolic_states` indicating the order of symbolic
-variables in `u`.
+the current time `t` as its third parameter.
 
 See also: [`is_time_dependent`](@ref), [`has_static_variable`](@ref)
 """
