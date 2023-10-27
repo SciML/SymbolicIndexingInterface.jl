@@ -7,6 +7,8 @@ else
     using ..SymbolicUtils
 end
 
-SymbolicIndexingInterface.issymbolic(::Type{<:SymbolicUtils.BasicSymbolic}) = Symbolic()
+function SymbolicIndexingInterface.symbolic_type(::Type{<:SymbolicUtils.BasicSymbolic})
+    ScalarSymbolic()
+end
 
 end

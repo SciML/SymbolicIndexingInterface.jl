@@ -1,30 +1,41 @@
-abstract type IsSymbolicTrait end
+abstract type SymbolicTypeTrait end
 
 """
-    struct Symbolic <: IsSymbolicTrait end
+    struct ScalarSymbolic <: SymbolicTypeTrait end
 
-Trait indicating a type is symbolic.
+Trait indicating a type is a scalar symbolic variable.
 
-See also: [`NotSymbolic`](@ref), [`issymbolic`](@ref)
+See also: [`ArraySymbolic`](@ref), [`NotSymbolic`](@ref), [`symbolic_type`](@ref)
 """
-struct Symbolic <: IsSymbolicTrait end
+struct ScalarSymbolic <: SymbolicTypeTrait end
 
 """
-    struct NotSymbolic <: IsSymbolicTrait end
+    struct ArraySymbolic <: SymbolicTypeTrait end
+
+Trait indicating type is a symbolic array or an array of scalar symbolic variables.
+
+See also: [`ScalarSymbolic`](@ref), [`NotSymbolic`](@ref), [`symbolic_type`](@ref)
+"""
+struct ArraySymbolic <: SymbolicTypeTrait end
+
+"""
+    struct NotSymbolic <: SymbolicTypeTrait end
 
 Trait indicating a type is not symbolic.
 
-See also: [`Symbolic`](@ref), [`issymbolic`](@ref)
+See also: [`ScalarSymbolic`](@ref), [`ArraySymbolic`](@ref), [`symbolic_type`](@ref)
 """
-struct NotSymbolic <: IsSymbolicTrait end
+struct NotSymbolic <: SymbolicTypeTrait end
 
 """
-    issymbolic(x) = issymbolic(typeof(x))
-    issymbolic(::Type)
+    symbolic_type(x) = symbolic_type(typeof(x))
+    symbolic_type(::Type)
 
-Check whether a type implements the [`Symbolic`](@ref) trait or not. Default to
-[`NotSymbolic`](@ref) for all types except `Symbol`.
+Get the symbolic type trait of a type. Default to [`NotSymbolic`](@ref) for all types
+except `Symbol`.
+
+See also: [`ScalarSymbolic`](@ref), [`ArraySymbolic`](@ref), [`NotSymbolic`](@ref)
 """
-issymbolic(x) = issymbolic(typeof(x))
-issymbolic(::Type) = NotSymbolic()
-issymbolic(::Type{Symbol}) = Symbolic()
+symbolic_type(x) = symbolic_type(typeof(x))
+symbolic_type(::Type) = NotSymbolic()
+symbolic_type(::Type{Symbol}) = ScalarSymbolic()

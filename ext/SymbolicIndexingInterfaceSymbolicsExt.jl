@@ -8,6 +8,7 @@ else
     using ..Symbolics
 end
 
-SymbolicIndexingInterface.issymbolic(::Type{<:Symbolics.Num}) = Symbolic()
+SymbolicIndexingInterface.symbolic_type(::Type{<:Symbolics.Num}) = ScalarSymbolic()
+SymbolicIndexingInterface.symbolic_type(::Type{<:Symbolics.Arr}) = ArraySymbolic()
 
 end

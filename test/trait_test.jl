@@ -3,12 +3,13 @@ using Symbolics
 using SymbolicIndexingInterface
 using Test
 
-@test all(issymbolic.([Int, Float64, String, Bool, UInt, Complex{Float64}]) .==
+@test all(symbolic_type.([Int, Float64, String, Bool, UInt, Complex{Float64}]) .==
           (NotSymbolic(),))
-@test all(issymbolic.([Symbol, SymbolicUtils.BasicSymbolic, Symbolics.Num]) .==
-          (Symbolic(),))
+@test all(symbolic_type.([Symbol, SymbolicUtils.BasicSymbolic, Symbolics.Num]) .==
+          (ScalarSymbolic(),))
+@test symbolic_type(Symbolics.Arr) == ArraySymbolic()
 @variables x
-@test issymbolic(x) == Symbolic()
+@test symbolic_type(x) == ScalarSymbolic()
 @variables y[1:3]
-@test issymbolic(y) == NotSymbolic()
-@test all(issymbolic.(collect(y)) .== (Symbolic(),))
+@test symbolic_type(y) == ArraySymbolic()
+@test all(symbolic_type.(collect(y)) .== (ScalarSymbolic(),))
