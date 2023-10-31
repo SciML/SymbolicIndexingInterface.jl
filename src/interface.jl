@@ -16,7 +16,7 @@ function has_static_variable end
     variable_index(sys, sym, [i])
 
 Return the index of the given variable `sym` in `sys`, or `nothing` otherwise. If
-[`has_static_variable`](@ref) is `false`, this accepts the current timestep as an
+[`has_static_variable`](@ref) is `false`, this accepts the current time index as an
 additional parameter `i`.
 """
 function variable_index end
@@ -57,12 +57,14 @@ Check whether the given `sym` is an observed value in `sys`.
 function is_observed end
 
 """
-    observed(sys, sym)
+    observed(sys, sym, [states])
 
 Return the observed function of the given `sym` in `sys`. The returned function should
 have the signature `(u, p) -> [values...]` where `u` and `p` is the current state and
 parameter vector. If `istimedependent(sys) == true`, the function should accept
-the current time `t` as its third parameter.
+the current time `t` as its third parameter. If `constant_structure(sys) == false`,
+accept a third parameter which can either be a vector of symbols indicating the order
+of states or a time index which identifies the order of states.
 
 See also: [`is_time_dependent`](@ref), [`has_static_variable`](@ref)
 """
