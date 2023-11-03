@@ -7,13 +7,13 @@ end
 
 SymbolicIndexingInterface.is_variable(sys::SystemMockup, sym) = sym in sys.vars
 function SymbolicIndexingInterface.variable_index(sys::SystemMockup, sym, t = nothing)
-    if !has_static_variable(sys) && t === nothing
+    if !constant_structure(sys) && t === nothing
         error("time index must be present")
     end
     findfirst(isequal(sym), current_state(sys, t))
 end
 function SymbolicIndexingInterface.current_state(sys::SystemMockup, i)
-    return has_static_variable(sys) ? sys.vars : circshift(sys.vars, i)
+    return constant_structure(sys) ? sys.vars : circshift(sys.vars, i)
 end
 SymbolicIndexingInterface.is_parameter(sys::SystemMockup, sym) = sym in sys.params
 function SymbolicIndexingInterface.parameter_index(sys::SystemMockup, sym)
@@ -26,7 +26,7 @@ function SymbolicIndexingInterface.is_observed(sys::SystemMockup, sym)
     is_variable(sys, sym) || is_parameter(sys, sym) || is_independent_variable(sys, sym)
 end
 function SymbolicIndexingInterface.observed(sys::SystemMockup, sym, states = nothing)
-    if !has_static_variable(sys) && states === nothing
+    if !constant_structure(sys) && states === nothing
         error("States required")
     end
     states = states isa Vector ? states : current_state(sys, states)
@@ -44,8 +44,7 @@ function SymbolicIndexingInterface.observed(sys::SystemMockup, sym, states = not
     end
 end
 SymbolicIndexingInterface.is_time_dependent(sys::SystemMockup) = isequal(sys.indepvar, :t)
-SymbolicIndexingInterface.constant_structure(sys::SystemMockup) = true
-SymbolicIndexingInterface.has_static_variable(sys::SystemMockup) = sys.static
+SymbolicIndexingInterface.constant_structure(sys::SystemMockup) = sys.static
 
 sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], :t)
 
@@ -69,7 +68,6 @@ sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], :t)
 @test observed(sys, :t)(1:3, 4:6, 1.5) == 1.5
 @test is_time_dependent(sys)
 @test constant_structure(sys)
-@test has_static_variable(sys)
 
 sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], nothing)
 
@@ -83,7 +81,7 @@ sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], nothing)
 @test constant_structure(sys)
 
 sys = SystemMockup(false, [:x, :y, :z], [:a, :b, :c], :t)
-@test !has_static_variable(sys)
+@test !constant_structure(sys)
 for variable in [:x, :y, :z, :a, :b, :c, :t]
     @test_throws ErrorException variable_index(sys, variable)
     @test_throws ErrorException observed(sys, variable)

@@ -5,7 +5,7 @@ using Requires
 export ScalarSymbolic, ArraySymbolic, NotSymbolic, symbolic_type
 include("trait.jl")
 
-export is_variable, has_static_variable, variable_index, is_parameter, parameter_index,
+export is_variable, variable_index, is_parameter, parameter_index,
     is_independent_variable, current_state, is_observed, observed, is_time_dependent,
     constant_structure
 include("interface.jl")

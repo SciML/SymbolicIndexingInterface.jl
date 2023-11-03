@@ -6,17 +6,10 @@ Check whether the given `sym` is a variable in `sys`.
 function is_variable end
 
 """
-    has_static_variable(sys)
-
-Check whether the variables in `sys` are stable across time.
-"""
-function has_static_variable end
-
-"""
     variable_index(sys, sym, [i])
 
 Return the index of the given variable `sym` in `sys`, or `nothing` otherwise. If
-[`has_static_variable`](@ref) is `false`, this accepts the current time index as an
+[`constant_structure`](@ref) is `false`, this accepts the current time index as an
 additional parameter `i`.
 """
 function variable_index end
@@ -66,7 +59,7 @@ the current time `t` as its third parameter. If `constant_structure(sys) == fals
 accept a third parameter which can either be a vector of symbols indicating the order
 of states or a time index which identifies the order of states.
 
-See also: [`is_time_dependent`](@ref), [`has_static_variable`](@ref)
+See also: [`is_time_dependent`](@ref), [`constant_structure`](@ref)
 """
 function observed end
 
