@@ -1,13 +1,29 @@
 # Interface Functions
 
 ```@docs
-isvariable
-variableindex
-isparameter
-parameterindex
-isindependent_variable
-isobserved
+is_variable
+variable_index
+is_parameter
+parameter_index
+is_independent_variable
+current_state
+is_observed
 observed
-istimedependent
+is_time_dependent
 constant_structure
+```
+
+# Traits
+
+```@docs
+ScalarSymbolic
+ArraySymbolic
+NotSymbolic
+symbolic_type
+```
+
+# Types
+
+```@docs
+SymbolCache
 ```
