@@ -1,31 +1,31 @@
-struct SymbolCache
+struct SystemMockup
     static::Bool
     vars::Vector{Symbol}
     params::Vector{Symbol}
     indepvar::Union{Symbol, Nothing}
 end
 
-SymbolicIndexingInterface.is_variable(sys::SymbolCache, sym) = sym in sys.vars
-function SymbolicIndexingInterface.variable_index(sys::SymbolCache, sym, t = nothing)
+SymbolicIndexingInterface.is_variable(sys::SystemMockup, sym) = sym in sys.vars
+function SymbolicIndexingInterface.variable_index(sys::SystemMockup, sym, t = nothing)
     if !has_static_variable(sys) && t === nothing
         error("time index must be present")
     end
     findfirst(isequal(sym), current_state(sys, t))
 end
-function SymbolicIndexingInterface.current_state(sys::SymbolCache, i)
+function SymbolicIndexingInterface.current_state(sys::SystemMockup, i)
     return has_static_variable(sys) ? sys.vars : circshift(sys.vars, i)
 end
-SymbolicIndexingInterface.is_parameter(sys::SymbolCache, sym) = sym in sys.params
-function SymbolicIndexingInterface.parameter_index(sys::SymbolCache, sym)
+SymbolicIndexingInterface.is_parameter(sys::SystemMockup, sym) = sym in sys.params
+function SymbolicIndexingInterface.parameter_index(sys::SystemMockup, sym)
     findfirst(isequal(sym), sys.params)
 end
-function SymbolicIndexingInterface.is_independent_variable(sys::SymbolCache, sym)
+function SymbolicIndexingInterface.is_independent_variable(sys::SystemMockup, sym)
     sys.indepvar !== nothing && isequal(sym, sys.indepvar)
 end
-function SymbolicIndexingInterface.is_observed(sys::SymbolCache, sym)
+function SymbolicIndexingInterface.is_observed(sys::SystemMockup, sym)
     is_variable(sys, sym) || is_parameter(sys, sym) || is_independent_variable(sys, sym)
 end
-function SymbolicIndexingInterface.observed(sys::SymbolCache, sym, states = nothing)
+function SymbolicIndexingInterface.observed(sys::SystemMockup, sym, states = nothing)
     if !has_static_variable(sys) && states === nothing
         error("States required")
     end
@@ -43,11 +43,11 @@ function SymbolicIndexingInterface.observed(sys::SymbolCache, sym, states = noth
         return is_time_dependent(sys) ? (u, p, t) -> t : (u, p) -> 1
     end
 end
-SymbolicIndexingInterface.is_time_dependent(sys::SymbolCache) = isequal(sys.indepvar, :t)
-SymbolicIndexingInterface.constant_structure(sys::SymbolCache) = true
-SymbolicIndexingInterface.has_static_variable(sys::SymbolCache) = sys.static
+SymbolicIndexingInterface.is_time_dependent(sys::SystemMockup) = isequal(sys.indepvar, :t)
+SymbolicIndexingInterface.constant_structure(sys::SystemMockup) = true
+SymbolicIndexingInterface.has_static_variable(sys::SystemMockup) = sys.static
 
-sys = SymbolCache(true, [:x, :y, :z], [:a, :b, :c], :t)
+sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], :t)
 
 @test all(is_variable.((sys,), [:x, :y, :z]))
 @test all(.!is_variable.((sys,), [:a, :b, :c, :t, :p, :q, :r]))
@@ -71,7 +71,7 @@ sys = SymbolCache(true, [:x, :y, :z], [:a, :b, :c], :t)
 @test constant_structure(sys)
 @test has_static_variable(sys)
 
-sys = SymbolCache(true, [:x, :y, :z], [:a, :b, :c], nothing)
+sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], nothing)
 
 @test !is_time_dependent(sys)
 @test all(observed(sys, :x)(1.0:3.0, 4:6) .== 1.0)
@@ -82,7 +82,7 @@ sys = SymbolCache(true, [:x, :y, :z], [:a, :b, :c], nothing)
 @test observed(sys, :c)(1:3, 4:6) == 6
 @test constant_structure(sys)
 
-sys = SymbolCache(false, [:x, :y, :z], [:a, :b, :c], :t)
+sys = SystemMockup(false, [:x, :y, :z], [:a, :b, :c], :t)
 @test !has_static_variable(sys)
 for variable in [:x, :y, :z, :a, :b, :c, :t]
     @test_throws ErrorException variable_index(sys, variable)

@@ -1,0 +1,19 @@
+sc = SymbolCache([:x, :y, :z], [:a, :b], [:t])
+
+@test all(is_variable.((sc,), [:x, :y, :z]))
+@test all(.!is_variable.((sc,), [:a, :b, :t, :q]))
+@test variable_index.((sc,), [:x, :y, :z, :a]) == [1, 2, 3, nothing]
+@test all(is_parameter.((sc,), [:a, :b]))
+@test all(.!is_parameter.((sc,), [:x, :y, :z, :t, :q]))
+@test parameter_index.((sc,), [:a, :b, :x]) == [1, 2, nothing]
+@test is_independent_variable(sc, :t)
+@test all(.!is_independent_variable.((sc,), [:x, :y, :z, :a, :b, :q]))
+@test current_state(sc) == [:x, :y, :z]
+@test all(.!is_observed.((sc,), [:x, :y, :z, :a, :b, :t, :q]))
+@test is_time_dependent(sc)
+@test constant_structure(sc)
+
+sc = SymbolCache([:x, :y], [:a, :b])
+@test !is_time_dependent(sc)
+# make sure the constructor works
+@test_nowarn SymbolCache([:x, :y])

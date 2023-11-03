@@ -10,6 +10,9 @@ export is_variable, has_static_variable, variable_index, is_parameter, parameter
     constant_structure
 include("interface.jl")
 
+export SymbolCache
+include("symbol_cache.jl")
+
 @static if !isdefined(Base, :get_extension)
     function __init__()
         @require Symbolics="0c5d862f-8b57-4792-8d23-62f2024744c7" include("../ext/SymbolicIndexingInterfaceSymbolicsExt.jl")
