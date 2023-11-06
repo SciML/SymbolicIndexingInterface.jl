@@ -17,3 +17,8 @@ sc = SymbolCache([:x, :y], [:a, :b])
 @test !is_time_dependent(sc)
 # make sure the constructor works
 @test_nowarn SymbolCache([:x, :y])
+
+sc2 = copy(sc)
+@test sc.variables == sc2.variables
+@test sc.parameters == sc2.parameters
+@test sc.independent_variables == sc2.independent_variables

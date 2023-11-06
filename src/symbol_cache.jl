@@ -27,3 +27,11 @@ current_state(sc::SymbolCache) = sc.variables
 is_observed(sc::SymbolCache, sym) = false
 is_time_dependent(sc::SymbolCache) = !isempty(sc.independent_variables)
 constant_structure(::SymbolCache) = true
+
+function Base.copy(sc::SymbolCache)
+    return SymbolCache(
+        sc.variables === nothing ? nothing : copy(sc.variables),
+        sc.parameters === nothing ? nothing : copy(sc.parameters),
+        sc.independent_variables === nothing ? nothing : copy(sc.independent_variables),
+    )
+end
