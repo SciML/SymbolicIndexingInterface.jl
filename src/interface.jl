@@ -15,6 +15,15 @@ additional parameter `i`.
 function variable_index end
 
 """
+    variable_symbols(sys, [i])
+
+Return a vector of the symbolic variables being solved for in the system `sys`. If
+`constant_structure(sys) == false` this accepts an additional parameter indicating
+the current time index. The returned vector should not be mutated.
+"""
+function variable_symbols end
+
+"""
     is_parameter(sys, sym)
 
 Check whether the given `sym` is a parameter in `sys`.
@@ -29,18 +38,27 @@ Return the index of the given parameter `sym` in `sys`, or `nothing` otherwise.
 function parameter_index end
 
 """
+    parameter_symbols(sys)
+
+Return a vector of the symbolic parameters of the given system `sys`. The returned
+vector should not be mutated.
+"""
+function parameter_symbols end
+
+"""
     is_independent_variable(sys, sym)
 
-Check whether the given `sym` is an independent variable in `sys`.
+Check whether the given `sym` is an independent variable in `sys`. The returned vector
+should not be mutated.
 """
 function is_independent_variable end
 
 """
-    current_state(sys, i)
+    independent_variable_symbols(sys)
 
-Return a vector of symbols representing the state variables at timestep `i`.
+Return a vector of the symbolic independent variables of the given system `sys`.
 """
-function current_state end
+function independent_variable_symbols end
 
 """
     is_observed(sys, sym)

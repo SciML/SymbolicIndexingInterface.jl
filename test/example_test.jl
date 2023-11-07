@@ -10,17 +10,25 @@ function SymbolicIndexingInterface.variable_index(sys::SystemMockup, sym, t = no
     if !constant_structure(sys) && t === nothing
         error("time index must be present")
     end
-    findfirst(isequal(sym), current_state(sys, t))
+    findfirst(isequal(sym), variable_symbols(sys, t))
 end
-function SymbolicIndexingInterface.current_state(sys::SystemMockup, i)
+function SymbolicIndexingInterface.variable_symbols(sys::SystemMockup, i = nothing)
     return constant_structure(sys) ? sys.vars : circshift(sys.vars, i)
 end
 SymbolicIndexingInterface.is_parameter(sys::SystemMockup, sym) = sym in sys.params
 function SymbolicIndexingInterface.parameter_index(sys::SystemMockup, sym)
     findfirst(isequal(sym), sys.params)
 end
+SymbolicIndexingInterface.parameter_symbols(sys::SystemMockup) = sys.params
 function SymbolicIndexingInterface.is_independent_variable(sys::SystemMockup, sym)
     sys.indepvar !== nothing && isequal(sym, sys.indepvar)
+end
+function SymbolicIndexingInterface.independent_variable_symbols(sys::SystemMockup)
+    if sys.indepvar === nothing
+        return []
+    else
+        return [sys.indepvar]
+    end
 end
 function SymbolicIndexingInterface.is_observed(sys::SystemMockup, sym)
     is_variable(sys, sym) || is_parameter(sys, sym) || is_independent_variable(sys, sym)
@@ -29,7 +37,7 @@ function SymbolicIndexingInterface.observed(sys::SystemMockup, sym, states = not
     if !constant_structure(sys) && states === nothing
         error("States required")
     end
-    states = states isa Vector ? states : current_state(sys, states)
+    states = states isa Vector ? states : variable_symbols(sys, states)
     if is_variable(sys, sym)
         return is_time_dependent(sys) ?
                (u, p, t) -> u[findfirst(isequal(sym), states)] :
@@ -68,6 +76,9 @@ sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], :t)
 @test observed(sys, :t)(1:3, 4:6, 1.5) == 1.5
 @test is_time_dependent(sys)
 @test constant_structure(sys)
+@test variable_symbols(sys) == [:x, :y, :z]
+@test parameter_symbols(sys) == [:a, :b, :c]
+@test independent_variable_symbols(sys) == [:t]
 
 sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], nothing)
 
@@ -79,6 +90,9 @@ sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], nothing)
 @test observed(sys, :b)(1:3, 4:6) == 5
 @test observed(sys, :c)(1:3, 4:6) == 6
 @test constant_structure(sys)
+@test variable_symbols(sys) == [:x, :y, :z]
+@test parameter_symbols(sys) == [:a, :b, :c]
+@test independent_variable_symbols(sys) == []
 
 sys = SystemMockup(false, [:x, :y, :z], [:a, :b, :c], :t)
 @test !constant_structure(sys)
@@ -95,3 +109,9 @@ end
 @test observed(sys, :b, 2)(1:3, 4:6, 1.5) == 5
 @test observed(sys, :c, 2)(1:3, 4:6, 1.5) == 6
 @test observed(sys, :t, 2)(1:3, 4:6, 1.5) == 1.5
+@test_throws Exception variable_symbols(sys)
+@test variable_symbols(sys, 1) == [:z, :x, :y]
+@test variable_symbols(sys, 2) == [:y, :z, :x]
+@test variable_symbols(sys, 3) == [:x, :y, :z]
+@test parameter_symbols(sys) == [:a, :b, :c]
+@test independent_variable_symbols(sys) == [:t]

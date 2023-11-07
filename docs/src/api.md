@@ -3,10 +3,12 @@
 ```@docs
 is_variable
 variable_index
+variable_symbols
 is_parameter
 parameter_index
+parameter_symbols
 is_independent_variable
-current_state
+independent_variable_symbols
 is_observed
 observed
 is_time_dependent

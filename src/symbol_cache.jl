@@ -20,18 +20,18 @@ end
 
 is_variable(sc::SymbolCache, sym) = sym in sc.variables
 variable_index(sc::SymbolCache, sym) = findfirst(isequal(sym), sc.variables)
+variable_symbols(sc::SymbolCache, i = nothing) = sc.variables
 is_parameter(sc::SymbolCache, sym) = sym in sc.parameters
 parameter_index(sc::SymbolCache, sym) = findfirst(isequal(sym), sc.parameters)
+parameter_symbols(sc::SymbolCache) = sc.parameters
 is_independent_variable(sc::SymbolCache, sym) = sym in sc.independent_variables
-current_state(sc::SymbolCache) = sc.variables
+independent_variable_symbols(sc::SymbolCache) = sc.independent_variables
 is_observed(sc::SymbolCache, sym) = false
 is_time_dependent(sc::SymbolCache) = !isempty(sc.independent_variables)
 constant_structure(::SymbolCache) = true
 
 function Base.copy(sc::SymbolCache)
-    return SymbolCache(
-        sc.variables === nothing ? nothing : copy(sc.variables),
+    return SymbolCache(sc.variables === nothing ? nothing : copy(sc.variables),
         sc.parameters === nothing ? nothing : copy(sc.parameters),
-        sc.independent_variables === nothing ? nothing : copy(sc.independent_variables),
-    )
+        sc.independent_variables === nothing ? nothing : copy(sc.independent_variables))
 end
