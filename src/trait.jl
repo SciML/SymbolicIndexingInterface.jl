@@ -39,3 +39,11 @@ See also: [`ScalarSymbolic`](@ref), [`ArraySymbolic`](@ref), [`NotSymbolic`](@re
 symbolic_type(x) = symbolic_type(typeof(x))
 symbolic_type(::Type) = NotSymbolic()
 symbolic_type(::Type{Symbol}) = ScalarSymbolic()
+
+
+"""
+    getname(x)::Symbol
+
+Get the name of a symbolic variable as a `Symbol`
+"""
+function getname end

@@ -2,7 +2,7 @@ module SymbolicIndexingInterface
 
 using Requires
 
-export ScalarSymbolic, ArraySymbolic, NotSymbolic, symbolic_type
+export ScalarSymbolic, ArraySymbolic, NotSymbolic, symbolic_type, getname
 include("trait.jl")
 
 export is_variable, variable_index, variable_symbols, is_parameter, parameter_index,
