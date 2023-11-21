@@ -40,6 +40,15 @@ symbolic_type(x) = symbolic_type(typeof(x))
 symbolic_type(::Type) = NotSymbolic()
 symbolic_type(::Type{Symbol}) = ScalarSymbolic()
 
+"""
+    hasname(x)
+
+Check whether the given symbolic variable (for which `symbolic_type(x) != NotSymbolic()`) has a valid name as per `getname`.
+"""
+function hasname end
+
+hasname(::Symbol) = true
+hasname(::Any) = false
 
 """
     getname(x)::Symbol

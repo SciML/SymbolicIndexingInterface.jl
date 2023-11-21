@@ -22,6 +22,7 @@ ScalarSymbolic
 ArraySymbolic
 NotSymbolic
 symbolic_type
+hasname
 getname
 ```
 
