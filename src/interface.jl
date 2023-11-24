@@ -1,9 +1,21 @@
 """
+    symbolic_container(p)
+
+Using `p`, return an object that implements the symbolic indexing interface. In case `p`
+itself implements the interface, `p` can be returned as-is. All symbolic indexing interface
+methods fall back to calling the same method on `symbolic_container(p)`, so this may be
+used for trivial implementations of the interface that forward all calls to another object.
+
+This is also used by [`ParameterIndexingProxy`](@ref)
+"""
+function symbolic_container end
+
+"""
     is_variable(sys, sym)
 
 Check whether the given `sym` is a variable in `sys`.
 """
-function is_variable end
+is_variable(sys, sym) = is_variable(symbolic_container(sys), sym)
 
 """
     variable_index(sys, sym, [i])
@@ -12,7 +24,8 @@ Return the index of the given variable `sym` in `sys`, or `nothing` otherwise. I
 [`constant_structure`](@ref) is `false`, this accepts the current time index as an
 additional parameter `i`.
 """
-function variable_index end
+variable_index(sys, sym) = variable_index(symbolic_container(sys), sym)
+variable_index(sys, sym, i) = variable_index(symbolic_container(sys), sym, i)
 
 """
     variable_symbols(sys, [i])
@@ -21,21 +34,22 @@ Return a vector of the symbolic variables being solved for in the system `sys`. 
 `constant_structure(sys) == false` this accepts an additional parameter indicating
 the current time index. The returned vector should not be mutated.
 """
-function variable_symbols end
+variable_symbols(sys) = variable_symbols(symbolic_container(sys))
+variable_symbols(sys, i) = variable_symbols(symbolic_container(sys), i)
 
 """
     is_parameter(sys, sym)
 
 Check whether the given `sym` is a parameter in `sys`.
 """
-function is_parameter end
+is_parameter(sys, sym) = is_parameter(symbolic_container(sys), sym)
 
 """
     parameter_index(sys, sym)
 
 Return the index of the given parameter `sym` in `sys`, or `nothing` otherwise.
 """
-function parameter_index end
+parameter_index(sys, sym) = parameter_index(symbolic_container(sys), sym)
 
 """
     parameter_symbols(sys)
@@ -43,7 +57,7 @@ function parameter_index end
 Return a vector of the symbolic parameters of the given system `sys`. The returned
 vector should not be mutated.
 """
-function parameter_symbols end
+parameter_symbols(sys) = parameter_symbols(symbolic_container(sys))
 
 """
     is_independent_variable(sys, sym)
@@ -51,21 +65,21 @@ function parameter_symbols end
 Check whether the given `sym` is an independent variable in `sys`. The returned vector
 should not be mutated.
 """
-function is_independent_variable end
+is_independent_variable(sys, sym) = is_independent_variable(symbolic_container(sys), sym)
 
 """
     independent_variable_symbols(sys)
 
 Return a vector of the symbolic independent variables of the given system `sys`.
 """
-function independent_variable_symbols end
+independent_variable_symbols(sys) = independent_variable_symbols(symbolic_container(sys))
 
 """
     is_observed(sys, sym)
 
 Check whether the given `sym` is an observed value in `sys`.
 """
-function is_observed end
+is_observed(sys, sym) = is_observed(symbolic_container(sys), sym)
 
 """
     observed(sys, sym, [states])
@@ -79,14 +93,15 @@ of states or a time index which identifies the order of states.
 
 See also: [`is_time_dependent`](@ref), [`constant_structure`](@ref)
 """
-function observed end
+observed(sys, sym) = observed(symbolic_container(sys), sym)
+observed(sys, sym, states) = observed(symbolic_container(sys), sym, states)
 
 """
     is_time_dependent(sys)
 
 Check if `sys` has time as (one of) its independent variables.
 """
-function is_time_dependent end
+is_time_dependent(sys) = is_time_dependent(symbolic_container(sys))
 
 """
     constant_structure(sys)
@@ -94,4 +109,4 @@ function is_time_dependent end
 Check if `sys` has a constant structure. Constant structure systems do not change the
 number of variables or parameters over time.
 """
-function constant_structure end
+constant_structure(sys) = constant_structure(symbolic_container(sys))

@@ -7,11 +7,14 @@ include("trait.jl")
 
 export is_variable, variable_index, variable_symbols, is_parameter, parameter_index,
     parameter_symbols, is_independent_variable, independent_variable_symbols, is_observed,
-    observed, is_time_dependent, constant_structure
+    observed, is_time_dependent, constant_structure, symbolic_container
 include("interface.jl")
 
 export SymbolCache
 include("symbol_cache.jl")
+
+export ParameterIndexingProxy, parameter_values
+include("parameter_indexing_proxy.jl")
 
 @static if !isdefined(Base, :get_extension)
     function __init__()
