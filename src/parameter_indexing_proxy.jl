@@ -1,3 +1,5 @@
+const PARAMETER_INDEXING_PROXY_PROPERTY_NAME = :ps
+
 """
     parameter_values(p)
 
