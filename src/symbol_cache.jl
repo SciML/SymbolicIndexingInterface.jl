@@ -18,13 +18,13 @@ function SymbolCache(vars::Vector{V}, params = [], indepvars = []) where {V}
     return SymbolCache{V, eltype(params), eltype(indepvars)}(vars, params, indepvars)
 end
 
-is_variable(sc::SymbolCache, sym) = sym in sc.variables
+is_variable(sc::SymbolCache, sym) = any(isequal(sym), sc.variables)
 variable_index(sc::SymbolCache, sym) = findfirst(isequal(sym), sc.variables)
 variable_symbols(sc::SymbolCache, i = nothing) = sc.variables
-is_parameter(sc::SymbolCache, sym) = sym in sc.parameters
+is_parameter(sc::SymbolCache, sym) = any(isequal(sym), sc.parameters)
 parameter_index(sc::SymbolCache, sym) = findfirst(isequal(sym), sc.parameters)
 parameter_symbols(sc::SymbolCache) = sc.parameters
-is_independent_variable(sc::SymbolCache, sym) = sym in sc.independent_variables
+is_independent_variable(sc::SymbolCache, sym) = any(isequal(sym), sc.independent_variables)
 independent_variable_symbols(sc::SymbolCache) = sc.independent_variables
 is_observed(sc::SymbolCache, sym) = false
 is_time_dependent(sc::SymbolCache) = !isempty(sc.independent_variables)
