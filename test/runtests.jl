@@ -13,6 +13,6 @@ end
 @testset "Fallback test" begin
     @time include("fallback_test.jl")
 end
-@testset "Parameter indexing proxy test" begin
-    @time include("parameter_indexing_proxy_test.jl")
+@testset "Parameter indexing test" begin
+    @time include("parameter_indexing_test.jl")
 end

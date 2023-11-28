@@ -13,8 +13,8 @@ include("interface.jl")
 export SymbolCache
 include("symbol_cache.jl")
 
-export ParameterIndexingProxy, parameter_values
-include("parameter_indexing_proxy.jl")
+export parameter_values, getp, setp
+include("parameter_indexing.jl")
 
 @static if !isdefined(Base, :get_extension)
     function __init__()
