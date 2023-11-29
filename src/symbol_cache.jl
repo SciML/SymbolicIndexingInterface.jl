@@ -7,31 +7,59 @@ of having a vector of variables, parameters and independent variables. This
 struct does not implement `observed`, and `is_observed` returns `false` for
 all input symbols. It is considered to be time dependent if it contains
 at least one independent variable.
+
+The independent variable may be specified as a single symbolic variable instead of an
+array containing a single variable if the system has only one independent variable.
 """
-struct SymbolCache{V, P, I}
-    variables::Vector{V}
-    parameters::Vector{P}
-    independent_variables::Vector{I}
+struct SymbolCache{V<:Union{Nothing,AbstractVector}, P<:Union{Nothing,AbstractVector}, I}
+    variables::V
+    parameters::P
+    independent_variables::I
 end
 
-function SymbolCache(vars::Vector{V}, params = [], indepvars = []) where {V}
-    return SymbolCache{V, eltype(params), eltype(indepvars)}(vars, params, indepvars)
+function SymbolCache(vars = nothing, params = nothing, indepvars = nothing)
+    return SymbolCache{typeof(vars),typeof(params),typeof(indepvars)}(vars, params, indepvars)
 end
 
-is_variable(sc::SymbolCache, sym) = any(isequal(sym), sc.variables)
-variable_index(sc::SymbolCache, sym) = findfirst(isequal(sym), sc.variables)
-variable_symbols(sc::SymbolCache, i = nothing) = sc.variables
-is_parameter(sc::SymbolCache, sym) = any(isequal(sym), sc.parameters)
-parameter_index(sc::SymbolCache, sym) = findfirst(isequal(sym), sc.parameters)
-parameter_symbols(sc::SymbolCache) = sc.parameters
-is_independent_variable(sc::SymbolCache, sym) = any(isequal(sym), sc.independent_variables)
-independent_variable_symbols(sc::SymbolCache) = sc.independent_variables
+is_variable(sc::SymbolCache, sym) = sc.variables !== nothing && any(isequal(sym), sc.variables)
+variable_index(sc::SymbolCache, sym) = sc.variables === nothing ? nothing : findfirst(isequal(sym), sc.variables)
+variable_symbols(sc::SymbolCache, i = nothing) = something(sc.variables, [])
+is_parameter(sc::SymbolCache, sym) = sc.parameters !== nothing && any(isequal(sym), sc.parameters)
+parameter_index(sc::SymbolCache, sym) = sc.parameters === nothing ? nothing : findfirst(isequal(sym), sc.parameters)
+parameter_symbols(sc::SymbolCache) = something(sc.parameters, [])
+function is_independent_variable(sc::SymbolCache, sym)
+    sc.independent_variables === nothing && return false
+    if symbolic_type(sc.independent_variables) == NotSymbolic()
+        return any(isequal(sym), sc.independent_variables)
+    elseif symbolic_type(sc.independent_variables) == ScalarSymbolic()
+        return sym == sc.independent_variables
+    else
+        return any(isequal(sym), collect(sc.independent_variables))
+    end
+end
+function independent_variable_symbols(sc::SymbolCache)
+    sc.independent_variables === nothing && return []
+    if symbolic_type(sc.independent_variables) == NotSymbolic()
+        return sc.independent_variables
+    elseif symbolic_type(sc.independent_variables) == ScalarSymbolic()
+        return [sc.independent_variables]
+    else
+        return collect(sc.independent_variables)
+    end
+end
 is_observed(sc::SymbolCache, sym) = false
-is_time_dependent(sc::SymbolCache) = !isempty(sc.independent_variables)
+function is_time_dependent(sc::SymbolCache)
+    sc.independent_variables === nothing && return false
+    if symbolic_type(sc.independent_variables) == NotSymbolic()
+        return !isempty(sc.independent_variables)
+    else
+        return true
+    end
+end
 constant_structure(::SymbolCache) = true
 
 function Base.copy(sc::SymbolCache)
     return SymbolCache(sc.variables === nothing ? nothing : copy(sc.variables),
         sc.parameters === nothing ? nothing : copy(sc.parameters),
-        sc.independent_variables === nothing ? nothing : copy(sc.independent_variables))
+        sc.independent_variables isa AbstractArray ? copy(sc.independent_variables) : sc.independent_variables)
 end

@@ -19,7 +19,23 @@ sc = SymbolCache([:x, :y], [:a, :b])
 @test !is_time_dependent(sc)
 # make sure the constructor works
 @test_nowarn SymbolCache([:x, :y])
+
+sc = SymbolCache()
+@test all(.!is_variable.((sc,), [:x, :y, :a, :b, :t]))
+@test all(variable_index.((sc,), [:x, :y, :a, :b, :t]) .== nothing)
+@test variable_symbols(sc) == []
+@test all(.!is_parameter.((sc,), [:x, :y, :a, :b, :t]))
+@test all(parameter_index.((sc,), [:x, :y, :a, :b, :t]) .== nothing)
+@test parameter_symbols(sc) == []
+@test all(.!is_independent_variable.((sc,), [:x, :y, :a, :b, :t]))
 @test independent_variable_symbols(sc) == []
+@test !is_time_dependent(sc)
+
+sc = SymbolCache(nothing, nothing, :t)
+@test all(.!is_independent_variable.((sc,), [:x, :y, :a, :b]))
+@test is_independent_variable(sc, :t)
+@test independent_variable_symbols(sc) == [:t]
+@test is_time_dependent(sc)
 
 sc2 = copy(sc)
 @test sc.variables == sc2.variables
