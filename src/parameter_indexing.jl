@@ -35,7 +35,7 @@ function _getp(sys, ::ScalarSymbolic, p)
     end
 end
 
-function _getp(sys, ::ScalarSymbolic, p::Union{Tuple,AbstractArray})
+function _getp(sys, ::ScalarSymbolic, p::Union{Tuple, AbstractArray})
     idxs = parameter_index.((sys,), p)
     return function getter(sol)
         return getindex.((parameter_values(sol),), idxs)
@@ -77,7 +77,7 @@ function _setp(sys, ::ScalarSymbolic, p)
     end
 end
 
-function _setp(sys, ::ScalarSymbolic, p::Union{Tuple,AbstractArray})
+function _setp(sys, ::ScalarSymbolic, p::Union{Tuple, AbstractArray})
     idxs = parameter_index.((sys,), p)
     return function setter!(sol, val)
         setindex!.((parameter_values(sol),), val, idxs)

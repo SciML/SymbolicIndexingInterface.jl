@@ -14,7 +14,8 @@ all_syms = [:x, :y, :z, :a, :b, :t]
 @test variable_index.((sys,), all_syms) == variable_index.((sc,), all_syms)
 @test is_parameter.((sys,), all_syms) == is_parameter.((sc,), all_syms)
 @test parameter_index.((sys,), all_syms) == parameter_index.((sc,), all_syms)
-@test is_independent_variable.((sys,), all_syms) == is_independent_variable.((sc,), all_syms)
+@test is_independent_variable.((sys,), all_syms) ==
+      is_independent_variable.((sc,), all_syms)
 @test is_observed.((sys,), all_syms) == is_observed.((sc,), all_syms)
 @test is_time_dependent(sys) == is_time_dependent(sc)
 @test constant_structure(sys) == constant_structure(sc)

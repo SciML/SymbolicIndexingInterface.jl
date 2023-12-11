@@ -11,21 +11,35 @@ at least one independent variable.
 The independent variable may be specified as a single symbolic variable instead of an
 array containing a single variable if the system has only one independent variable.
 """
-struct SymbolCache{V<:Union{Nothing,AbstractVector}, P<:Union{Nothing,AbstractVector}, I}
+struct SymbolCache{
+    V <: Union{Nothing, AbstractVector},
+    P <: Union{Nothing, AbstractVector},
+    I,
+}
     variables::V
     parameters::P
     independent_variables::I
 end
 
 function SymbolCache(vars = nothing, params = nothing, indepvars = nothing)
-    return SymbolCache{typeof(vars),typeof(params),typeof(indepvars)}(vars, params, indepvars)
+    return SymbolCache{typeof(vars), typeof(params), typeof(indepvars)}(vars,
+        params,
+        indepvars)
 end
 
-is_variable(sc::SymbolCache, sym) = sc.variables !== nothing && any(isequal(sym), sc.variables)
-variable_index(sc::SymbolCache, sym) = sc.variables === nothing ? nothing : findfirst(isequal(sym), sc.variables)
+function is_variable(sc::SymbolCache, sym)
+    sc.variables !== nothing && any(isequal(sym), sc.variables)
+end
+function variable_index(sc::SymbolCache, sym)
+    sc.variables === nothing ? nothing : findfirst(isequal(sym), sc.variables)
+end
 variable_symbols(sc::SymbolCache, i = nothing) = something(sc.variables, [])
-is_parameter(sc::SymbolCache, sym) = sc.parameters !== nothing && any(isequal(sym), sc.parameters)
-parameter_index(sc::SymbolCache, sym) = sc.parameters === nothing ? nothing : findfirst(isequal(sym), sc.parameters)
+function is_parameter(sc::SymbolCache, sym)
+    sc.parameters !== nothing && any(isequal(sym), sc.parameters)
+end
+function parameter_index(sc::SymbolCache, sym)
+    sc.parameters === nothing ? nothing : findfirst(isequal(sym), sc.parameters)
+end
 parameter_symbols(sc::SymbolCache) = something(sc.parameters, [])
 function is_independent_variable(sc::SymbolCache, sym)
     sc.independent_variables === nothing && return false
@@ -61,5 +75,6 @@ constant_structure(::SymbolCache) = true
 function Base.copy(sc::SymbolCache)
     return SymbolCache(sc.variables === nothing ? nothing : copy(sc.variables),
         sc.parameters === nothing ? nothing : copy(sc.parameters),
-        sc.independent_variables isa AbstractArray ? copy(sc.independent_variables) : sc.independent_variables)
+        sc.independent_variables isa AbstractArray ? copy(sc.independent_variables) :
+        sc.independent_variables)
 end
