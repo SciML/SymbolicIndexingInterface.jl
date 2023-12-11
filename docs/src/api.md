@@ -1,6 +1,7 @@
 # Interface Functions
 
 ```@docs
+symbolic_container
 is_variable
 variable_index
 variable_symbols
@@ -13,6 +14,9 @@ is_observed
 observed
 is_time_dependent
 constant_structure
+parameter_values
+getp
+setp
 ```
 
 # Traits
