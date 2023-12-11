@@ -1,19 +1,36 @@
 # Interface Functions
 
-Default methods cast all symbols to `Symbol` before comparing.
-
 ```@docs
-independent_variables
-is_indep_sym
-states
-state_sym_to_index
-is_state_sym
-parameters
-param_sym_to_index
-is_param_sym
+symbolic_container
+is_variable
+variable_index
+variable_symbols
+is_parameter
+parameter_index
+parameter_symbols
+is_independent_variable
+independent_variable_symbols
+is_observed
+observed
+is_time_dependent
+constant_structure
+parameter_values
+getp
+setp
 ```
 
-## Concrete Types
+# Traits
+
+```@docs
+ScalarSymbolic
+ArraySymbolic
+NotSymbolic
+symbolic_type
+hasname
+getname
+```
+
+# Types
 
 ```@docs
 SymbolCache

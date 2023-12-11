@@ -1,162 +1,112 @@
 """
-$(TYPEDSIGNATURES)
+    symbolic_container(p)
 
-Get an iterable over the independent variables for the given system. Default to an empty
-vector.
+Using `p`, return an object that implements the symbolic indexing interface. In case `p`
+itself implements the interface, `p` can be returned as-is. All symbolic indexing interface
+methods fall back to calling the same method on `symbolic_container(p)`, so this may be
+used for trivial implementations of the interface that forward all calls to another object.
+
+This is also used by [`ParameterIndexingProxy`](@ref)
 """
-function independent_variables end
-independent_variables(::Any) = []
-
-"""
-$(TYPEDSIGNATURES)
-
-Check if the given sym is an independent variable in the given system. Default to checking
-if the given `sym` exists in the iterable returned by `independent_variables`.
-"""
-function is_indep_sym end
-
-function is_indep_sym(store, sym)
-    any(isequal(Symbol(sym)), Symbol.(independent_variables(store)))
-end
+function symbolic_container end
 
 """
-$(TYPEDSIGNATURES)
+    is_variable(sys, sym)
 
-Get an iterable over the states for the given system. Default to an empty vector.
+Check whether the given `sym` is a variable in `sys`.
 """
-function states end
-
-states(::Any) = []
+is_variable(sys, sym) = is_variable(symbolic_container(sys), sym)
 
 """
-$(TYPEDSIGNATURES)
+    variable_index(sys, sym, [i])
 
-Get an iterable over the unknown states for the given system. Default to an empty vector.
+Return the index of the given variable `sym` in `sys`, or `nothing` otherwise. If
+[`constant_structure`](@ref) is `false`, this accepts the current time index as an
+additional parameter `i`.
 """
-function unknown_states end
-
-unknown_states(::Any) = []
-
-"""
-$(TYPEDSIGNATURES)
-
-Find the index of the given sym in the given system. Default to the index of the first
-symbol in the iterable returned by `states` which matches the given `sym`. Return
-`nothing` if the given `sym` does not match.
-"""
-function state_sym_to_index end
-
-function state_sym_to_index(store, sym)
-    findfirst(isequal(Symbol(sym)), Symbol.(states(store)))
-end
+variable_index(sys, sym) = variable_index(symbolic_container(sys), sym)
+variable_index(sys, sym, i) = variable_index(symbolic_container(sys), sym, i)
 
 """
-$(TYPEDSIGNATURES)
+    variable_symbols(sys, [i])
 
-Check if the given sym is a state variable in the given system. Default to checking if
-the value returned by `state_sym_to_index` is not `nothing`.
+Return a vector of the symbolic variables being solved for in the system `sys`. If
+`constant_structure(sys) == false` this accepts an additional parameter indicating
+the current time index. The returned vector should not be mutated.
 """
-function is_state_sym end
-
-is_state_sym(store, sym) = !isnothing(state_sym_to_index(store, sym))
-
-"""
-$(TYPEDSIGNATURES)
-
-Get an iterable over the parameters variables for the given system. Default to an empty
-vector.
-"""
-function parameters end
-
-parameters(::Any) = []
+variable_symbols(sys) = variable_symbols(symbolic_container(sys))
+variable_symbols(sys, i) = variable_symbols(symbolic_container(sys), i)
 
 """
-$(TYPEDSIGNATURES)
+    is_parameter(sys, sym)
 
-Find the index of the given sym in the given system. Default to the index of the first
-symbol in the iterable retruned by `parameters` which matches the given `sym`. Return
-`nothing` if the given `sym` does not match.
+Check whether the given `sym` is a parameter in `sys`.
 """
-function param_sym_to_index end
-
-param_sym_to_index(store, sym) = findfirst(isequal(Symbol(sym)), Symbol.(parameters(store)))
+is_parameter(sys, sym) = is_parameter(symbolic_container(sys), sym)
 
 """
-$(TYPEDSIGNATURES)
+    parameter_index(sys, sym)
 
-Check if the given sym is a parameter variable in the given system. Default
-to checking if the value returned by `param_sym_to_index` is not `nothing`.
+Return the index of the given parameter `sym` in `sys`, or `nothing` otherwise.
 """
-function is_param_sym end
-
-is_param_sym(store, sym) = !isnothing(param_sym_to_index(store, sym))
+parameter_index(sys, sym) = parameter_index(symbolic_container(sys), sym)
 
 """
-$(TYPEDSIGNATURES)
+    parameter_symbols(sys)
 
-Get an iterable over the observed variable expressions for the given system.
-Default to an empty vector.
+Return a vector of the symbolic parameters of the given system `sys`. The returned
+vector should not be mutated.
 """
-function observed end
-
-observed(::Any) = []
+parameter_symbols(sys) = parameter_symbols(symbolic_container(sys))
 
 """
-$(TYPEDSIGNATURES)
+    is_independent_variable(sys, sym)
 
-Check if the given sym is an observed variable in the given system. Default
-to checking if the value returned by `observed_sym_to_index` is not `nothing`.
+Check whether the given `sym` is an independent variable in `sys`. The returned vector
+should not be mutated.
 """
-function is_observed_sym end
-
-is_observed_sym(store, sym) = !isnothing(observed_sym_to_index(store, sym))
+is_independent_variable(sys, sym) = is_independent_variable(symbolic_container(sys), sym)
 
 """
-$(TYPEDSIGNATURES)
+    independent_variable_symbols(sys)
 
-Find the index of the given sym in the given system. Default to the index of the first
-symbol in the iterable returned by `states` which matches the given `sym`. Return
-`nothing` if the given `sym` does not match.
+Return a vector of the symbolic independent variables of the given system `sys`.
 """
-function observed_sym_to_index end
-
-function observed_sym_to_index(store, sym)
-    findfirst(o -> isequal(sym, o.lhs), observed(store))
-end
+independent_variable_symbols(sys) = independent_variable_symbols(symbolic_container(sys))
 
 """
-$(TYPEDSIGNATURES)
+    is_observed(sys, sym)
 
-Return a list of the dependent state variables of an observed variable. Default to returning
-an empty list.
+Check whether the given `sym` is an observed value in `sys`.
 """
-function get_state_dependencies end
-
-get_state_dependencies(store, sym) = []
+is_observed(sys, sym) = is_observed(symbolic_container(sys), sym)
 
 """
-$(TYPEDSIGNATURES)
+    observed(sys, sym, [states])
 
-Return a list of the dependent observed variables of an observed variable. Default to returning
-an empty list.
+Return the observed function of the given `sym` in `sys`. The returned function should
+have the signature `(u, p) -> [values...]` where `u` and `p` is the current state and
+parameter vector. If `istimedependent(sys) == true`, the function should accept
+the current time `t` as its third parameter. If `constant_structure(sys) == false`,
+accept a third parameter which can either be a vector of symbols indicating the order
+of states or a time index which identifies the order of states.
+
+See also: [`is_time_dependent`](@ref), [`constant_structure`](@ref)
 """
-function get_observed_dependencies end
-
-get_observed_dependencies(store, sym) = []
+observed(sys, sym) = observed(symbolic_container(sys), sym)
+observed(sys, sym, states) = observed(symbolic_container(sys), sym, states)
 
 """
-$(TYPEDSIGNATURES)
+    is_time_dependent(sys)
 
-Return a list of the dependent state variables of all observed equations of the system.
-Default to returning an empty list.
+Check if `sys` has time as (one of) its independent variables.
 """
-function get_deps_of_observed end
+is_time_dependent(sys) = is_time_dependent(symbolic_container(sys))
 
-function get_deps_of_observed(store)
-    obs = observed(store)
-    deps = mapreduce(vcat, obs, init = []) do eq
-        get_state_dependencies(store, eq.lhs)
-    end |> unique
+"""
+    constant_structure(sys)
 
-    return deps
-end
+Check if `sys` has a constant structure. Constant structure systems do not change the
+number of variables or parameters over time.
+"""
+constant_structure(sys) = constant_structure(symbolic_container(sys))
