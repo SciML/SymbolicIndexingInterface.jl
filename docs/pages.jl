@@ -3,4 +3,5 @@
 pages = [
     "Home" => "index.md",
     "API" => "api.md",
+    "Tutorial" => "tutorial.md",
 ]
