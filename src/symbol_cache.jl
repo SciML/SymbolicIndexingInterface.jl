@@ -71,6 +71,8 @@ function is_time_dependent(sc::SymbolCache)
     end
 end
 constant_structure(::SymbolCache) = true
+all_solvable_symbols(sc::SymbolCache) = variable_symbols(sc)
+all_symbols(sc::SymbolCache) = vcat(variable_symbols(sc), parameter_symbols(sc), independent_variable_symbols(sc))
 
 function Base.copy(sc::SymbolCache)
     return SymbolCache(sc.variables === nothing ? nothing : copy(sc.variables),

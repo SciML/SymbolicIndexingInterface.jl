@@ -14,6 +14,8 @@ is_observed
 observed
 is_time_dependent
 constant_structure
+all_solvable_symbols
+all_symbols
 parameter_values
 getp
 setp

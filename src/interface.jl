@@ -110,3 +110,19 @@ Check if `sys` has a constant structure. Constant structure systems do not chang
 number of variables or parameters over time.
 """
 constant_structure(sys) = constant_structure(symbolic_container(sys))
+
+"""
+    all_solvable_symbols(sys)
+
+Return an array of all symbols in the system that can be solved for. This includes
+observed variables, but not parameters or independent variables.
+"""
+all_solvable_symbols(sys) = all_solvable_symbols(symbolic_container(sys))
+
+"""
+    all_symbols(sys)
+
+Return an array of all symbols in the system. This includes parameters and independent
+variables.
+"""
+all_symbols(sys) = all_symbols(symbolic_container(sys))
