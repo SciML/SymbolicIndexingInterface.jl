@@ -116,10 +116,9 @@ number of variables or parameters over time.
 constant_structure(sys) = constant_structure(symbolic_container(sys))
 
 """
-    all_variables(sys)
+    all_variable_symbols(sys)
 
-Return a vector of pairs, where the first element of each pair is a symbolic variable
-and the second is its initial value. This includes observed quantities.
+Return a vector of variable symbols in the system, including observed quantities.
 
 For types that implement `Base.getindex` with symbolic indices using this interface,
 The shorthand `sys[allvariables]` can be used as shorthand for
@@ -145,7 +144,7 @@ This singleton is used as a shortcut to allow indexing all solution variables
 [`ScalarSymbolic`](@ref). See: [`variable_symbols`](@ref).
 """
 const solvedvariables = SolvedVariables()
-symbolic_type(::Type{AllVariables}) = ScalarSymbolic()
+symbolic_type(::Type{SolvedVariables}) = ScalarSymbolic()
 
 struct AllVariables end
 
