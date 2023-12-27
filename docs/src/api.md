@@ -14,6 +14,10 @@ is_observed
 observed
 is_time_dependent
 constant_structure
+all_variable_symbols
+all_symbols
+solvedvariables
+allvariables
 parameter_values
 getp
 setp

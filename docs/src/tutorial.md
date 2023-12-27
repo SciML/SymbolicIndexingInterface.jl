@@ -41,6 +41,8 @@ struct ExampleSolution
   state_index::Dict{Symbol,Int}
   parameter_index::Dict{Symbol,Int}
   independent_variable::Union{Symbol,Nothing}
+  # mapping from observed variable to Expr to calculate its value
+  observed::Dict{Symbol,Expr}
   u::Vector{Vector{Float64}}
   p::Vector{Float64}
   t::Vector{Float64}
@@ -86,9 +88,9 @@ function SymbolicIndexingInterface.independent_variable_symbols(sys::ExampleSolu
   sys.independent_variable === nothing ? [] : [sys.independent_variable]
 end
 
-# this types accepts `Expr` for observed expressions involving state/parameter
+# this type accepts `Expr` for observed expressions involving state/parameter/observed
 # variables
-SymbolicIndexingInterface.is_observed(sys::ExampleSolution, sym) = sym isa Expr
+SymbolicIndexingInterface.is_observed(sys::ExampleSolution, sym) = sym isa Expr || sym isa Symbol && haskey(sys.observed, sym)
 
 function SymbolicIndexingInterface.observed(sys::ExampleSolution, sym::Expr)
   if is_time_dependent(sys)
@@ -109,6 +111,21 @@ function SymbolicIndexingInterface.is_time_dependent(sys::ExampleSolution)
 end
 
 SymbolicIndexingInterface.constant_structure(::ExampleSolution) = true
+
+function SymbolicIndexingInterface.all_solvable_symbols(sys::ExampleSolution)
+  return vcat(
+    collect(keys(sys.state_index)),
+    collect(keys(sys.observed)),
+  )
+end
+
+function SymbolicIndexingInterface.all_symbols(sys::ExampleSolution)
+  return vcat(
+    all_solvable_symbols(sys),
+    collect(keys(sys.parameter_index)),
+    sys.independent_variable === nothing ? Symbol[] : sys.independent_variable
+  )
+end
 ```
 
 Note that the method definitions are all assuming `constant_structure(p) == true`.

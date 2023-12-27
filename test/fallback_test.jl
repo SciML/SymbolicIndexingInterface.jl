@@ -22,3 +22,5 @@ all_syms = [:x, :y, :z, :a, :b, :t]
 @test variable_symbols(sys) == variable_symbols(sc)
 @test parameter_symbols(sys) == parameter_symbols(sc)
 @test independent_variable_symbols(sys) == independent_variable_symbols(sc)
+@test all_variable_symbols(sys) == variable_symbols(sc)
+@test all_symbols(sys) == all_symbols(sc)
