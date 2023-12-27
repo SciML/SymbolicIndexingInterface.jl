@@ -53,7 +53,7 @@ function SymbolicIndexingInterface.observed(sys::SystemMockup, sym, states = not
 end
 SymbolicIndexingInterface.is_time_dependent(sys::SystemMockup) = isequal(sys.indepvar, :t)
 SymbolicIndexingInterface.constant_structure(sys::SystemMockup) = sys.static
-SymbolicIndexingInterface.all_solvable_symbols(sys::SystemMockup) = sys.vars
+SymbolicIndexingInterface.all_variable_symbols(sys::SystemMockup) = sys.vars
 function SymbolicIndexingInterface.all_symbols(sys::SystemMockup)
     vcat(sys.vars, sys.params, independent_variable_symbols(sys))
 end
@@ -83,7 +83,7 @@ sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], :t)
 @test variable_symbols(sys) == [:x, :y, :z]
 @test parameter_symbols(sys) == [:a, :b, :c]
 @test independent_variable_symbols(sys) == [:t]
-@test all_solvable_symbols(sys) == [:x, :y, :z]
+@test all_variable_symbols(sys) == [:x, :y, :z]
 @test sort(all_symbols(sys)) == [:a, :b, :c, :t, :x, :y, :z]
 
 sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], nothing)
@@ -99,7 +99,7 @@ sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], nothing)
 @test variable_symbols(sys) == [:x, :y, :z]
 @test parameter_symbols(sys) == [:a, :b, :c]
 @test independent_variable_symbols(sys) == []
-@test all_solvable_symbols(sys) == [:x, :y, :z]
+@test all_variable_symbols(sys) == [:x, :y, :z]
 @test sort(all_symbols(sys)) == [:a, :b, :c, :x, :y, :z]
 
 sys = SystemMockup(false, [:x, :y, :z], [:a, :b, :c], :t)
@@ -123,5 +123,5 @@ end
 @test variable_symbols(sys, 3) == [:x, :y, :z]
 @test parameter_symbols(sys) == [:a, :b, :c]
 @test independent_variable_symbols(sys) == [:t]
-@test all_solvable_symbols(sys) == [:x, :y, :z]
+@test all_variable_symbols(sys) == [:x, :y, :z]
 @test sort(all_symbols(sys)) == [:a, :b, :c, :t, :x, :y, :z]

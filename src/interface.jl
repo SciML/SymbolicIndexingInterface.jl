@@ -33,6 +33,10 @@ variable_index(sys, sym, i) = variable_index(symbolic_container(sys), sym, i)
 Return a vector of the symbolic variables being solved for in the system `sys`. If
 `constant_structure(sys) == false` this accepts an additional parameter indicating
 the current time index. The returned vector should not be mutated.
+
+For types that implement `Base.getindex` with symbolic indices using this interface,
+The shorthand `sys[solvedvariables]` can be used as shorthand for
+`sys[variable_symbols(sys)]`. See: [`solvedvariables`](@ref).
 """
 variable_symbols(sys) = variable_symbols(symbolic_container(sys))
 variable_symbols(sys, i) = variable_symbols(symbolic_container(sys), i)
@@ -112,12 +116,16 @@ number of variables or parameters over time.
 constant_structure(sys) = constant_structure(symbolic_container(sys))
 
 """
-    all_solvable_symbols(sys)
+    all_variables(sys)
 
-Return an array of all symbols in the system that can be solved for. This includes
-observed variables, but not parameters or independent variables.
+Return a vector of pairs, where the first element of each pair is a symbolic variable
+and the second is its initial value. This includes observed quantities.
+
+For types that implement `Base.getindex` with symbolic indices using this interface,
+The shorthand `sys[allvariables]` can be used as shorthand for
+`sys[all_variable_symbols(sys)]`. See: [`allvariables`](@ref).
 """
-all_solvable_symbols(sys) = all_solvable_symbols(symbolic_container(sys))
+all_variable_symbols(sys) = all_variable_symbols(symbolic_container(sys))
 
 """
     all_symbols(sys)
@@ -126,3 +134,27 @@ Return an array of all symbols in the system. This includes parameters and indep
 variables.
 """
 all_symbols(sys) = all_symbols(symbolic_container(sys))
+
+struct SolvedVariables end
+
+"""
+    const solvedvariables = SolvedVariables()
+
+This singleton is used as a shortcut to allow indexing all solution variables
+(excluding observed quantities). It has a [`symbolic_type`](@ref) of
+[`ScalarSymbolic`](@ref). See: [`variable_symbols`](@ref).
+"""
+const solvedvariables = SolvedVariables()
+symbolic_type(::Type{AllVariables}) = ScalarSymbolic()
+
+struct AllVariables end
+
+"""
+    const allvariables = AllVariables()
+
+This singleton is used as a shortcut to allow indexing all solution variables
+(including observed quantities). It has a [`symbolic_type`](@ref) of
+[`ScalarSymbolic`](@ref). See [`all_variable_symbols`](@ref).
+"""
+const allvariables = AllVariables()
+symbolic_type(::Type{AllVariables}) = ScalarSymbolic()

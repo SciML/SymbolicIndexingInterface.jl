@@ -14,7 +14,7 @@ sc = SymbolCache([:x, :y, :z], [:a, :b], [:t])
 @test variable_symbols(sc) == [:x, :y, :z]
 @test parameter_symbols(sc) == [:a, :b]
 @test independent_variable_symbols(sc) == [:t]
-@test all_solvable_symbols(sc) == [:x, :y, :z]
+@test all_variable_symbols(sc) == [:x, :y, :z]
 @test sort(all_symbols(sc)) == [:a, :b, :t, :x, :y, :z]
 
 sc = SymbolCache([:x, :y], [:a, :b])
@@ -33,7 +33,7 @@ sc = SymbolCache()
 @test all(.!is_independent_variable.((sc,), [:x, :y, :a, :b, :t]))
 @test independent_variable_symbols(sc) == []
 @test !is_time_dependent(sc)
-@test all_solvable_symbols(sc) == []
+@test all_variable_symbols(sc) == []
 @test all_symbols(sc) == []
 
 sc = SymbolCache(nothing, nothing, :t)
@@ -41,7 +41,7 @@ sc = SymbolCache(nothing, nothing, :t)
 @test is_independent_variable(sc, :t)
 @test independent_variable_symbols(sc) == [:t]
 @test is_time_dependent(sc)
-@test all_solvable_symbols(sc) == []
+@test all_variable_symbols(sc) == []
 @test all_symbols(sc) == [:t]
 
 sc2 = copy(sc)
