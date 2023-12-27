@@ -46,13 +46,25 @@ sol[x]
 ```
 
 This also works for arrays or tuples of variables, including observed quantities and
-independent variables:
+independent variables, and for interpolating solutions:
 ```@example Usage
 sol[[x, y]]
 ```
 
 ```@example Usage
 sol[(t, w)]
+```
+
+```@example Usage
+sol(1.3, idxs=x)
+```
+
+```@example Usage
+sol(1.3, idxs=[x, w]) # cannot use tuples of variables for interpolation
+```
+
+```@example Usage
+sol(1.3, idxs=[:y, :z])
 ```
 
 If necessary, `Symbol`s can be used to refer to variables. This is only valid for
