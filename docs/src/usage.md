@@ -4,7 +4,7 @@ This tutorial will cover ways to use the interface for types that implement it.
 Consider the following example:
 
 ```@example Usage
-using ModelingToolkit, OrdinaryDiffEq, SymbolicIndexingInterface
+using ModelingToolkit, OrdinaryDiffEq, SymbolicIndexingInterface, Plots
 
 @parameters σ ρ β
 @variables t x(t) y(t) z(t) w(t)
@@ -46,7 +46,7 @@ sol[x]
 ```
 
 This also works for arrays or tuples of variables, including observed quantities and
-independent variables, and for interpolating solutions:
+independent variables, for interpolating solutions, and plotting:
 ```@example Usage
 sol[[x, y]]
 ```
@@ -60,11 +60,15 @@ sol(1.3, idxs=x)
 ```
 
 ```@example Usage
-sol(1.3, idxs=[x, w]) # cannot use tuples of variables for interpolation
+sol(1.3, idxs=[x, w])
 ```
 
 ```@example Usage
 sol(1.3, idxs=[:y, :z])
+```
+
+```@example Usage
+plot(sol, idxs=x)
 ```
 
 If necessary, `Symbol`s can be used to refer to variables. This is only valid for
