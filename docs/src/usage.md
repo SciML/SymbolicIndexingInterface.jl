@@ -21,7 +21,7 @@ sys = structural_simplify(sys)
 
 The system has 4 state variables, 3 parameters and one observed variable:
 ```@example Usage
-observed(sys)
+ModelingToolkit.observed(sys)
 ```
 
 Solving the system,

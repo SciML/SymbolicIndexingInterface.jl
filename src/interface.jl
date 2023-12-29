@@ -5,8 +5,6 @@ Using `p`, return an object that implements the symbolic indexing interface. In 
 itself implements the interface, `p` can be returned as-is. All symbolic indexing interface
 methods fall back to calling the same method on `symbolic_container(p)`, so this may be
 used for trivial implementations of the interface that forward all calls to another object.
-
-This is also used by [`ParameterIndexingProxy`](@ref)
 """
 function symbolic_container end
 
