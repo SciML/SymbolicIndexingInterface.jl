@@ -3,9 +3,9 @@
     function SymbolCache(vars, [params, [indepvars]])
 
 A struct implementing the symbolic indexing interface for the trivial case
-of having a vector of variables, parameters and independent variables. This
+of having a vector of variables, parameters, and independent variables. This
 struct does not implement `observed`, and `is_observed` returns `false` for
-all input symbols. It is considered to be time dependent if it contains
+all input symbols. It is considered time dependent if it contains
 at least one independent variable.
 
 The independent variable may be specified as a single symbolic variable instead of an

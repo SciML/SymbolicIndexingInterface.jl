@@ -33,7 +33,7 @@ Return a vector of the symbolic variables being solved for in the system `sys`. 
 the current time index. The returned vector should not be mutated.
 
 For types that implement `Base.getindex` with symbolic indices using this interface,
-The shorthand `sys[solvedvariables]` can be used as shorthand for
+the shorthand `sys[solvedvariables]` can be used as shorthand for
 `sys[variable_symbols(sys)]`. See: [`solvedvariables`](@ref).
 """
 variable_symbols(sys) = variable_symbols(symbolic_container(sys))
@@ -88,10 +88,10 @@ is_observed(sys, sym) = is_observed(symbolic_container(sys), sym)
 
 Return the observed function of the given `sym` in `sys`. The returned function should
 have the signature `(u, p) -> [values...]` where `u` and `p` is the current state and
-parameter vector. If `istimedependent(sys) == true`, the function should accept
+parameter vector, respectively. If `istimedependent(sys) == true`, the function should accept
 the current time `t` as its third parameter. If `constant_structure(sys) == false`,
-accept a third parameter which can either be a vector of symbols indicating the order
-of states or a time index which identifies the order of states.
+accept a third parameter, which can either be a vector of symbols indicating the order
+of states or a time index, which identifies the order of states.
 
 See also: [`is_time_dependent`](@ref), [`constant_structure`](@ref)
 """
@@ -137,7 +137,7 @@ struct SolvedVariables end
 """
     const solvedvariables = SolvedVariables()
 
-This singleton is used as a shortcut to allow indexing all solution variables
+This singleton is used as a shortcut to allow indexing of all solution variables
 (excluding observed quantities). It has a [`symbolic_type`](@ref) of
 [`ScalarSymbolic`](@ref). See: [`variable_symbols`](@ref).
 """
@@ -149,7 +149,7 @@ struct AllVariables end
 """
     const allvariables = AllVariables()
 
-This singleton is used as a shortcut to allow indexing all solution variables
+This singleton is used as a shortcut to allow indexing of all solution variables
 (including observed quantities). It has a [`symbolic_type`](@ref) of
 [`ScalarSymbolic`](@ref). See [`all_variable_symbols`](@ref).
 """
