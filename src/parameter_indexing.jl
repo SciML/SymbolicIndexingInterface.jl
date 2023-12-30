@@ -51,7 +51,7 @@ end
 """
     setp(sys, p)
 
-Return a function that takes an integrator of `sys` and a value, and sets the
+Return a function that takes an integrator of `sys` and a value, and sets
 the parameter `p` to that value. Note that `p` can be a direct numerical index or a
 symbolic value. Requires that the integrator implement [`parameter_values`](@ref) and the
 returned collection be a mutable reference to the parameter vector in the integrator. In

@@ -23,8 +23,8 @@ symbolic_container(sys::MySolutionWrapper) = sys.sol
 Since `symbolic_container` will return the wrapped solution, all method calls such as
 `is_parameter(sys::MySolutionWrapper, sym)` will be forwarded to `is_parameter(sys.sol, sym)`.
 
-In case some methods need to function differently than those of the wrapped type, they can selectively
-be defined. For example, suppose `MySolutionWrapper` does not support observed quantities. The following
+In cases where some methods need to function differently than those of the wrapped type, they can be selectively
+defined. For example, suppose `MySolutionWrapper` does not support observed quantities. The following
 method can be defined (in addition to the one above):
 
 ```julia
@@ -33,8 +33,8 @@ is_observed(sys::MySolutionWrapper, sym) = false
 
 ## Defining the interface in its entirety
 
-Not all of the methods in the interface are required. Some only need to be implemented if a type
-supports specific functionality. Consider the following struct which needs to implement the interface:
+Not all the methods in the interface are required. Some only need to be implemented if a type
+supports specific functionality. Consider the following struct, which needs to implement the interface:
 
 ```julia
 struct ExampleSolution
@@ -150,10 +150,10 @@ on a type that wraps this type. An example is `ModelingToolkit.AbstractSystem`, 
 can identify whether a value is observed, but cannot implement `observed` itself.
 
 Other optional methods relate to parameter indexing. If a type contains the values of
-parameter variables, it must implement [`parameter_values`](@ref). This will allow the
+parameter variables, it must implement [`parameter_values`](@ref). This allows the
 default definitions of [`getp`](@ref) and [`setp`](@ref) to work. While `setp` is
-not typically useful for solution objects, it may be useful for integrators. Typically
-the default implementations for `getp` and `setp` will suffice and manually defining
+not typically useful for solution objects, it may be useful for integrators. Typically,
+the default implementations for `getp` and `setp` will suffice, and manually defining
 them is not necessary.
 
 ```julia

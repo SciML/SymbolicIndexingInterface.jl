@@ -19,9 +19,9 @@ eqs = [D(D(x)) ~ σ * (y - x),
 sys = structural_simplify(sys)
 ```
 
-The system has 4 state variables, 3 parameters and one observed variable:
+The system has 4 state variables, 3 parameters, and one observed variable:
 ```@example Usage
-observed(sys)
+ModelingToolkit.observed(sys)
 ```
 
 Solving the system,
@@ -126,7 +126,7 @@ The updated parameter values can be checked using [`parameter_values`](@ref).
 parameter_values(prob)
 ```
 
-Solving the new system, note that the parameter getter functions still work on the new
+When solving the new system, note that the parameter getter functions still work on the new
 solution object.
 
 ```@example Usage

@@ -1,6 +1,8 @@
 using SymbolicIndexingInterface
 using Test
-
+@testset "Quality Assurance" begin
+    @time include("qa.jl")
+end
 @testset "Interface test" begin
     @time include("example_test.jl")
 end
