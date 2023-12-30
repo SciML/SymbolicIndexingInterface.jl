@@ -2,7 +2,11 @@
 
 pages = [
     "Home" => "index.md",
-    "Tutorial" => "tutorial.md",
-    "Usage" => "usage.md",
+    "Tutorials" => [
+        "Using the SciML Symbolic Indexing Interface" => "usage.md",
+        "Simple Demonstration of a Symbolic System Structure" => "simple_sii_sys.md",
+        "Implementing the Complete Symbolic Indexing Interface" => "complete_sii.md",
+    ],
+    "Defining Solution Wrapper Fallbacks" => "solution_wrappers.md",
     "API" => "api.md",
 ]
