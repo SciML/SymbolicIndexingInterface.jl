@@ -29,6 +29,8 @@ The symbolic indexing interface has 2 levels:
 ## Example
 
 ```julia
+# Use ModelingToolkit to make a solution
+
 using ModelingToolkit, OrdinaryDiffEq, SymbolicIndexingInterface, Plots
 
 @parameters σ ρ β
@@ -42,6 +44,21 @@ eqs = [D(D(x)) ~ σ * (y - x),
 
 @named sys = ODESystem(eqs)
 sys = structural_simplify(sys)
+
+u0 = [D(x) => 2.0,
+    x => 1.0,
+    y => 0.0,
+    z => 0.0]
+
+p = [σ => 28.0,
+    ρ => 10.0,
+    β => 8 / 3]
+
+tspan = (0.0, 100.0)
+prob = ODEProblem(sys, u0, tspan, p, jac = true)
+sol = solve(prob, Tsit5())
+
+# Now index it symbolically
 
 sol[x]
 ```
