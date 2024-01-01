@@ -35,13 +35,14 @@ struct NotSymbolic <: SymbolicTypeTrait end
     symbolic_type(::Type)
 
 Get the symbolic type trait of a type. Default to [`NotSymbolic`](@ref) for all types
-except `Symbol`.
+except `Symbol` and `Expr`, both of which are [`ScalarSymbolic`](@ref).
 
 See also: [`ScalarSymbolic`](@ref), [`ArraySymbolic`](@ref), [`NotSymbolic`](@ref)
 """
 symbolic_type(x) = symbolic_type(typeof(x))
 symbolic_type(::Type) = NotSymbolic()
 symbolic_type(::Type{Symbol}) = ScalarSymbolic()
+symbolic_type(::Type{Expr}) = ScalarSymbolic()
 
 """
     hasname(x)

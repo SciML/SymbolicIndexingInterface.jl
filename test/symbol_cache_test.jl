@@ -1,3 +1,6 @@
+using SymbolicIndexingInterface
+using Test
+
 sc = SymbolCache([:x, :y, :z], [:a, :b], [:t])
 
 @test all(is_variable.((sc,), [:x, :y, :z]))

@@ -15,4 +15,7 @@ include("symbol_cache.jl")
 export parameter_values, getp, setp
 include("parameter_indexing.jl")
 
+export state_values, current_time, getu, setu
+include("state_indexing.jl")
+
 end

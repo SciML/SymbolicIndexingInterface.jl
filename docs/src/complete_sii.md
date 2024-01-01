@@ -85,22 +85,41 @@ These are for handling symbolic expressions and generating equations which are n
 in the solution vector.
 
 ```julia
+using RuntimeGeneratedFunctions
+RuntimeGeneratedFunctions.init(@__MODULE__)
+
 # this type accepts `Expr` for observed expressions involving state/parameter/observed
 # variables
 SymbolicIndexingInterface.is_observed(sys::ExampleSystem, sym) = sym isa Expr || sym isa Symbol && haskey(sys.observed, sym)
 
 function SymbolicIndexingInterface.observed(sys::ExampleSystem, sym::Expr)
+  # generate a function with the appropriate signature
   if is_time_dependent(sys)
-    return function (u, p, t)
-      # compute value from `sym`, leveraging `variable_index` and
-      # `parameter_index` to turn symbols into indices
-    end
+    fn_expr = :(
+      function gen(u, p, t)
+        # assign a variable for each state symbol it's value in u
+        $([:($var = u[$idx]) for (var, idx) in pairs(sys.state_index)]...)
+        # assign a variable for each parameter symbol it's value in p
+        $([:($var = p[$idx]) for (var, idx) in pairs(sys.parameter_index)]...)
+        # assign a variable for the independent variable
+        $(sys.independent_variable) = t
+        # return the value of the expression
+        return $sym
+      end
+    )
   else
-    return function (u, p)
-      # compute value from `sym`, leveraging `variable_index` and
-      # `parameter_index` to turn symbols into indices
-    end
+    fn_expr = :(
+      function gen(u, p)
+        # assign a variable for each state symbol it's value in u
+        $([:($var = u[$idx]) for (var, idx) in pairs(sys.state_index)]...)
+        # assign a variable for each parameter symbol it's value in p
+        $([:($var = p[$idx]) for (var, idx) in pairs(sys.parameter_index)]...)
+        # return the value of the expression
+        return $sym
+      end
+    )
   end
+  return @RuntimeGeneratedFunction(fn_expr)
 end
 ```
 
@@ -127,7 +146,7 @@ only responsible for identifying observed values and `observed` will always be c
 on a type that wraps this type. An example is `ModelingToolkit.AbstractSystem`, which
 can identify whether a value is observed, but cannot implement `observed` itself.
 
-Other optional methods relate to parameter indexing. If a type contains the values of
+Other optional methods relate to indexing functions. If a type contains the values of
 parameter variables, it must implement [`parameter_values`](@ref). This allows the
 default definitions of [`getp`](@ref) and [`setp`](@ref) to work. While `setp` is
 not typically useful for solution objects, it may be useful for integrators. Typically,
@@ -140,7 +159,51 @@ function SymbolicIndexingInterface.parameter_values(sys::ExampleSystem)
 end
 ```
 
-## Implementing the `SymbolicTypeTrait` for a type
+If a type contains the value of state variables, it can define [`state_values`](@ref) to
+enable the usage of [`getu`](@ref) and [`setu`](@ref). These methods retturn getter/
+setter functions to access or update the value of a state variable (or a collection of
+them). If the type also supports generating [`observed`](@ref) functions, `getu` also
+enables returning functions to access the value of arbitrary expressions involving
+the system's symbols. This also requires that the type implement
+[`parameter_values`](@ref) and [`current_time`](@ref) (if the system is time-dependent).
+
+Consider the following `ExampleIntegrator`
+
+```julia
+mutable struct ExampleIntegrator
+  u::Vector{Float64}
+  p::Vector{Float64}
+  t::Float64
+  state_index::Dict{Symbol,Int}
+  parameter_index::Dict{Symbol,Int}
+  independent_variable::Symbol
+end
+```
+
+Assume that it implements the mandatory part of the interface as described above, and
+the following methods below:
+
+```julia
+SymbolicIndexingInterface.state_values(sys::ExampleIntegrator) = sys.u
+SymbolicIndexingInterface.parameter_values(sys::ExampleIntegrator) = sys.p
+SymbolicIndexingInterface.current_time(sys::ExampleIntegrator) = sys.t
+```
+
+Then the following example would work:
+```julia
+integrator = ExampleIntegrator([1.0, 2.0, 3.0], [4.0, 5.0], 6.0, Dict(:x => 1, :y => 2, :z => 3), Dict(:a => 1, :b => 2), :t)
+getx = getu(integrator, :x)
+getx(integrator) # 1.0
+
+get_expr = getu(integrator, :(x + y + t))
+get_expr(integrator) # 13.0
+
+setx! = setu(integrator, :y)
+setx!(integrator, 0.0)
+getx(integrator) # 0.0
+```
+
+# Implementing the `SymbolicTypeTrait` for a type
 
 The `SymbolicTypeTrait` is used to identify values that can act as symbolic variables. It
 has three variants:

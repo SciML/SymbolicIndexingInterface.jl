@@ -18,9 +18,13 @@ all_variable_symbols
 all_symbols
 solvedvariables
 allvariables
+state_values
 parameter_values
+current_time
 getp
 setp
+getu
+setu
 ```
 
 # Traits
