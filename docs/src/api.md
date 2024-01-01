@@ -18,6 +18,9 @@ all_variable_symbols
 all_symbols
 solvedvariables
 allvariables
+Timeseries
+NotTimeseries
+is_timeseries
 state_values
 parameter_values
 current_time
