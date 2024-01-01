@@ -1,7 +1,7 @@
 using SymbolicIndexingInterface
 using Test
 
-struct FakeIntegrator{S,P}
+struct FakeIntegrator{S, P}
     sys::S
     p::P
 end
