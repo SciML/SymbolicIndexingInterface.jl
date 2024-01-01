@@ -1,6 +1,8 @@
 using SymbolicIndexingInterface
+using Test
 
-struct FakeIntegrator{P}
+struct FakeIntegrator{S,P}
+    sys::S
     p::P
 end
 
@@ -9,7 +11,7 @@ SymbolicIndexingInterface.parameter_values(fp::FakeIntegrator) = fp.p
 
 sys = SymbolCache([:x, :y, :z], [:a, :b], [:t])
 p = [1.0, 2.0]
-fi = FakeIntegrator(copy(p))
+fi = FakeIntegrator(sys, copy(p))
 for (i, sym) in [(1, :a), (2, :b), ([1, 2], [:a, :b]), ((1, 2), (:a, :b))]
     get = getp(sys, sym)
     set! = setp(sys, sym)

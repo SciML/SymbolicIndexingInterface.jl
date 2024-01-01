@@ -1,3 +1,6 @@
+using SymbolicIndexingInterface
+using Test
+
 struct SystemMockup
     static::Bool
     vars::Vector{Symbol}

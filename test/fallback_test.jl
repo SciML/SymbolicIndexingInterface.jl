@@ -1,4 +1,5 @@
 using SymbolicIndexingInterface
+using Test
 
 struct Wrapper{W}
     wrapped::W
