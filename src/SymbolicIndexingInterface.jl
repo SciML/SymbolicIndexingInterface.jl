@@ -20,4 +20,6 @@ export Timeseries,
     NotTimeseries, is_timeseries, state_values, set_state!, current_time, getu, setu
 include("state_indexing.jl")
 
+export ParameterIndexingProxy
+include("parameter_indexing_proxy.jl")
 end
