@@ -91,7 +91,9 @@ have the signature `(u, p) -> [values...]` where `u` and `p` is the current stat
 parameter vector, respectively. If `istimedependent(sys) == true`, the function should accept
 the current time `t` as its third parameter. If `constant_structure(sys) == false`,
 accept a third parameter, which can either be a vector of symbols indicating the order
-of states or a time index, which identifies the order of states.
+of states or a time index, which identifies the order of states. This function
+does not need to be defined if [`is_observed`](@ref) always returns `false`. Thus,
+it is mandatory to always check `is_observed` before using this function.
 
 See also: [`is_time_dependent`](@ref), [`constant_structure`](@ref)
 """

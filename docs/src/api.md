@@ -1,5 +1,7 @@
 # Interface Functions
 
+## Mandatory methods
+
 ```@docs
 symbolic_container
 is_variable
@@ -11,23 +13,45 @@ parameter_symbols
 is_independent_variable
 independent_variable_symbols
 is_observed
-observed
 is_time_dependent
 constant_structure
 all_variable_symbols
 all_symbols
 solvedvariables
 allvariables
-state_values
+```
+
+## Optional Methods
+
+### Observed equation handling
+
+```@docs
+observed
+```
+
+### Parameter indexing
+
+```@docs
 parameter_values
-current_time
+set_parameter!
 getp
 setp
+```
+
+### State indexing
+
+```@docs
+Timeseries
+NotTimeseries
+is_timeseries
+state_values
+set_state!
+current_time
 getu
 setu
 ```
 
-# Traits
+# Symbolic Trait
 
 ```@docs
 ScalarSymbolic

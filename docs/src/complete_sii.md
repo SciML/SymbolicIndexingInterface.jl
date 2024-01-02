@@ -123,6 +123,9 @@ function SymbolicIndexingInterface.observed(sys::ExampleSystem, sym::Expr)
 end
 ```
 
+In case a type does not support such observed quantities, `is_observed` must be
+defined to always return `false`, and `observed` does not need to be implemented.
+
 ### Note about constant structure
 
 Note that the method definitions are all assuming `constant_structure(p) == true`.
@@ -174,16 +177,11 @@ mutable struct ExampleIntegrator
   u::Vector{Float64}
   p::Vector{Float64}
   t::Float64
-  state_index::Dict{Symbol,Int}
-  parameter_index::Dict{Symbol,Int}
-  independent_variable::Symbol
+  sys::ExampleSystem
 end
-```
 
-Assume that it implements the mandatory part of the interface as described above, and
-the following methods below:
-
-```julia
+# define a fallback for the interface methods
+SymbolicIndexingInterface.symbolic_container(integ::ExampleIntegrator) = integ.sys
 SymbolicIndexingInterface.state_values(sys::ExampleIntegrator) = sys.u
 SymbolicIndexingInterface.parameter_values(sys::ExampleIntegrator) = sys.p
 SymbolicIndexingInterface.current_time(sys::ExampleIntegrator) = sys.t
@@ -191,16 +189,77 @@ SymbolicIndexingInterface.current_time(sys::ExampleIntegrator) = sys.t
 
 Then the following example would work:
 ```julia
-integrator = ExampleIntegrator([1.0, 2.0, 3.0], [4.0, 5.0], 6.0, Dict(:x => 1, :y => 2, :z => 3), Dict(:a => 1, :b => 2), :t)
-getx = getu(integrator, :x)
+sys = ExampleSystem(Dict(:x => 1, :y => 2, :z => 3), Dict(:a => 1, :b => 2), :t, Dict())
+integrator = ExampleIntegrator([1.0, 2.0, 3.0], [4.0, 5.0], 6.0, sys)
+getx = getu(sys, :x)
 getx(integrator) # 1.0
 
-get_expr = getu(integrator, :(x + y + t))
+get_expr = getu(sys, :(x + y + t))
 get_expr(integrator) # 13.0
 
-setx! = setu(integrator, :y)
+setx! = setu(sys, :y)
 setx!(integrator, 0.0)
 getx(integrator) # 0.0
+```
+
+In case a type stores timeseries data (such as solutions), then it must also implement
+the [`Timeseries`](@ref) trait. The type would then return a timeseries from
+[`state_values`](@ref) and [`current_time`](@ref) and the function returned from
+[`getu`](@ref) would then return a timeseries as well. For example, consider the
+`ExampleSolution` below:
+
+```julia
+struct ExampleSolution
+  u::Vector{Vector{Float64}}
+  t::Vector{Float64}
+  p::Vector{Float64}
+  sys::ExampleSystem
+end
+
+# define a fallback for the interface methods
+SymbolicIndexingInterface.symbolic_container(sol::ExampleSolution) = sol.sys
+SymbolicIndexingInterface.parameter_values(sol::ExampleSolution) = sol.p
+# define the trait
+SymbolicIndexingInterface.is_timeseries(::Type{ExampleSolution}) = Timeseries()
+# both state_values and current_time return a timeseries, which must be
+# the same length
+SymbolicIndexingInterface.state_values(sol::ExampleSolution) = sol.u
+SymbolicIndexingInterface.current_time(sol::ExampleSolution) = sol.t
+```
+
+Then the following example would work:
+```julia
+# using the same system that the ExampleIntegrator used
+sol = ExampleSolution([[1.0, 2.0, 3.0], [1.5, 2.5, 3.5]], [4.0, 5.0], [6.0, 7.0], sys)
+getx = getu(sys, :x)
+getx(sol) # [1.0, 1.5]
+
+get_expr = getu(sys, :(x + y + t))
+get_expr(sol) # [9.0, 11.0]
+
+get_arr = getu(sys, [:y, :(x + a)])
+get_arr(sol) # [[2.0, 5.0], [2.5, 5.5]]
+
+get_tuple = getu(sys, (:z, :(z * t)))
+get_tuple(sol) # [(3.0, 18.0), (3.5, 24.5)]
+```
+
+Note that `setu` is not designed to work for `Timeseries` objects.
+
+If a type needs to perform some additional actions when updating the state/parameters
+or if it is not possible to return a mutable reference to the state/parameter vector
+which can directly be modified, the functions [`set_state!`](@ref) and/or
+[`set_parameter!`](@ref) can be used. For example, suppose our `ExampleIntegrator`
+had an additional field `u_modified::Bool` to allow it to keep track of when a
+discontinuity occurs and handle it appropriately. This flag needs to be set to `true`
+whenever the state is modified. The `set_state!` function can then be implemented as
+follows:
+
+```julia
+function SymbolicIndexingInterface.set_state!(integrator::ExampleIntegrator, val, idx)
+  integrator.u[idx] = val
+  integrator.u_modified = true
+end
 ```
 
 # Implementing the `SymbolicTypeTrait` for a type
