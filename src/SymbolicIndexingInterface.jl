@@ -13,10 +13,11 @@ include("interface.jl")
 export SymbolCache
 include("symbol_cache.jl")
 
-export parameter_values, getp, setp
+export parameter_values, set_parameter!, getp, setp
 include("parameter_indexing.jl")
 
-export Timeseries, NotTimeseries, is_timeseries, state_values, current_time, getu, setu
+export Timeseries,
+    NotTimeseries, is_timeseries, state_values, set_state!, current_time, getu, setu
 include("state_indexing.jl")
 
 end

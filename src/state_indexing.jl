@@ -49,6 +49,20 @@ See: [`is_timeseries`](@ref)
 function state_values end
 
 """
+    set_state!(sys, val, idx)
+
+Set the state at index `idx` to `val` for system `sys`. This defaults to modifying
+`state_values(sys)`. If any additional bookkeeping needs to be performed or the
+default implementation does not work for a particular type, this method needs to be
+defined to enable the proper functioning of [`setu`](@ref).
+
+See: [`state_values`](@ref)
+"""
+function set_state!(sys, val, idx)
+    state_values(sys)[idx] = val
+end
+
+"""
     current_time(p)
 
 Return the current time in the integrator or problem `p`. If
@@ -164,12 +178,10 @@ Return a function that takes an integrator or problem of `sys` and a value, and 
 the state `sym` to that value. Note that `sym` can be a direct numerical index, a symbolic state, or an array/tuple of the aforementioned.
 
 Requires that the integrator implement [`state_values`](@ref) and the
-returned collection be a mutable reference to the state vector in the integrator/problem.
+returned collection be a mutable reference to the state vector in the integrator/problem. Alternatively, if this is not possible or additional actions need to
+be performed when updating state, [`set_state!`](@ref) can be defined.
 This function does not work on types for which [`is_timeseries`](@ref) is
 [`Timeseries`](@ref).
-
-In case `state_values` cannot return such a mutable reference, `setu` needs to be
-implemented manually.
 """
 function setu(sys, sym)
     symtype = symbolic_type(sym)
@@ -184,7 +196,7 @@ end
 
 function _setu(sys, ::NotSymbolic, sym)
     return function setter!(prob, val)
-        state_values(prob)[sym] = val
+        set_state!(prob, val, sym)
     end
 end
 
@@ -192,7 +204,7 @@ function _setu(sys, ::ScalarSymbolic, sym)
     is_variable(sys, sym) || error("Invalid symbol $sym for `setu`")
     idx = variable_index(sys, sym)
     return function setter!(prob, val)
-        state_values(prob)[idx] = val
+        set_state!(prob, val, idx)
     end
 end
 
