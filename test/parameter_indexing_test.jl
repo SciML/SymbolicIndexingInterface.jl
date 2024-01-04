@@ -16,8 +16,8 @@ for (i, sym) in [(1, :a), (2, :b), ([1, 2], [:a, :b]), ((1, 2), (:a, :b))]
     get = getp(sys, sym)
     set! = setp(sys, sym)
     true_value = i isa Tuple ? getindex.((p,), i) : p[i]
-    @test get(fi) == true_value
+    @test get(fi) == ParameterIndexingProxy(fi)[sym] == true_value
     set!(fi, 0.5 .* i)
-    @test get(fi) == 0.5 .* i
+    @test get(fi) == ParameterIndexingProxy(fi)[sym] == 0.5 .* i
     set!(fi, true_value)
 end

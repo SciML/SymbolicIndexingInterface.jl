@@ -262,6 +262,35 @@ function SymbolicIndexingInterface.set_state!(integrator::ExampleIntegrator, val
 end
 ```
 
+# The `ParameterIndexingProxy`
+
+[`ParameterIndexingProxy`](@ref) is a wrapper around another type which implements the
+interface and allows using [`getp`](@ref) and [`setp`](@ref) to get and set parameter 
+values. This allows for a cleaner interface for parameter indexing. Consider the
+following example for `ExampleIntegrator`:
+
+```julia
+function Base.getproperty(obj::ExampleIntegrator, sym::Symbol)
+  if sym === :ps
+    return ParameterIndexingProxy(obj)
+  else
+    return getfield(obj, sym)
+  end
+end
+```
+
+This enables the following API:
+
+```julia
+integrator = ExampleIntegrator([1.0, 2.0, 3.0], [4.0, 5.0], 6.0, Dict(:x => 1, :y => 2, :z => 3), Dict(:a => 1, :b => 2), :t)
+
+integrator.ps[:a] # 4.0
+getp(integrator, :a)(integrator) # functionally the same as above
+
+integrator.ps[:b] = 3.0
+setp(integrator, :b)(integrator, 3.0) # functionally the same as above
+```
+
 # Implementing the `SymbolicTypeTrait` for a type
 
 The `SymbolicTypeTrait` is used to identify values that can act as symbolic variables. It

@@ -36,6 +36,7 @@ parameter_values
 set_parameter!
 getp
 setp
+ParameterIndexingProxy
 ```
 
 ### State indexing
