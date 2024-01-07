@@ -2,24 +2,10 @@ using SymbolicIndexingInterface
 using SafeTestsets
 using Test
 
-@safetestset "Quality Assurance" begin
-    @time include("qa.jl")
-end
-@safetestset "Interface test" begin
-    @time include("example_test.jl")
-end
-@safetestset "Trait test" begin
-    @time include("trait_test.jl")
-end
-@safetestset "SymbolCache test" begin
-    @time include("symbol_cache_test.jl")
-end
-@safetestset "Fallback test" begin
-    @time include("fallback_test.jl")
-end
-@safetestset "Parameter indexing test" begin
-    @time include("parameter_indexing_test.jl")
-end
-@safetestset "State indexing test" begin
-    @time include("state_indexing_test.jl")
-end
+@safetestset "Quality Assurance" @time include("qa.jl")
+@safetestset "Interface test" @time include("example_test.jl")
+@safetestset "Trait test" @time include("trait_test.jl")
+@safetestset "SymbolCache test" @time include("symbol_cache_test.jl")
+@safetestset "Fallback test" @time include("fallback_test.jl")
+@safetestset "Parameter indexing test" @time include("parameter_indexing_test.jl")
+@safetestset "State indexing test" @time include("state_indexing_test.jl")
