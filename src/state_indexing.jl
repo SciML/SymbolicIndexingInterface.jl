@@ -93,23 +93,20 @@ relying on the above functions.
 function getu(sys, sym)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-
-    if symtype != NotSymbolic()
-        _getu(sys, symtype, sym)
-    else
-        _getu(sys, elsymtype, sym)
-    end
+    _getu(sys, symtype, elsymtype, sym)
 end
 
-function _getu(sys, ::NotSymbolic, sym)
+function _getu(sys, ::NotSymbolic, ::NotSymbolic, sym)
     _getter(::Timeseries, prob) = getindex.(state_values(prob), (sym,))
     _getter(::NotTimeseries, prob) = state_values(prob)[sym]
-    return function getter(prob)
-        return _getter(is_timeseries(prob), prob)
+    return let _getter = _getter
+        function getter(prob)
+            return _getter(is_timeseries(prob), prob)
+        end
     end
 end
 
-function _getu(sys, ::ScalarSymbolic, sym)
+function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
         return getu(sys, idx)
@@ -125,8 +122,10 @@ function _getu(sys, ::ScalarSymbolic, sym)
                 return fn(state_values(prob), parameter_values(prob), current_time(prob))
             end
 
-            return function getter2(prob)
-                return _getter2(is_timeseries(prob), prob)
+            return let _getter2 = _getter2
+                function getter2(prob)
+                    return _getter2(is_timeseries(prob), prob)
+                end
             end
         else
             function _getter3(::Timeseries, prob)
@@ -136,8 +135,10 @@ function _getu(sys, ::ScalarSymbolic, sym)
                 return fn(state_values(prob), parameter_values(prob))
             end
 
-            return function getter3(prob)
-                return _getter3(is_timeseries(prob), prob)
+            return let _getter3 = _getter3
+                function getter3(prob)
+                    return _getter3(is_timeseries(prob), prob)
+                end
             end
         end
     end
@@ -153,23 +154,37 @@ state_values(t::TimeseriesIndexWrapper) = state_values(t.timeseries)[t.idx]
 parameter_values(t::TimeseriesIndexWrapper) = parameter_values(t.timeseries)
 current_time(t::TimeseriesIndexWrapper) = current_time(t.timeseries)[t.idx]
 
-function _getu(sys, ::ScalarSymbolic, sym::Union{<:Tuple, <:AbstractArray})
-    getters = getu.((sys,), sym)
-    _call(getter, prob) = getter(prob)
+for (t1, t2) in [(ScalarSymbolic, Any), (ArraySymbolic, Any), (NotSymbolic, Union{<:Tuple, <:AbstractArray})]
+    @eval function _getu(sys, ::NotSymbolic, ::$t1, sym::$t2)
+        getters = getu.((sys,), sym)
+        _call(getter, prob) = getter(prob)
 
-    function _getter(::Timeseries, prob)
-        tiws = TimeseriesIndexWrapper.((prob,), eachindex(state_values(prob)))
-        return [_getter(NotTimeseries(), tiw) for tiw in tiws]
-    end
-    _getter(::NotTimeseries, prob) = _call.(getters, (prob,))
-    return function getter(prob)
-        return _getter(is_timeseries(prob), prob)
+        return let getters = getters, _call = _call
+            _getter(::NotTimeseries, prob) = map(g -> g(prob), getters)
+            function _getter(::Timeseries, prob)
+                tiws = TimeseriesIndexWrapper.((prob,), eachindex(state_values(prob)))
+                # Ideally this should recursively call `_getter` but that leads to type-instability
+                # since the reference to itself is boxed
+                # Turning this broadcasted `_call` into a map also makes this type-unstable
+
+                return map(tiw -> _call.(getters, (tiw,)), tiws)
+            end
+
+            # Need another scope for this to not box `_getter`
+            let _getter = _getter
+                function getter(prob)
+                    return _getter(is_timeseries(prob), prob)
+                end
+            end
+        end
     end
 end
 
-function _getu(sys, ::ArraySymbolic, sym)
+function _getu(sys, ::ArraySymbolic, ::NotSymbolic, sym)
     return getu(sys, collect(sym))
 end
+
+# setu doesn't need the same `let` blocks to be inferred for some reason
 
 """
     setu(sys, sym)
@@ -186,21 +201,16 @@ This function does not work on types for which [`is_timeseries`](@ref) is
 function setu(sys, sym)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-
-    if symtype != NotSymbolic()
-        _setu(sys, symtype, sym)
-    else
-        _setu(sys, elsymtype, sym)
-    end
+    _setu(sys, symtype, elsymtype, sym)
 end
 
-function _setu(sys, ::NotSymbolic, sym)
+function _setu(sys, ::NotSymbolic, ::NotSymbolic, sym)
     return function setter!(prob, val)
         set_state!(prob, val, sym)
     end
 end
 
-function _setu(sys, ::ScalarSymbolic, sym)
+function _setu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     is_variable(sys, sym) || error("Invalid symbol $sym for `setu`")
     idx = variable_index(sys, sym)
     return function setter!(prob, val)
@@ -208,14 +218,15 @@ function _setu(sys, ::ScalarSymbolic, sym)
     end
 end
 
-function _setu(sys, ::ScalarSymbolic, sym::Union{<:Tuple, <:AbstractArray})
-    setters = setu.((sys,), sym)
-    _call!(setter!, prob, val) = setter!(prob, val)
-    return function setter!(prob, val)
-        _call!.(setters, (prob,), val)
+for (t1, t2) in [(ScalarSymbolic, Any), (ArraySymbolic, Any), (NotSymbolic, Union{<:Tuple, <:AbstractArray})]
+    @eval function _setu(sys, ::NotSymbolic, ::$t1, sym::$t2)
+        setters = setu.((sys,), sym)
+        return function setter!(prob, val)
+            map((s!, v) -> s!(prob, v), setters, val)
+        end
     end
 end
 
-function _setu(sys, ::ArraySymbolic, sym)
+function _setu(sys, ::ArraySymbolic, ::NotSymbolic, sym)
     return setu(sys, collect(sym))
 end
