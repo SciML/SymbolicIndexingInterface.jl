@@ -2,8 +2,12 @@
     parameter_values(p)
 
 Return an indexable collection containing the value of each parameter in `p`.
+
+If this function is called with an `AbstractArray`, it will return the same array.
 """
 function parameter_values end
+
+parameter_values(arr::AbstractArray) = arr
 
 """
     set_parameter!(sys, val, idx)
@@ -22,9 +26,9 @@ end
 """
     getp(sys, p)
 
-Return a function that takes an integrator or solution of `sys`, and returns the value of
-the parameter `p`. Note that `p` can be a direct numerical index or a symbolic value, or
-an array/tuple of the aforementioned.
+Return a function that takes an array representing the parameter vector or an integrator
+or solution of `sys`, and returns the value of the parameter `p`. Note that `p` can be a
+direct numerical index or a symbolic value, or an array/tuple of the aforementioned.
 
 Requires that the integrator or solution implement [`parameter_values`](@ref). This function
 typically does not need to be implemented, and has a default implementation relying on
@@ -66,10 +70,12 @@ end
 """
     setp(sys, p)
 
-Return a function that takes an integrator of `sys` and a value, and sets
-the parameter `p` to that value. Note that `p` can be a direct numerical index or a
-symbolic value. Requires that the integrator implement [`parameter_values`](@ref) and the
-returned collection be a mutable reference to the parameter vector in the integrator. In
+Return a function that takes an array representing the parameter vector or an integrator
+or problem of `sys`, and a value, and sets the parameter `p` to that value. Note that `p`
+can be a direct numerical index or a symbolic value.
+
+Requires that the integrator implement [`parameter_values`](@ref) and the returned
+collection be a mutable reference to the parameter vector in the integrator. In
 case `parameter_values` cannot return such a mutable reference, or additional actions
 need to be performed when updating parameters, [`set_parameter!`](@ref) must be
 implemented.

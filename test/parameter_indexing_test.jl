@@ -42,4 +42,17 @@ for (sym, oldval, newval, check_inference) in [
     @test get(fi) == newval
     set!(fi, oldval)
     @test get(fi) == oldval
+
+    if check_inference
+        @inferred get(p)
+    end
+    @test get(p) == oldval
+    if check_inference
+        @inferred set!(p, newval)
+    else
+        set!(p, newval)
+    end
+    @test get(p) == newval
+    set!(p, oldval)
+    @test get(p) == oldval
 end

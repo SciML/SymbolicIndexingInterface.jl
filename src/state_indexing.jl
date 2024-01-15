@@ -44,9 +44,12 @@ Return an indexable collection containing the values of all states in the integr
 problem `p`. If `is_timeseries(p)` is [`Timeseries`](@ref), return a vector of arrays,
 each of which contain the state values at the corresponding timestep.
 
+If this function is called with an `AbstractArray`, it will return the same array.
+
 See: [`is_timeseries`](@ref)
 """
 function state_values end
+state_values(arr::AbstractArray) = arr
 
 """
     set_state!(sys, val, idx)
@@ -78,9 +81,11 @@ function current_time end
     getu(sys, sym)
 
 Return a function that takes an integrator, problem or solution of `sys`, and returns
-the value of the symbolic `sym`. `sym` can be a direct index into the state vector, a
-symbolic state, a symbolic expression involving symbolic quantities in the system
-`sys`, or an array/tuple of the aforementioned.
+the value of the symbolic `sym`. If `sym` is not an observed quantity, the returned
+function can also directly be called with an array of values representing the state
+vector. `sym` can be a direct index into the state vector, a symbolic state, a symbolic
+expression involving symbolic quantities in the system `sys`, or an array/tuple of the
+aforementioned.
 
 At minimum, this requires that the integrator, problem or solution implement
 [`state_values`](@ref). To support symbolic expressions, the integrator or problem
@@ -189,8 +194,9 @@ end
 """
     setu(sys, sym)
 
-Return a function that takes an integrator or problem of `sys` and a value, and sets the
-the state `sym` to that value. Note that `sym` can be a direct numerical index, a symbolic state, or an array/tuple of the aforementioned.
+Return a function that takes an array representing the state vector or an integrator or
+problem of `sys`, and a value, and sets the the state `sym` to that value. Note that `sym`
+can be a direct numerical index, a symbolic state, or an array/tuple of the aforementioned.
 
 Requires that the integrator implement [`state_values`](@ref) and the
 returned collection be a mutable reference to the state vector in the integrator/problem. Alternatively, if this is not possible or additional actions need to
