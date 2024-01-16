@@ -39,10 +39,14 @@ is_timeseries(::Type) = NotTimeseries()
 
 """
     state_values(p)
+    state_values(p, i)
 
 Return an indexable collection containing the values of all states in the integrator or
 problem `p`. If `is_timeseries(p)` is [`Timeseries`](@ref), return a vector of arrays,
-each of which contain the state values at the corresponding timestep.
+each of which contain the state values at the corresponding timestep. In this case, the
+two-argument version of the function can also be implemented to efficiently return
+the state values at timestep `i`. By default, the two-argument method calls
+`state_values(p)[i]`
 
 If this function is called with an `AbstractArray`, it will return the same array.
 
@@ -50,6 +54,7 @@ See: [`is_timeseries`](@ref)
 """
 function state_values end
 state_values(arr::AbstractArray) = arr
+state_values(arr, i) = state_values(arr)[i]
 
 """
     set_state!(sys, val, idx)
@@ -67,15 +72,20 @@ end
 
 """
     current_time(p)
+    current_time(p, i)
 
 Return the current time in the integrator or problem `p`. If
 `is_timeseries(p)` is [`Timeseries`](@ref), return the vector of timesteps at which
-the state value is saved.
+the state value is saved. In this case, the two-argument version of the function can
+also be implemented to efficiently return the time at timestep `i`. By default, the two-
+argument method calls `current_time(p)[i]`
 
 
 See: [`is_timeseries`](@ref)
 """
 function current_time end
+
+current_time(p, i) = current_time(p)[i]
 
 """
     getu(sys, sym)
@@ -85,7 +95,8 @@ the value of the symbolic `sym`. If `sym` is not an observed quantity, the retur
 function can also directly be called with an array of values representing the state
 vector. `sym` can be a direct index into the state vector, a symbolic state, a symbolic
 expression involving symbolic quantities in the system `sys`, or an array/tuple of the
-aforementioned.
+aforementioned. If the returned function is called with a timeseries object, it can also
+be given a second argument representing the index at which to find the value of `sym`.
 
 At minimum, this requires that the integrator, problem or solution implement
 [`state_values`](@ref). To support symbolic expressions, the integrator or problem
@@ -103,11 +114,16 @@ end
 
 function _getu(sys, ::NotSymbolic, ::NotSymbolic, sym)
     _getter(::Timeseries, prob) = getindex.(state_values(prob), (sym,))
+    _getter(::Timeseries, prob, i) = getindex(state_values(prob, i), sym)
     _getter(::NotTimeseries, prob) = state_values(prob)[sym]
     return let _getter = _getter
         function getter(prob)
             return _getter(is_timeseries(prob), prob)
         end
+        function getter(prob, i)
+            return _getter(is_timeseries(prob), prob, i)
+        end
+        getter
     end
 end
 
@@ -123,6 +139,9 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
                     (parameter_values(prob),),
                     current_time(prob))
             end
+            function _getter2(::Timeseries, prob, i)
+                return fn(state_values(prob, i), parameter_values(prob), current_time(prob, i))
+            end
             function _getter2(::NotTimeseries, prob)
                 return fn(state_values(prob), parameter_values(prob), current_time(prob))
             end
@@ -131,18 +150,16 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
                 function getter2(prob)
                     return _getter2(is_timeseries(prob), prob)
                 end
+                function getter2(prob, i)
+                    return _getter2(is_timeseries(prob), prob, i)
+                end
+                getter2
             end
         else
-            function _getter3(::Timeseries, prob)
-                return fn.(state_values(prob), (parameter_values(prob),))
-            end
-            function _getter3(::NotTimeseries, prob)
-                return fn(state_values(prob), parameter_values(prob))
-            end
-
-            return let _getter3 = _getter3
+            # if there is no time, there is no timeseries
+            return let fn = fn
                 function getter3(prob)
-                    return _getter3(is_timeseries(prob), prob)
+                    return fn(state_values(prob), parameter_values(prob))
                 end
             end
         end
@@ -150,29 +167,18 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     error("Invalid symbol $sym for `getu`")
 end
 
-struct TimeseriesIndexWrapper{T, I}
-    timeseries::T
-    idx::I
-end
-
-state_values(t::TimeseriesIndexWrapper) = state_values(t.timeseries)[t.idx]
-parameter_values(t::TimeseriesIndexWrapper) = parameter_values(t.timeseries)
-current_time(t::TimeseriesIndexWrapper) = current_time(t.timeseries)[t.idx]
-
 for (t1, t2) in [(ScalarSymbolic, Any), (ArraySymbolic, Any), (NotSymbolic, Union{<:Tuple, <:AbstractArray})]
     @eval function _getu(sys, ::NotSymbolic, ::$t1, sym::$t2)
         getters = getu.((sys,), sym)
-        _call(getter, prob) = getter(prob)
-
+        _call(getter, args...) = getter(args...)
         return let getters = getters, _call = _call
             _getter(::NotTimeseries, prob) = map(g -> g(prob), getters)
             function _getter(::Timeseries, prob)
-                tiws = TimeseriesIndexWrapper.((prob,), eachindex(state_values(prob)))
-                # Ideally this should recursively call `_getter` but that leads to type-instability
-                # since the reference to itself is boxed
-                # Turning this broadcasted `_call` into a map also makes this type-unstable
-
-                return map(tiw -> _call.(getters, (tiw,)), tiws)
+                broadcast(i -> map(g -> _call(g, prob, i), getters),
+                    eachindex(state_values(prob)))
+            end
+            function _getter(::Timeseries, prob, i)
+                return map(g -> _call(g, prob, i), getters)
             end
 
             # Need another scope for this to not box `_getter`
@@ -180,6 +186,10 @@ for (t1, t2) in [(ScalarSymbolic, Any), (ArraySymbolic, Any), (NotSymbolic, Unio
                 function getter(prob)
                     return _getter(is_timeseries(prob), prob)
                 end
+                function getter(prob, i)
+                    return _getter(is_timeseries(prob), prob, i)
+                end
+                getter
             end
         end
     end

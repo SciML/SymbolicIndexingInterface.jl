@@ -103,4 +103,10 @@ for (sym, ans, check_inference) in [
         @inferred get(sol)
     end
     @test get(sol) == ans
+    for i in eachindex(u)
+        if check_inference
+            @inferred get(sol, i)
+        end
+        @test get(sol, i) == ans[i]
+    end
 end
