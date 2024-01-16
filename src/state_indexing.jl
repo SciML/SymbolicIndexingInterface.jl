@@ -94,9 +94,10 @@ Return a function that takes an integrator, problem or solution of `sys`, and re
 the value of the symbolic `sym`. If `sym` is not an observed quantity, the returned
 function can also directly be called with an array of values representing the state
 vector. `sym` can be a direct index into the state vector, a symbolic state, a symbolic
-expression involving symbolic quantities in the system `sys`, or an array/tuple of the
-aforementioned. If the returned function is called with a timeseries object, it can also
-be given a second argument representing the index at which to find the value of `sym`.
+expression involving symbolic quantities in the system `sys`, a parameter symbol, or the
+independent variable symbol, or an array/tuple of the aforementioned. If the returned
+function is called with a timeseries object, it can also be given a second argument
+representing the index at which to find the value of `sym`.
 
 At minimum, this requires that the integrator, problem or solution implement
 [`state_values`](@ref). To support symbolic expressions, the integrator or problem
@@ -131,6 +132,19 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
         return getu(sys, idx)
+    elseif is_parameter(sys, sym)
+        return let fn = getp(sys, sym)
+            getter(prob, args...) = fn(prob)
+            getter
+        end
+    elseif is_independent_variable(sys, sym)
+        _getter(::IsTimeseriesTrait, prob) = current_time(prob)
+        _getter(::Timeseries, prob, i) = current_time(prob, i)
+        return let _getter = _getter
+            getter(prob) = _getter(is_timeseries(prob), prob)
+            getter(prob, i) = _getter(is_timeseries(prob), prob, i)
+            getter
+        end
     elseif is_observed(sys, sym)
         fn = observed(sys, sym)
         if is_time_dependent(sys)
@@ -227,11 +241,15 @@ function _setu(sys, ::NotSymbolic, ::NotSymbolic, sym)
 end
 
 function _setu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
-    is_variable(sys, sym) || error("Invalid symbol $sym for `setu`")
-    idx = variable_index(sys, sym)
-    return function setter!(prob, val)
-        set_state!(prob, val, idx)
+    if is_variable(sys, sym)
+        idx = variable_index(sys, sym)
+        return function setter!(prob, val)
+            set_state!(prob, val, idx)
+        end
+    elseif is_parameter(sys, sym)
+        return setp(sys, sym)
     end
+    error("Invalid symbol $sym for `setu`")
 end
 
 for (t1, t2) in [(ScalarSymbolic, Any), (ArraySymbolic, Any), (NotSymbolic, Union{<:Tuple, <:AbstractArray})]

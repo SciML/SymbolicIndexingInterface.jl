@@ -1,16 +1,22 @@
 using SymbolicIndexingInterface
 
-struct FakeIntegrator{S, U}
+struct FakeIntegrator{S, U, P, T}
     sys::S
     u::U
+    p::P
+    t::T
 end
 
 SymbolicIndexingInterface.symbolic_container(fp::FakeIntegrator) = fp.sys
 SymbolicIndexingInterface.state_values(fp::FakeIntegrator) = fp.u
+SymbolicIndexingInterface.parameter_values(fp::FakeIntegrator) = fp.p
+SymbolicIndexingInterface.current_time(fp::FakeIntegrator) = fp.t
 
-sys = SymbolCache([:x, :y, :z], [:a, :b], [:t])
+sys = SymbolCache([:x, :y, :z], [:a, :b, :c], [:t])
 u = [1.0, 2.0, 3.0]
-fi = FakeIntegrator(sys, copy(u))
+p = [11.0, 12.0, 13.0]
+t = 0.5
+fi = FakeIntegrator(sys, copy(u), copy(p), t)
 # checking inference for non-concretely typed arrays will always fail
 for (sym, val, newval, check_inference) in [
     (:x, u[1], 4.0, true)
@@ -61,19 +67,60 @@ for (sym, val, newval, check_inference) in [
     @test get(u) == val
 end
 
+for (sym, oldval, newval, check_inference) in [
+    (:a, p[1], 4.0, true)
+    (:b, p[2], 5.0, true)
+    (:c, p[3], 6.0, true)
+    ([:a, :b], p[1:2], [4.0, 5.0], true)
+    ((:c, :b), (p[3], p[2]), (6.0, 5.0), true)
+    ([:x, :a], [u[1], p[1]], [4.0, 5.0], false)
+    ((:y, :b), (u[2], p[2]), (5.0, 6.0), true)
+]
+    get = getu(fi, sym)
+    set! = setu(fi, sym)
+    if check_inference
+        @inferred get(fi)
+    end
+    @test get(fi) == oldval
+    if check_inference
+        @inferred set!(fi, newval)
+    else
+        set!(fi, newval)
+    end
+    @test get(fi) == newval
+    set!(fi, oldval)
+    @test get(fi) == oldval
+end
 
-struct FakeSolution{S, U}
+for (sym, val, check_inference) in [
+    (:t, t, true),
+    ([:x, :a, :t], [u[1], p[1], t], false),
+    ((:x, :a, :t), (u[1], p[1], t), true),
+]
+    get = getu(fi, sym)
+    if check_inference
+        @inferred get(fi)
+    end
+    @test get(fi) == val
+end
+
+struct FakeSolution{S, U, P, T}
     sys::S
     u::U
+    p::P
+    t::T
 end
 
 SymbolicIndexingInterface.is_timeseries(::Type{<:FakeSolution}) = Timeseries()
 SymbolicIndexingInterface.symbolic_container(fp::FakeSolution) = fp.sys
 SymbolicIndexingInterface.state_values(fp::FakeSolution) = fp.u
+SymbolicIndexingInterface.parameter_values(fp::FakeSolution) = fp.p
+SymbolicIndexingInterface.current_time(fp::FakeSolution) = fp.t
 
-sys = SymbolCache([:x, :y, :z], [:a, :b], [:t])
+sys = SymbolCache([:x, :y, :z], [:a, :b, :c], [:t])
 u = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
-sol = FakeSolution(sys, u)
+t = [1.5, 2.0]
+sol = FakeSolution(sys, u, p, t)
 
 xvals = getindex.(sol.u, 1)
 yvals = getindex.(sol.u, 2)
@@ -97,6 +144,11 @@ for (sym, ans, check_inference) in [
     ((:x, [:y, :z]), tuple.(xvals, vcat.(yvals, zvals)), true)
     ((:x, (:y, :z)), tuple.(xvals, tuple.(yvals, zvals)), true)
     ((:x, [:y, :z], (:z, :y)), tuple.(xvals, vcat.(yvals, zvals), tuple.(zvals, yvals)), true)
+    ([:x, :a], vcat.(xvals, p[1]), false)
+    ((:y, :b), tuple.(yvals, p[2]), true)
+    (:t, t, true)
+    ([:x, :a, :t], vcat.(xvals, p[1], t), false)
+    ((:x, :a, :t), tuple.(xvals, p[1], t), true)
 ]
     get = getu(sys, sym)
     if check_inference
@@ -109,4 +161,16 @@ for (sym, ans, check_inference) in [
         end
         @test get(sol, i) == ans[i]
     end
+end
+
+for (sym, val) in [
+    (:a, p[1])
+    (:b, p[2])
+    (:c, p[3])
+    ([:a, :b], p[1:2])
+    ((:c, :b), (p[3], p[2]))
+]
+    get = getu(fi, sym)
+    @inferred get(fi)
+    @test get(fi) == val
 end
