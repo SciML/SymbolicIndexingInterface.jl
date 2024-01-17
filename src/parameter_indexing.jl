@@ -53,7 +53,11 @@ function _getp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
     end
 end
 
-for (t1, t2) in [(ArraySymbolic, Any), (ScalarSymbolic, Any), (NotSymbolic, Union{<:Tuple, <:AbstractArray})]
+for (t1, t2) in [
+    (ArraySymbolic, Any),
+    (ScalarSymbolic, Any),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray}),
+]
     @eval function _getp(sys, ::NotSymbolic, ::$t1, p::$t2)
         getters = getp.((sys,), p)
 
@@ -99,7 +103,11 @@ function _setp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
     end
 end
 
-for (t1, t2) in [(ArraySymbolic, Any), (ScalarSymbolic, Any), (NotSymbolic, Union{<:Tuple, <:AbstractArray})]
+for (t1, t2) in [
+    (ArraySymbolic, Any),
+    (ScalarSymbolic, Any),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray}),
+]
     @eval function _setp(sys, ::NotSymbolic, ::$t1, p::$t2)
         setters = setp.((sys,), p)
         return function setter!(sol, val)

@@ -18,8 +18,7 @@ p = [11.0, 12.0, 13.0]
 t = 0.5
 fi = FakeIntegrator(sys, copy(u), copy(p), t)
 # checking inference for non-concretely typed arrays will always fail
-for (sym, val, newval, check_inference) in [
-    (:x, u[1], 4.0, true)
+for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
     (:y, u[2], 4.0, true)
     (:z, u[3], 4.0, true)
     (1, u[1], 4.0, true)
@@ -36,8 +35,7 @@ for (sym, val, newval, check_inference) in [
     ((:x, [:y, :z]), (u[1], u[2:3]), (4.0, [5.0, 6.0]), true)
     ((:x, (:y, :z)), (u[1], (u[2], u[3])), (4.0, (5.0, 6.0)), true)
     ((1, (:y, :z)), (u[1], (u[2], u[3])), (4.0, (5.0, 6.0)), true)
-    ((:x, [:y], (:z,)), (u[1], [u[2]], (u[3],)), (4.0, [5.0], (6.0,)), true)
-]
+    ((:x, [:y], (:z,)), (u[1], [u[2]], (u[3],)), (4.0, [5.0], (6.0,)), true)]
     get = getu(sys, sym)
     set! = setu(sys, sym)
     if check_inference
@@ -67,15 +65,13 @@ for (sym, val, newval, check_inference) in [
     @test get(u) == val
 end
 
-for (sym, oldval, newval, check_inference) in [
-    (:a, p[1], 4.0, true)
+for (sym, oldval, newval, check_inference) in [(:a, p[1], 4.0, true)
     (:b, p[2], 5.0, true)
     (:c, p[3], 6.0, true)
     ([:a, :b], p[1:2], [4.0, 5.0], true)
     ((:c, :b), (p[3], p[2]), (6.0, 5.0), true)
     ([:x, :a], [u[1], p[1]], [4.0, 5.0], false)
-    ((:y, :b), (u[2], p[2]), (5.0, 6.0), true)
-]
+    ((:y, :b), (u[2], p[2]), (5.0, 6.0), true)]
     get = getu(fi, sym)
     set! = setu(fi, sym)
     if check_inference
@@ -126,8 +122,7 @@ xvals = getindex.(sol.u, 1)
 yvals = getindex.(sol.u, 2)
 zvals = getindex.(sol.u, 3)
 
-for (sym, ans, check_inference) in [
-    (:x, xvals, true)
+for (sym, ans, check_inference) in [(:x, xvals, true)
     (:y, yvals, true)
     (:z, zvals, true)
     (1, xvals, true)
@@ -139,17 +134,22 @@ for (sym, ans, check_inference) in [
     ([:x, [:y, :z]], vcat.(xvals, [[x] for x in vcat.(yvals, zvals)]), false)
     ([:x, (:y, :z)], vcat.(xvals, tuple.(yvals, zvals)), false)
     ([1, (:y, :z)], vcat.(xvals, tuple.(yvals, zvals)), false)
-    ([:x, [:y, :z], (:x, :z)], vcat.(xvals, [[x] for x in vcat.(yvals, zvals)], tuple.(xvals, zvals)), false)
-    ([:x, [:y, 3], (1, :z)], vcat.(xvals, [[x] for x in vcat.(yvals, zvals)], tuple.(xvals, zvals)), false)
+    ([:x, [:y, :z], (:x, :z)],
+    vcat.(xvals, [[x] for x in vcat.(yvals, zvals)], tuple.(xvals, zvals)),
+    false)
+    ([:x, [:y, 3], (1, :z)],
+    vcat.(xvals, [[x] for x in vcat.(yvals, zvals)], tuple.(xvals, zvals)),
+    false)
     ((:x, [:y, :z]), tuple.(xvals, vcat.(yvals, zvals)), true)
     ((:x, (:y, :z)), tuple.(xvals, tuple.(yvals, zvals)), true)
-    ((:x, [:y, :z], (:z, :y)), tuple.(xvals, vcat.(yvals, zvals), tuple.(zvals, yvals)), true)
+    ((:x, [:y, :z], (:z, :y)),
+    tuple.(xvals, vcat.(yvals, zvals), tuple.(zvals, yvals)),
+    true)
     ([:x, :a], vcat.(xvals, p[1]), false)
     ((:y, :b), tuple.(yvals, p[2]), true)
     (:t, t, true)
     ([:x, :a, :t], vcat.(xvals, p[1], t), false)
-    ((:x, :a, :t), tuple.(xvals, p[1], t), true)
-]
+    ((:x, :a, :t), tuple.(xvals, p[1], t), true)]
     get = getu(sys, sym)
     if check_inference
         @inferred get(sol)
@@ -163,13 +163,11 @@ for (sym, ans, check_inference) in [
     end
 end
 
-for (sym, val) in [
-    (:a, p[1])
+for (sym, val) in [(:a, p[1])
     (:b, p[2])
     (:c, p[3])
     ([:a, :b], p[1:2])
-    ((:c, :b), (p[3], p[2]))
-]
+    ((:c, :b), (p[3], p[2]))]
     get = getu(fi, sym)
     @inferred get(fi)
     @test get(fi) == val

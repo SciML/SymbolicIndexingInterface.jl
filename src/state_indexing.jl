@@ -154,7 +154,9 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
                     current_time(prob))
             end
             function _getter2(::Timeseries, prob, i)
-                return fn(state_values(prob, i), parameter_values(prob), current_time(prob, i))
+                return fn(state_values(prob, i),
+                    parameter_values(prob),
+                    current_time(prob, i))
             end
             function _getter2(::NotTimeseries, prob)
                 return fn(state_values(prob), parameter_values(prob), current_time(prob))
@@ -181,7 +183,11 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     error("Invalid symbol $sym for `getu`")
 end
 
-for (t1, t2) in [(ScalarSymbolic, Any), (ArraySymbolic, Any), (NotSymbolic, Union{<:Tuple, <:AbstractArray})]
+for (t1, t2) in [
+    (ScalarSymbolic, Any),
+    (ArraySymbolic, Any),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray}),
+]
     @eval function _getu(sys, ::NotSymbolic, ::$t1, sym::$t2)
         getters = getu.((sys,), sym)
         _call(getter, args...) = getter(args...)
@@ -252,7 +258,11 @@ function _setu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     error("Invalid symbol $sym for `setu`")
 end
 
-for (t1, t2) in [(ScalarSymbolic, Any), (ArraySymbolic, Any), (NotSymbolic, Union{<:Tuple, <:AbstractArray})]
+for (t1, t2) in [
+    (ScalarSymbolic, Any),
+    (ArraySymbolic, Any),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray}),
+]
     @eval function _setu(sys, ::NotSymbolic, ::$t1, sym::$t2)
         setters = setu.((sys,), sym)
         return function setter!(prob, val)
