@@ -2,8 +2,12 @@
     parameter_values(p)
 
 Return an indexable collection containing the value of each parameter in `p`.
+
+If this function is called with an `AbstractArray`, it will return the same array.
 """
 function parameter_values end
+
+parameter_values(arr::AbstractArray) = arr
 
 """
     set_parameter!(sys, val, idx)
@@ -22,8 +26,10 @@ end
 """
     getp(sys, p)
 
-Return a function that takes an integrator or solution of `sys`, and returns the value of
-the parameter `p`. Note that `p` can be a direct numerical index or a symbolic value.
+Return a function that takes an array representing the parameter vector or an integrator
+or solution of `sys`, and returns the value of the parameter `p`. Note that `p` can be a
+direct numerical index or a symbolic value, or an array/tuple of the aforementioned.
+
 Requires that the integrator or solution implement [`parameter_values`](@ref). This function
 typically does not need to be implemented, and has a default implementation relying on
 [`parameter_values`](@ref).
@@ -31,44 +37,49 @@ typically does not need to be implemented, and has a default implementation rely
 function getp(sys, p)
     symtype = symbolic_type(p)
     elsymtype = symbolic_type(eltype(p))
-    if symtype != NotSymbolic()
-        return _getp(sys, symtype, p)
-    else
-        return _getp(sys, elsymtype, p)
-    end
+    _getp(sys, symtype, elsymtype, p)
 end
 
-function _getp(sys, ::NotSymbolic, p)
+function _getp(sys, ::NotSymbolic, ::NotSymbolic, p)
     return function getter(sol)
         return parameter_values(sol)[p]
     end
 end
 
-function _getp(sys, ::ScalarSymbolic, p)
+function _getp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
     idx = parameter_index(sys, p)
     return function getter(sol)
         return parameter_values(sol)[idx]
     end
 end
 
-function _getp(sys, ::ScalarSymbolic, p::Union{Tuple, AbstractArray})
-    idxs = parameter_index.((sys,), p)
-    return function getter(sol)
-        return getindex.((parameter_values(sol),), idxs)
+for (t1, t2) in [
+    (ArraySymbolic, Any),
+    (ScalarSymbolic, Any),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray}),
+]
+    @eval function _getp(sys, ::NotSymbolic, ::$t1, p::$t2)
+        getters = getp.((sys,), p)
+
+        return function getter(sol)
+            map(g -> g(sol), getters)
+        end
     end
 end
 
-function _getp(sys, ::ArraySymbolic, p)
+function _getp(sys, ::ArraySymbolic, ::NotSymbolic, p)
     return getp(sys, collect(p))
 end
 
 """
     setp(sys, p)
 
-Return a function that takes an integrator of `sys` and a value, and sets
-the parameter `p` to that value. Note that `p` can be a direct numerical index or a
-symbolic value. Requires that the integrator implement [`parameter_values`](@ref) and the
-returned collection be a mutable reference to the parameter vector in the integrator. In
+Return a function that takes an array representing the parameter vector or an integrator
+or problem of `sys`, and a value, and sets the parameter `p` to that value. Note that `p`
+can be a direct numerical index or a symbolic value.
+
+Requires that the integrator implement [`parameter_values`](@ref) and the returned
+collection be a mutable reference to the parameter vector in the integrator. In
 case `parameter_values` cannot return such a mutable reference, or additional actions
 need to be performed when updating parameters, [`set_parameter!`](@ref) must be
 implemented.
@@ -76,33 +87,35 @@ implemented.
 function setp(sys, p)
     symtype = symbolic_type(p)
     elsymtype = symbolic_type(eltype(p))
-    if symtype != NotSymbolic()
-        return _setp(sys, symtype, p)
-    else
-        return _setp(sys, elsymtype, p)
-    end
+    _setp(sys, symtype, elsymtype, p)
 end
 
-function _setp(sys, ::NotSymbolic, p)
+function _setp(sys, ::NotSymbolic, ::NotSymbolic, p)
     return function setter!(sol, val)
         set_parameter!(sol, val, p)
     end
 end
 
-function _setp(sys, ::ScalarSymbolic, p)
+function _setp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
     idx = parameter_index(sys, p)
     return function setter!(sol, val)
         set_parameter!(sol, val, idx)
     end
 end
 
-function _setp(sys, ::ScalarSymbolic, p::Union{Tuple, AbstractArray})
-    idxs = parameter_index.((sys,), p)
-    return function setter!(sol, val)
-        set_parameter!.((sol,), val, idxs)
+for (t1, t2) in [
+    (ArraySymbolic, Any),
+    (ScalarSymbolic, Any),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray}),
+]
+    @eval function _setp(sys, ::NotSymbolic, ::$t1, p::$t2)
+        setters = setp.((sys,), p)
+        return function setter!(sol, val)
+            map((s!, v) -> s!(sol, v), setters, val)
+        end
     end
 end
 
-function _setp(sys, ::ArraySymbolic, p)
+function _setp(sys, ::ArraySymbolic, ::NotSymbolic, p)
     return setp(sys, collect(p))
 end
