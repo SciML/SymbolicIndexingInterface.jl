@@ -1,7 +1,7 @@
 name = "SymbolicIndexingInterface"
 uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
 authors = ["Aayush Sabharwal <aayush.sabharwal@gmail.com> and contributors"]
-version = "0.3.3"
+version = "0.3.4"
 
 [compat]
 Aqua = "0.8"
