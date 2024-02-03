@@ -116,7 +116,7 @@ end
 function _getu(sys, ::NotSymbolic, ::NotSymbolic, sym)
     _getter(::Timeseries, prob) = getindex.(state_values(prob), (sym,))
     _getter(::Timeseries, prob, i) = getindex(state_values(prob, i), sym)
-    _getter(::NotTimeseries, prob) = state_values(prob)[sym]
+    _getter(::NotTimeseries, prob) = state_values(prob, sym)
     return let _getter = _getter
         function getter(prob)
             return _getter(is_timeseries(prob), prob)
@@ -186,7 +186,7 @@ end
 for (t1, t2) in [
     (ScalarSymbolic, Any),
     (ArraySymbolic, Any),
-    (NotSymbolic, Union{<:Tuple, <:AbstractArray}),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray})
 ]
     @eval function _getu(sys, ::NotSymbolic, ::$t1, sym::$t2)
         num_observed = count(x -> is_observed(sys, x), sym)
@@ -266,7 +266,7 @@ end
 
 Return a function that takes an array representing the state vector or an integrator or
 problem of `sys`, and a value, and sets the the state `sym` to that value. Note that `sym`
-can be a direct numerical index, a symbolic state, or an array/tuple of the aforementioned.
+can be a direct index, a symbolic state, or an array/tuple of the aforementioned.
 
 Requires that the integrator implement [`state_values`](@ref) and the
 returned collection be a mutable reference to the state vector in the integrator/problem. Alternatively, if this is not possible or additional actions need to
@@ -301,7 +301,7 @@ end
 for (t1, t2) in [
     (ScalarSymbolic, Any),
     (ArraySymbolic, Any),
-    (NotSymbolic, Union{<:Tuple, <:AbstractArray}),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray})
 ]
     @eval function _setu(sys, ::NotSymbolic, ::$t1, sym::$t2)
         setters = setu.((sys,), sym)

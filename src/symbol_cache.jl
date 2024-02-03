@@ -14,7 +14,7 @@ array containing a single variable if the system has only one independent variab
 struct SymbolCache{
     V <: Union{Nothing, AbstractVector},
     P <: Union{Nothing, AbstractVector},
-    I,
+    I
 }
     variables::V
     parameters::P
