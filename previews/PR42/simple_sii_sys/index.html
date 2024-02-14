@@ -53,15 +53,15 @@ u: 61-element Vector{Vector{Float64}}:
  [0.9999172960310598, 3.583508669306405e-5, 4.6868882246842164e-5]
  [0.9998862913763157, 3.6412401619257426e-5, 7.729622206475401e-5]
  ⋮
- [0.05563508171413294, 2.354632239450543e-7, 0.9443646828226426]
- [0.04792535215921003, 2.0121496539471092e-7, 0.9520744466258239]
- [0.0412334236754256, 1.7192789116847054e-7, 0.958766404396682]
- [0.035437000202076956, 1.4688362762022164e-7, 0.9645628529142934]
- [0.030425373099653402, 1.2546809864160563e-7, 0.9695745014322463]
- [0.026099133126498933, 1.0715608821695004e-7, 0.9739007597174124]
- [0.022369692367946288, 9.149845157822576e-8, 0.9776302161336017]
- [0.019158563494465545, 7.81109645534633e-8, 0.9808413583945701]
- [0.01782789384589467, 7.258919980139007e-8, 0.9821720335649057]</code></pre><p>The solution can now be indexed symbolically:</p><pre><code class="language-julia hljs">sol[:y₁]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">61-element Vector{Float64}:
+ [0.05563508171413299, 2.3546322394505452e-7, 0.9443646828226427]
+ [0.047925352159210066, 2.0121496539471124e-7, 0.952074446625824]
+ [0.04123342367542562, 1.7192789116847073e-7, 0.9587664043966823]
+ [0.03543700020207697, 1.4688362762022172e-7, 0.9645628529142937]
+ [0.030425373099653413, 1.254680986416057e-7, 0.9695745014322465]
+ [0.026099133126498943, 1.0715608821694996e-7, 0.9739007597174125]
+ [0.022369692367946305, 9.149845157822574e-8, 0.9776302161336018]
+ [0.019158563494465566, 7.811096455346334e-8, 0.9808413583945702]
+ [0.017827893845894692, 7.258919980139019e-8, 0.9821720335649058]</code></pre><p>The solution can now be indexed symbolically:</p><pre><code class="language-julia hljs">sol[:y₁]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">61-element Vector{Float64}:
  1.0
  0.9999987215181657
  0.9999942397329006
@@ -73,15 +73,15 @@ u: 61-element Vector{Vector{Float64}}:
  0.9999172960310598
  0.9998862913763157
  ⋮
- 0.05563508171413294
- 0.04792535215921003
- 0.0412334236754256
- 0.035437000202076956
- 0.030425373099653402
- 0.026099133126498933
- 0.022369692367946288
- 0.019158563494465545
- 0.01782789384589467</code></pre><pre><code class="language-julia hljs">sol(1e3, idxs=:y₁)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.33675468352626864</code></pre><p>However, we did not give names to the parameters or the independent variables. They can be specified using <code>SymbolCache</code> as well:</p><pre><code class="language-julia hljs">sys = SymbolCache([:y₁, :y₂, :y₃], [:k₁, :k₂, :k₃], :t)
+ 0.05563508171413299
+ 0.047925352159210066
+ 0.04123342367542562
+ 0.03543700020207697
+ 0.030425373099653413
+ 0.026099133126498943
+ 0.022369692367946305
+ 0.019158563494465566
+ 0.017827893845894692</code></pre><pre><code class="language-julia hljs">sol(1e3, idxs=:y₁)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.3367546835262688</code></pre><p>However, we did not give names to the parameters or the independent variables. They can be specified using <code>SymbolCache</code> as well:</p><pre><code class="language-julia hljs">sys = SymbolCache([:y₁, :y₂, :y₃], [:k₁, :k₂, :k₃], :t)
 odefun = ODEFunction(rober!; sys = sys)
 prob = ODEProblem(odefun, [1.0, 0.0, 0.0], (0.0, 1e5), [0.04, 3e7, 1e4])
 sol = solve(prob, Rosenbrock23())
@@ -107,4 +107,4 @@ getk1(prob)</code></pre><pre class="documenter-example-output"><code class="nohi
   64593.73530179436
   77241.71691097679
   92180.81843146283
- 100000.0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../usage/">« Using the SciML Symbolic Indexing Interface</a><a class="docs-footer-nextpage" href="../complete_sii/">Implementing the Complete Symbolic Indexing Interface »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Tuesday 13 February 2024 10:38">Tuesday 13 February 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 100000.0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../usage/">« Using the SciML Symbolic Indexing Interface</a><a class="docs-footer-nextpage" href="../complete_sii/">Implementing the Complete Symbolic Indexing Interface »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Wednesday 14 February 2024 06:09">Wednesday 14 February 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
