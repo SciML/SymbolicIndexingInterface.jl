@@ -75,6 +75,7 @@ all_variable_symbols(sc::SymbolCache) = variable_symbols(sc)
 function all_symbols(sc::SymbolCache)
     vcat(variable_symbols(sc), parameter_symbols(sc), independent_variable_symbols(sc))
 end
+default_values(::SymbolCache) = Dict()
 
 function Base.copy(sc::SymbolCache)
     return SymbolCache(sc.variables === nothing ? nothing : copy(sc.variables),

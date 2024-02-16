@@ -19,6 +19,7 @@ sc = SymbolCache([:x, :y, :z], [:a, :b], [:t])
 @test independent_variable_symbols(sc) == [:t]
 @test all_variable_symbols(sc) == [:x, :y, :z]
 @test sort(all_symbols(sc)) == [:a, :b, :t, :x, :y, :z]
+@test isempty(default_values(sc))
 
 sc = SymbolCache([:x, :y], [:a, :b])
 @test !is_time_dependent(sc)
@@ -38,6 +39,7 @@ sc = SymbolCache()
 @test !is_time_dependent(sc)
 @test all_variable_symbols(sc) == []
 @test all_symbols(sc) == []
+@test isempty(default_values(sc))
 
 sc = SymbolCache(nothing, nothing, :t)
 @test all(.!is_independent_variable.((sc,), [:x, :y, :a, :b]))
@@ -46,6 +48,7 @@ sc = SymbolCache(nothing, nothing, :t)
 @test is_time_dependent(sc)
 @test all_variable_symbols(sc) == []
 @test all_symbols(sc) == [:t]
+@test isempty(default_values(sc))
 
 sc2 = copy(sc)
 @test sc.variables == sc2.variables

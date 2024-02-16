@@ -134,6 +134,14 @@ variables.
 """
 all_symbols(sys) = all_symbols(symbolic_container(sys))
 
+"""
+    default_values(sys)
+
+Return a dictionary mapping symbols in the system to their default value, if any. This includes
+parameter symbols.
+"""
+default_values(sys) = default_values(symbolic_container(sys))
+
 struct SolvedVariables end
 
 """

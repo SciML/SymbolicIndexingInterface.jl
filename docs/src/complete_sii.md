@@ -8,6 +8,7 @@ struct ExampleSystem
   state_index::Dict{Symbol,Int}
   parameter_index::Dict{Symbol,Int}
   independent_variable::Union{Symbol,Nothing}
+  defaults::Dict{Symbol, Float64}
   # mapping from observed variable to Expr to calculate its value
   observed::Dict{Symbol,Expr}
 end
@@ -76,6 +77,10 @@ function SymbolicIndexingInterface.all_symbols(sys::ExampleSystem)
     collect(keys(sys.parameter_index)),
     sys.independent_variable === nothing ? Symbol[] : sys.independent_variable
   )
+end
+
+function SymbolicIndexingInterface.default_values(sys::ExampleSystem)
+  return sys.defaults
 end
 ```
 

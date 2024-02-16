@@ -9,7 +9,7 @@ export is_variable, variable_index, variable_symbols, is_parameter, parameter_in
        is_observed,
        observed, is_time_dependent, constant_structure, symbolic_container,
        all_variable_symbols,
-       all_symbols, solvedvariables, allvariables
+       all_symbols, solvedvariables, allvariables, default_values
 include("interface.jl")
 
 export SymbolCache
