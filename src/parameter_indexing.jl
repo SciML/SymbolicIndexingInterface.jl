@@ -35,9 +35,14 @@ set_parameter!(sys, val, idx) = set_parameter!(parameter_values(sys), val, idx)
 """
     getp(sys, p)
 
-Return a function that takes an array representing the parameter vector or an integrator
+Return a function that takes an array representing the parameter object or an integrator
 or solution of `sys`, and returns the value of the parameter `p`. Note that `p` can be a
 direct index or a symbolic value, or an array/tuple of the aforementioned.
+
+If `p` is an array/tuple of parameters, then the returned function can also be used
+as an in-place getter function. The first argument is the buffer to which the parameter
+values should be written, and the second argument is the parameter object/integrator/
+solution from which the values are obtained.
 
 Requires that the integrator or solution implement [`parameter_values`](@ref). This function
 typically does not need to be implemented, and has a default implementation relying on
