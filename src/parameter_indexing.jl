@@ -57,8 +57,10 @@ end
 
 function _getp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
     idx = parameter_index(sys, p)
-    return function getter(sol)
-        return parameter_values(sol, idx)
+    return let idx = idx
+        function getter(sol)
+            return parameter_values(sol, idx)
+        end
     end
 end
 
@@ -70,8 +72,16 @@ for (t1, t2) in [
     @eval function _getp(sys, ::NotSymbolic, ::$t1, p::$t2)
         getters = getp.((sys,), p)
 
-        return function getter(sol)
-            map(g -> g(sol), getters)
+        return let getters = getters
+            function getter(sol)
+                map(g -> g(sol), getters)
+            end
+            function getter(buffer, sol)
+                for (i, g) in zip(eachindex(buffer), getters)
+                    buffer[i] = g(sol)
+                end
+                buffer
+            end
         end
     end
 end
