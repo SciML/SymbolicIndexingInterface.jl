@@ -56,3 +56,15 @@ for (sym, oldval, newval, check_inference) in [
     set!(p, oldval)
     @test get(p) == oldval
 end
+
+for (sym, val) in [
+    ([:a, :b, :c], p),
+    ([:c, :a], p[[3, 1]]),
+    ((:b, :a), p[[2, 1]]),
+    ((1, :c), p[[1, 3]])
+]
+    buffer = zeros(length(sym))
+    get = getp(sys, sym)
+    @inferred get(buffer, fi)
+    @test buffer == val
+end
