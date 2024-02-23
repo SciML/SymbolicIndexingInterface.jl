@@ -12,6 +12,7 @@ We recommend any DSL implementing the symbolic indexing interface to link to thi
 as a full description of the functionality.
 
 !!! note
+    
     While this tutorial focuses on demonstrating the symbolic indexing interface for ODEs,
     note that the same functionality works across all of the other problem types, such as
     optimization problems, nonlinear problems, nonlinear solutions, etc.
@@ -76,19 +77,19 @@ sol[(t, w)]
 ```
 
 ```@example Usage
-sol(1.3, idxs=x)
+sol(1.3, idxs = x)
 ```
 
 ```@example Usage
-sol(1.3, idxs=[x, w])
+sol(1.3, idxs = [x, w])
 ```
 
 ```@example Usage
-sol(1.3, idxs=[:y, :z])
+sol(1.3, idxs = [:y, :z])
 ```
 
 ```@example Usage
-plot(sol, idxs=x)
+plot(sol, idxs = x)
 ```
 
 If necessary, `Symbol`s can be used to refer to variables. This is only valid for
@@ -117,6 +118,7 @@ sol[solvedvariables] # equivalent to sol[variable_symbols(sol)]
 
 This does not include the observed variable `w`. To include observed variables in the
 output, the following shorthand is used:
+
 ```@example Usage
 sol[allvariables] # equivalent to sol[all_variable_symbols(sol)]
 ```
@@ -150,6 +152,7 @@ expression, and thus it needs to be provided to the `ProblemState`.
 Parameters cannot be obtained using this syntax, and instead require using [`getp`](@ref) and [`setp`](@ref).
 
 !!! note
+    
     The reason why parameters use a separate syntax is to be able to ensure type stability
     of the `sol[x]` indexing. Without separating the parameter indexing, the return type of
     symbolic indexing could be anything a parameter can be, which is general is not the same
@@ -201,6 +204,7 @@ parameter_values(prob)
 ```
 
 !!! note
+    
     These getters and setters generate high-performance functions for the specific chosen
     symbols or collection of symbols. Caching the getter/setter function and reusing it
     on other problem/solution instances can be the key to achieving good performance. Note
