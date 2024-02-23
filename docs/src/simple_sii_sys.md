@@ -56,7 +56,7 @@ sol[:y₁]
 ```
 
 ```@example symbolcache
-sol(1e3, idxs=:y₁)
+sol(1e3, idxs = :y₁)
 ```
 
 However, we did not give names to the parameters or the independent variables. They can
