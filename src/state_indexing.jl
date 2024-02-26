@@ -216,39 +216,49 @@ for (t1, t2) in [
             end
         else
             obs = observed(sys, sym isa Tuple ? collect(sym) : sym)
-            return let obs = obs, is_tuple = sym isa Tuple
-                function _getter2(::NotTimeseries, prob)
-                    obs(state_values(prob), parameter_values(prob), current_time(prob))
-                end
-                function _getter2(::Timeseries, prob)
-                    obs.(state_values(prob), (parameter_values(prob),), current_time(prob))
-                end
-                function _getter2(::Timeseries, prob, i)
-                    obs(state_values(prob, i),
-                        parameter_values(prob),
-                        current_time(prob, i))
-                end
-
-                if is_tuple
-                    let _getter2 = _getter2
-                        function getter2(prob)
-                            Tuple(_getter2(is_timeseries(prob), prob))
-                        end
-                        function getter2(prob, i)
-                            Tuple(_getter2(is_timeseries(prob), prob, i))
-                        end
-                        getter2
+            _getter2 = if is_time_dependent(sys)
+                let obs = obs, is_tuple = sym isa Tuple
+                    function _getter2a(::NotTimeseries, prob)
+                        obs(state_values(prob), parameter_values(prob), current_time(prob))
                     end
-                else
-                    let _getter2 = _getter2
-                        function getter3(prob)
-                            _getter2(is_timeseries(prob), prob)
-                        end
-                        function getter3(prob, i)
-                            _getter2(is_timeseries(prob), prob, i)
-                        end
-                        getter3
+                    function _getter2a(::Timeseries, prob)
+                        obs.(state_values(prob), (parameter_values(prob),),
+                            current_time(prob))
                     end
+                    function _getter2a(::Timeseries, prob, i)
+                        obs(state_values(prob, i),
+                            parameter_values(prob),
+                            current_time(prob, i))
+                    end
+                    _getter2a
+                end
+            else
+                let obs = obs, is_tuple = sym isa Tuple
+                    function _getter2b(::NotTimeseries, prob)
+                        obs(state_values(prob), parameter_values(prob))
+                    end
+                    _getter2b
+                end
+            end
+            return if sym isa Tuple
+                let _getter2 = _getter2
+                    function getter2(prob)
+                        Tuple(_getter2(is_timeseries(prob), prob))
+                    end
+                    function getter2(prob, i)
+                        Tuple(_getter2(is_timeseries(prob), prob, i))
+                    end
+                    getter2
+                end
+            else
+                let _getter2 = _getter2
+                    function getter3(prob)
+                        _getter2(is_timeseries(prob), prob)
+                    end
+                    function getter3(prob, i)
+                        _getter2(is_timeseries(prob), prob, i)
+                    end
+                    getter3
                 end
             end
         end
