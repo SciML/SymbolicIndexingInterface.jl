@@ -32,8 +32,7 @@ eqs = [D(D(x)) ~ σ * (y - x),
     D(z) ~ x * y - β * z,
     w ~ x + y + z]
 
-@named sys = ODESystem(eqs)
-sys = structural_simplify(sys)
+@mtkbuild sys = ODESystem(eqs, t)
 ```
 
 The system has 4 state variables, 3 parameters, and one observed variable:
