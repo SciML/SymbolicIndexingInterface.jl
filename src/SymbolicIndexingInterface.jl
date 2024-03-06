@@ -1,6 +1,7 @@
 module SymbolicIndexingInterface
 
-export ScalarSymbolic, ArraySymbolic, NotSymbolic, symbolic_type, hasname, getname
+export ScalarSymbolic, ArraySymbolic, NotSymbolic, symbolic_type, hasname, getname,
+       Timeseries, NotTimeseries, is_timeseries
 include("trait.jl")
 
 export is_variable, variable_index, variable_symbols, is_parameter, parameter_index,
@@ -14,11 +15,10 @@ include("interface.jl")
 export SymbolCache
 include("symbol_cache.jl")
 
-export parameter_values, set_parameter!, getp, setp
+export parameter_values, set_parameter!, parameter_values_at_time, parameter_values_at_state_time, parameter_timeseries, getp, setp
 include("parameter_indexing.jl")
 
-export Timeseries,
-       NotTimeseries, is_timeseries, state_values, set_state!, current_time, getu, setu
+export state_values, set_state!, current_time, getu, setu
 include("state_indexing.jl")
 
 export ParameterIndexingProxy

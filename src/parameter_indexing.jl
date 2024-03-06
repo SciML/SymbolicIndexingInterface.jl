@@ -16,6 +16,56 @@ parameter_values(arr::AbstractArray, i) = arr[i]
 parameter_values(prob, i) = parameter_values(parameter_values(prob), i)
 
 """
+    parameter_values_at_time(p, i)
+
+Return an indexable collection containing the value of all parameters in `p` at time index
+`i`. This is useful when parameter values change during the simulation
+(such as through callbacks) and their values are saved. `i` is the time index in the
+timeseries formed by these changing parameter values, obtained using
+[`parameter_timeseries`](@ref).
+
+By default, this function returns `parameter_values(p)` regardless of `i`, and only needs
+to be specialized for timeseries objects where parameter values are not constant at all
+times. The resultant object should be indexable using [`parameter_values`](@ref).
+
+If this function is implemented, [`parameter_values_at_state_time`](@ref) must be 
+implemented for [`getu`](@ref) to work correctly.
+"""
+function parameter_values_at_time end
+parameter_values_at_time(p, i) = parameter_values(p)
+
+"""
+    parameter_values_at_state_time(p, i)
+
+Return an indexable collection containing the value of all parameters in `p` at time
+index `i`. This is useful when parameter values change during the simulation (such as
+through callbacks) and their values are saved. `i` is the time index in the timeseries
+formed by dependent variables (as opposed to the timeseries of the parameters, as in
+[`parameter_values_at_time`](@ref)).
+
+By default, this function returns `parameter_values(p)` regardless of `i`, and only needs
+to be specialized for timeseries objects where parameter values are not constant at
+all times. The resultant object should be indexable using [`parameter_values`](@ref).
+
+If this function is implemented, [`parameter_values_at_time`](@ref) must be implemented for
+[`getp`](@ref) to work correctly.
+"""
+function parameter_values_at_state_time end
+parameter_values_at_state_time(p, i) = parameter_values(p)
+
+"""
+    parameter_timeseries(p)
+
+Return an iterable of time steps at which the parameter values are saved. This is only
+required for objects where `is_timeseries(p) === Timeseries()` and the parameter values
+change during the simulation (such as through callbacks). By default, this returns `[0]`.
+
+See also: [`parameter_values_at_time`](@ref).
+"""
+function parameter_timeseries end
+parameter_timeseries(_) = [0]
+
+"""
     set_parameter!(sys, val, idx)
 
 Set the parameter at index `idx` to `val` for system `sys`. This defaults to modifying
@@ -55,18 +105,30 @@ function getp(sys, p)
 end
 
 function _getp(sys, ::NotSymbolic, ::NotSymbolic, p)
-    return function getter(sol)
-        return parameter_values(sol, p)
+    _getter = let p = p
+        function _getter(::NotTimeseries, prob)
+            parameter_values(prob, p)
+        end
+        function _getter(::Timeseries, prob)
+            parameter_values(prob, p)
+        end
+        function _getter(::Timeseries, prob, i)
+            parameter_values(parameter_values_at_time(prob, i), p)
+        end
+        function _getter(::Timeseries, prob, ::Colon)
+            parameter_values.((parameter_values_at_time(prob, i) for i in eachindex(parameter_timeseries(prob))), (p,))
+        end
+    end
+    return let _getter = _getter
+        function getter(prob, args...)
+            return _getter(is_timeseries(prob), prob, args...)
+        end
     end
 end
 
 function _getp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
     idx = parameter_index(sys, p)
-    return let idx = idx
-        function getter(sol)
-            return parameter_values(sol, idx)
-        end
-    end
+    return getp(sys, idx)
 end
 
 for (t1, t2) in [
@@ -77,16 +139,45 @@ for (t1, t2) in [
     @eval function _getp(sys, ::NotSymbolic, ::$t1, p::$t2)
         getters = getp.((sys,), p)
 
-        return let getters = getters
-            function getter(sol)
-                map(g -> g(sol), getters)
+        _getter = return let getters = getters
+            function _getter(::NotTimeseries, prob)
+                map(g -> g(prob), getters)
             end
-            function getter(buffer, sol)
-                for (i, g) in zip(eachindex(buffer), getters)
-                    buffer[i] = g(sol)
+            function _getter(::Timeseries, prob)
+                map(g -> g(prob), getters)
+            end
+            function _getter(::Timeseries, prob, i)
+                map(g -> g(prob, i), getters)
+            end
+            function _getter(::Timeseries, prob, ::Colon)
+                [map(g -> g(prob, i), getters) for i in eachindex(parameter_timeseries(prob))]
+            end
+            function _getter(buffer, ::NotTimeseries, prob)
+                map!(g -> g(prob), buffer, getters)
+            end
+            function _getter(buffer, ::Timeseries, prob)
+                map!(g -> g(prob), buffer, getters)
+            end
+            function _getter(buffer, ::Timeseries, prob, i)
+                map!(g -> g(prob, i), buffer, getters)
+            end
+            function _getter(buffer, ::Timeseries, prob, ::Colon)
+                for (bufi, tsi) in zip(eachindex(buffer), eachindex(parameter_timeseries(prob)))
+                    map!(g -> g(prob, tsi), buffer[bufi], getters)
                 end
                 buffer
             end
+            _getter
+        end
+
+        return let _getter = _getter
+            function getter(prob, i...)
+                return _getter(is_timeseries(prob), prob, i...)
+            end
+            function getter(buffer::AbstractArray, prob, i...)
+                return _getter(buffer, is_timeseries(prob), prob, i...)
+            end
+            getter
         end
     end
 end
