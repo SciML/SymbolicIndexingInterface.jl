@@ -10,8 +10,8 @@ struct ParameterIndexingProxy{T}
     wrapped::T
 end
 
-function Base.getindex(p::ParameterIndexingProxy, idx)
-    return getp(p.wrapped, idx)(p.wrapped)
+function Base.getindex(p::ParameterIndexingProxy, idx, args...)
+    getp(p.wrapped, idx)(p.wrapped, args...)
 end
 
 function Base.setindex!(p::ParameterIndexingProxy, val, idx)
