@@ -338,3 +338,81 @@ end
 
 [`hasname`](@ref) is not required to always be `true` for symbolic types. For example,
 `Symbolics.Num` returns `false` whenever the wrapped value is a number, or an expression.
+
+## Parameter Timeseries
+
+If a solution object saves modified parameter values (such as through callbacks) during the
+simulation, it must implement [`parameter_timeseries`](@ref),
+[`parameter_values_at_time`](@ref) and [`parameter_values_at_state_time`](@ref) for correct
+functioning of [`getu`](@ref) and [`getp`](@ref). The following mockup gives an example
+of correct implementation of these functions and the indexing syntax they enable.
+
+```@example param_timeseries
+using SymbolicIndexingInterface
+
+struct ExampleSolution2
+    sys::SymbolCache
+    u::Vector{Vector{Float64}}
+    t::Vector{Float64}
+    p::Vector{Vector{Float64}}
+    pt::Vector{Float64}
+end
+
+# Add the `:ps` property to automatically wrap in `ParameterIndexingProxy`
+function Base.getproperty(fs::ExampleSolution2, s::Symbol)
+    s === :ps ? ParameterIndexingProxy(fs) : getfield(fs, s)
+end
+# Use the contained `SymbolCache` for indexing
+SymbolicIndexingInterface.symbolic_container(fs::ExampleSolution2) = fs.sys
+# By default, `parameter_values` refers to the last value
+SymbolicIndexingInterface.parameter_values(fs::ExampleSolution2) = fs.p[end]
+SymbolicIndexingInterface.parameter_values(fs::ExampleSolution2, i) = fs.p[end][i]
+# Index into the parameter timeseries vector
+function SymbolicIndexingInterface.parameter_values_at_time(fs::ExampleSolution2, t)
+    fs.p[t]
+end
+# Find the first index in the parameter timeseries vector with a time smaller
+# than the time from the state timeseries, and use that to index the parameter
+# timeseries
+function SymbolicIndexingInterface.parameter_values_at_state_time(fs::ExampleSolution2, t)
+    ptind = searchsortedfirst(fs.pt, fs.t[t]; lt = <=)
+    fs.p[ptind - 1]
+end
+SymbolicIndexingInterface.parameter_timeseries(fs::ExampleSolution2) = fs.pt
+# Mark the object as a `Timeseries` object
+SymbolicIndexingInterface.is_timeseries(::Type{ExampleSolution2}) = Timeseries()
+    
+```
+
+Now we can create an example object and observe the new functionality. Note that
+`sol.ps[sym, args...]` is identical to `getp(sol, sym)(sol, args...)`.
+
+```@example param_timeseries
+sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
+sol = ExampleSolution2(
+    sys,
+    [i * ones(3) for i in 1:5],
+    [0.2i for i in 1:5],
+    [2i * ones(3) for i in 1:10],
+    [0.1i for i in 1:10]
+)
+sol.ps[:a] # returns the value at the last timestep
+```
+
+```@example param_timeseries
+sol.ps[:a, :] # use Colon to fetch the entire parameter timeseries
+```
+
+```@example param_timeseries
+sol.ps[:a, 3] # index at a specific index in the parameter timeseries
+```
+
+```@example param_timeseries
+sol.ps[:a, [3, 6, 8]] # index using arrays
+```
+
+```@example param_timeseries
+idxs = @show rand(Bool, 10) # boolean mask for indexing
+sol.ps[:a, idxs]
+```
+

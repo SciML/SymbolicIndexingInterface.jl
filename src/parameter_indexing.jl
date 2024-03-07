@@ -97,6 +97,13 @@ solution from which the values are obtained.
 Requires that the integrator or solution implement [`parameter_values`](@ref). This function
 typically does not need to be implemented, and has a default implementation relying on
 [`parameter_values`](@ref).
+
+If the returned function is used on a timeseries object which saves parameter timeseries, it
+can be used to index said timeseries. The timeseries object must implement
+[`parameter_timeseries`](@ref), [`parameter_values_at_time`](@ref) and
+[`parameter_values_at_state_time`](@ref). The function returned from `getp` will can be passed
+`Colon()` (`:`) as the last argument to return the entire parameter timeseries for `p`, or
+any index into the parameter timeseries for a subset of values.
 """
 function getp(sys, p)
     symtype = symbolic_type(p)
