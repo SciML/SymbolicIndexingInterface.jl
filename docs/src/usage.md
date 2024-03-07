@@ -168,11 +168,11 @@ sol2 = solve(prob, Tsit5())
 σ_ρ_getter(sol)
 ```
 
-To set the entire parameter vector at once, [`parameter_values`](@ref) can be used
-(note the usage of broadcasted assignment).
+To set the entire parameter vector at once, [`setp`](@ref) can be used
+(note that the order of symbols passed to `setp` must match the order of values in the array).
 
 ```@example Usage
-parameter_values(prob) .= [29.0, 11.0, 2.5]
+setp(prob, parameter_symbols(prob))(prob, [29.0, 11.0, 2.5])
 parameter_values(prob)
 ```
 
