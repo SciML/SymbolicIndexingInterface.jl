@@ -15,7 +15,8 @@ include("interface.jl")
 export SymbolCache
 include("symbol_cache.jl")
 
-export parameter_values, set_parameter!, parameter_values_at_time, parameter_values_at_state_time, parameter_timeseries, getp, setp
+export parameter_values, set_parameter!, parameter_values_at_time,
+       parameter_values_at_state_time, parameter_timeseries, getp, setp
 include("parameter_indexing.jl")
 
 export state_values, set_state!, current_time, getu, setu

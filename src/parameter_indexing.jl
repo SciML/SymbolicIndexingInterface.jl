@@ -113,10 +113,16 @@ function _getp(sys, ::NotSymbolic, ::NotSymbolic, p)
             parameter_values(prob, p)
         end
         function _getter(::Timeseries, prob, i::Union{Int, CartesianIndex})
-            parameter_values(parameter_values_at_time(prob, only(to_indices(parameter_timeseries(prob), (i,)))), p)
+            parameter_values(
+                parameter_values_at_time(
+                    prob, only(to_indices(parameter_timeseries(prob), (i,)))),
+                p)
         end
         function _getter(::Timeseries, prob, i::Union{AbstractArray{Bool}, Colon})
-            parameter_values.(parameter_values_at_time.((prob,), (j for j in only(to_indices(parameter_timeseries(prob), (i,))))), p)
+            parameter_values.(
+                parameter_values_at_time.((prob,),
+                    (j for j in only(to_indices(parameter_timeseries(prob), (i,))))),
+                p)
         end
         function _getter(::Timeseries, prob, i)
             parameter_values.(parameter_values_at_time.((prob,), i), (p,))
@@ -132,7 +138,8 @@ end
 
 function _getp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
     idx = parameter_index(sys, p)
-    return invoke(_getp, Tuple{Any, NotSymbolic, NotSymbolic, Any}, sys, NotSymbolic(), NotSymbolic(), idx)
+    return invoke(_getp, Tuple{Any, NotSymbolic, NotSymbolic, Any},
+        sys, NotSymbolic(), NotSymbolic(), idx)
     return _getp(sys, NotSymbolic(), NotSymbolic(), idx)
 end
 
@@ -155,7 +162,8 @@ for (t1, t2) in [
                 map(g -> g(prob, i), getters)
             end
             function _getter(::Timeseries, prob, i)
-                [map(g -> g(prob, j), getters) for j in only(to_indices(parameter_timeseries(prob), (i,)))]
+                [map(g -> g(prob, j), getters)
+                 for j in only(to_indices(parameter_timeseries(prob), (i,)))]
             end
             function _getter!(buffer, ::NotTimeseries, prob)
                 for (g, bufi) in zip(getters, eachindex(buffer))
@@ -176,7 +184,8 @@ for (t1, t2) in [
                 buffer
             end
             function _getter!(buffer, ::Timeseries, prob, i)
-                for (bufi, tsi) in zip(eachindex(buffer), only(to_indices(parameter_timeseries(prob), (i,))))
+                for (bufi, tsi) in zip(
+                    eachindex(buffer), only(to_indices(parameter_timeseries(prob), (i,))))
                     for (g, bufj) in zip(getters, eachindex(buffer[bufi]))
                         buffer[bufi][bufj] = g(prob, tsi)
                     end

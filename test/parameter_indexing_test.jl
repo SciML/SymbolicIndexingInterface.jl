@@ -108,7 +108,7 @@ fs = FakeSolution(
     [i * ones(3) for i in 1:5],
     [0.2i for i in 1:5],
     [2i * ones(3) for i in 1:10],
-    [0.1i for i in 1:10],
+    [0.1i for i in 1:10]
 )
 ps = fs.p
 p = fs.p[end]
@@ -122,11 +122,13 @@ for (sym, val, arrval, check_inference) in [
     ([:a, :b], p[1:2], vcat.(avals, bvals), true),
     (1:2, p[1:2], vcat.(avals, bvals), true),
     ((1, 2), Tuple(p[1:2]), tuple.(avals, bvals), true),
-    ([:a, [:b, :c]], [p[1], p[2:3]], [[i, [j, k]] for (i, j, k) in zip(avals, bvals, cvals)], false),
+    ([:a, [:b, :c]], [p[1], p[2:3]],
+        [[i, [j, k]] for (i, j, k) in zip(avals, bvals, cvals)], false),
     ([:a, (:b, :c)], [p[1], (p[2], p[3])], vcat.(avals, tuple.(bvals, cvals)), false),
     ((:a, [:b, :c]), (p[1], p[2:3]), tuple.(avals, vcat.(bvals, cvals)), true),
     ((:a, (:b, :c)), (p[1], (p[2], p[3])), tuple.(avals, tuple.(bvals, cvals)), true),
-    ([1, [:b, :c]], [p[1], p[2:3]], [[i, [j, k]] for (i, j, k) in zip(avals, bvals, cvals)], false),
+    ([1, [:b, :c]], [p[1], p[2:3]],
+        [[i, [j, k]] for (i, j, k) in zip(avals, bvals, cvals)], false),
     ([1, (:b, :c)], [p[1], (p[2], p[3])], vcat.(avals, tuple.(bvals, cvals)), false),
     ((1, [:b, :c]), (p[1], p[2:3]), tuple.(avals, vcat.(bvals, cvals)), true),
     ((1, (:b, :c)), (p[1], (p[2], p[3])), tuple.(avals, tuple.(bvals, cvals)), true)
@@ -138,7 +140,8 @@ for (sym, val, arrval, check_inference) in [
     @test get(fs) == fs.ps[sym]
     @test get(fs) == val
 
-    for sub_inds in [:, 3:5, rand(Bool, length(ps)), rand(eachindex(ps)), rand(CartesianIndices(ps))]
+    for sub_inds in [
+        :, 3:5, rand(Bool, length(ps)), rand(eachindex(ps)), rand(CartesianIndices(ps))]
         if check_inference
             @inferred get(fs, sub_inds)
         end

@@ -101,4 +101,3 @@ function is_timeseries end
 
 is_timeseries(x) = is_timeseries(typeof(x))
 is_timeseries(::Type) = NotTimeseries()
-

@@ -185,7 +185,9 @@ for (t1, t2) in [
                     end
                     function _getter2a(::Timeseries, prob)
                         curtime = current_time(prob)
-                        obs.(state_values(prob), (parameter_values_at_state_time(prob, i) for i in eachindex(curtime)),
+                        obs.(state_values(prob),
+                            (parameter_values_at_state_time(prob, i)
+                            for i in eachindex(curtime)),
                             curtime)
                     end
                     function _getter2a(::Timeseries, prob, i)
