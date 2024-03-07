@@ -60,3 +60,44 @@ hasname(::Any) = false
 Get the name of a symbolic variable as a `Symbol`
 """
 function getname end
+
+############ IsTimeseriesTrait
+
+abstract type IsTimeseriesTrait end
+
+"""
+    struct Timeseries <: IsTimeseriesTrait end
+
+Trait indicating a type contains timeseries data. This affects the behaviour of
+functions such as [`state_values`](@ref) and [`current_time`](@ref).
+
+See also: [`NotTimeseries`](@ref), [`is_timeseries`](@ref)
+"""
+struct Timeseries <: IsTimeseriesTrait end
+
+"""
+    struct NotTimeseries <: IsTimeseriesTrait end
+
+Trait indicating a type does not contain timeseries data. This affects the behaviour
+of functions such as [`state_values`](@ref) and [`current_time`](@ref). Note that
+if a type is `NotTimeseries` this only implies that it does not _store_ timeseries
+data. It may still be time-dependent. For example, an `ODEProblem` only stores
+the initial state of a system, so it is `NotTimeseries`, but still time-dependent.
+This is the default trait variant for all types.
+
+See also: [`Timeseries`](@ref), [`is_timeseries`](@ref)
+"""
+struct NotTimeseries <: IsTimeseriesTrait end
+
+"""
+    is_timeseries(x) = is_timeseries(typeof(x))
+    is_timeseries(::Type)
+
+Get the timeseries trait of a type. Defaults to [`NotTimeseries`](@ref) for all types.
+
+See also: [`Timeseries`](@ref), [`NotTimeseries`](@ref)
+"""
+function is_timeseries end
+
+is_timeseries(x) = is_timeseries(typeof(x))
+is_timeseries(::Type) = NotTimeseries()

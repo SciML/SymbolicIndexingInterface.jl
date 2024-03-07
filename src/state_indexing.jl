@@ -1,42 +1,3 @@
-abstract type IsTimeseriesTrait end
-
-"""
-    struct Timeseries <: IsTimeseriesTrait end
-
-Trait indicating a type contains timeseries data. This affects the behaviour of
-functions such as [`state_values`](@ref) and [`current_time`](@ref).
-
-See also: [`NotTimeseries`](@ref), [`is_timeseries`](@ref)
-"""
-struct Timeseries <: IsTimeseriesTrait end
-
-"""
-    struct NotTimeseries <: IsTimeseriesTrait end
-
-Trait indicating a type does not contain timeseries data. This affects the behaviour
-of functions such as [`state_values`](@ref) and [`current_time`](@ref). Note that
-if a type is `NotTimeseries` this only implies that it does not _store_ timeseries
-data. It may still be time-dependent. For example, an `ODEProblem` only stores
-the initial state of a system, so it is `NotTimeseries`, but still time-dependent.
-This is the default trait variant for all types.
-
-See also: [`Timeseries`](@ref), [`is_timeseries`](@ref)
-"""
-struct NotTimeseries <: IsTimeseriesTrait end
-
-"""
-    is_timeseries(x) = is_timeseries(typeof(x))
-    is_timeseries(::Type)
-
-Get the timeseries trait of a type. Defaults to [`NotTimeseries`](@ref) for all types.
-
-See also: [`Timeseries`](@ref), [`NotTimeseries`](@ref)
-"""
-function is_timeseries end
-
-is_timeseries(x) = is_timeseries(typeof(x))
-is_timeseries(::Type) = NotTimeseries()
-
 """
     state_values(p)
     state_values(p, i)
@@ -149,13 +110,14 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
         fn = observed(sys, sym)
         if is_time_dependent(sys)
             function _getter2(::Timeseries, prob)
+                curtime = current_time(prob)
                 return fn.(state_values(prob),
-                    (parameter_values(prob),),
-                    current_time(prob))
+                    (parameter_values_at_state_time(prob, i) for i in eachindex(curtime)),
+                    curtime)
             end
             function _getter2(::Timeseries, prob, i)
                 return fn(state_values(prob, i),
-                    parameter_values(prob),
+                    parameter_values_at_state_time(prob, i),
                     current_time(prob, i))
             end
             function _getter2(::NotTimeseries, prob)
@@ -222,18 +184,21 @@ for (t1, t2) in [
                         obs(state_values(prob), parameter_values(prob), current_time(prob))
                     end
                     function _getter2a(::Timeseries, prob)
-                        obs.(state_values(prob), (parameter_values(prob),),
-                            current_time(prob))
+                        curtime = current_time(prob)
+                        obs.(state_values(prob),
+                            (parameter_values_at_state_time(prob, i)
+                            for i in eachindex(curtime)),
+                            curtime)
                     end
                     function _getter2a(::Timeseries, prob, i)
                         obs(state_values(prob, i),
-                            parameter_values(prob),
+                            parameter_values_at_state_time(prob, i),
                             current_time(prob, i))
                     end
                     _getter2a
                 end
             else
-                let obs = obs, is_tuple = sym isa Tuple
+                let obs = obs
                     function _getter2b(::NotTimeseries, prob)
                         obs(state_values(prob), parameter_values(prob))
                     end

@@ -52,6 +52,18 @@ getu
 setu
 ```
 
+### Parameter timeseries
+
+If a solution object saves a timeseries of parameter values that are updated during the
+simulation (such as by callbacks), it must implement the following methods to ensure
+correct functioning of [`getu`](@ref) and [`getp`](@ref).
+
+```@docs
+parameter_timeseries
+parameter_values_at_time
+parameter_values_at_state_time
+```
+
 # Symbolic Trait
 
 ```@docs
