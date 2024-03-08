@@ -17,7 +17,7 @@ jobs:
         julia-version: [1]
         os: [ubuntu-latest]
         package:
-          - {user: SciML, repo: RecursiveArrayTools.jl, group: All}
+          - {user: SciML, repo: RecursiveArrayTools.jl, group: SymbolicIndexingInterface}
           - {user: JuliaSymbolics, repo: Symbolics.jl, group: SymbolicIndexingInterface}
           - {user: SciML, repo: SciMLBase.jl, group: SymbolicIndexingInterface}
     steps:
