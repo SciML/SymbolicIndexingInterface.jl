@@ -95,8 +95,16 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
         return getu(sys, idx)
     elseif is_parameter(sys, sym)
         return let fn = getp(sys, sym)
-            getter(prob, args...) = fn(prob)
-            getter
+            _getter_p(::NotTimeseries, prob) = fn(prob)
+            function _getter_p(::Timeseries, prob)
+                [fn(parameter_values_at_state_time(prob, i))
+                 for i in eachindex(current_time(prob))]
+            end
+            _getter_p(::Timeseries, prob, i) = fn(parameter_values_at_state_time(prob, i))
+            let _getter = _getter_p
+                getter(prob, args...) = _getter(is_timeseries(prob), prob, args...)
+                getter
+            end
         end
     elseif is_independent_variable(sys, sym)
         _getter(::IsTimeseriesTrait, prob) = current_time(prob)
