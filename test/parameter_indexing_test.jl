@@ -90,6 +90,8 @@ end
 function Base.getproperty(fs::FakeSolution, s::Symbol)
     s === :ps ? ParameterIndexingProxy(fs) : getfield(fs, s)
 end
+SymbolicIndexingInterface.state_values(fs::FakeSolution) = fs.u
+SymbolicIndexingInterface.current_time(fs::FakeSolution) = fs.t
 SymbolicIndexingInterface.symbolic_container(fs::FakeSolution) = fs.sys
 SymbolicIndexingInterface.parameter_values(fs::FakeSolution) = fs.p[end]
 SymbolicIndexingInterface.parameter_values(fs::FakeSolution, i) = fs.p[end][i]
@@ -147,5 +149,22 @@ for (sym, val, arrval, check_inference) in [
         end
         @test get(fs, sub_inds) == fs.ps[sym, sub_inds]
         @test get(fs, sub_inds) == arrval[sub_inds]
+    end
+end
+
+ps = fs.p[2:2:end]
+avals = getindex.(ps, 1)
+bvals = getindex.(ps, 2)
+cvals = getindex.(ps, 3)
+for (sym, val, arrval) in [
+    (:a, p[1], avals),
+    ((:b, :c), p[2:3], tuple.(bvals, cvals)),
+    ([:c, :a], p[[3, 1]], vcat.(cvals, avals))
+]
+    get = getu(sys, sym)
+    @inferred get(fs)
+    @test get(fs) == arrval
+    for i in eachindex(ps)
+        @test get(fs, i) == arrval[i]
     end
 end
