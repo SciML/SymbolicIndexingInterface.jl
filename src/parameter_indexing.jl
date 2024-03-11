@@ -129,7 +129,7 @@ function _getp(sys, ::NotSymbolic, ::NotSymbolic, p)
             parameter_values.(
                 parameter_values_at_time.((prob,),
                     (j for j in only(to_indices(parameter_timeseries(prob), (i,))))),
-                p)
+                (p,))
         end
         function _getter(::Timeseries, prob, i)
             parameter_values.(parameter_values_at_time.((prob,), i), (p,))
