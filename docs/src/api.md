@@ -13,6 +13,7 @@ parameter_symbols
 is_independent_variable
 independent_variable_symbols
 is_observed
+default_values
 is_time_dependent
 constant_structure
 all_variable_symbols
@@ -73,6 +74,7 @@ NotSymbolic
 symbolic_type
 hasname
 getname
+symbolic_evaluate
 ```
 
 # Types

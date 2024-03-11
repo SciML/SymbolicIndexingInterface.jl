@@ -2,11 +2,12 @@
     struct SymbolCache{V,P,I}
     function SymbolCache(vars, [params, [indepvars]])
 
-A struct implementing the symbolic indexing interface for the trivial case
-of having a vector of variables, parameters, and independent variables. This
-struct does not implement `observed`, and `is_observed` returns `false` for
-all input symbols. It is considered time dependent if it contains
-at least one independent variable.
+A struct implementing the symbolic indexing interface for the trivial case of having a
+vector of variables, parameters, and independent variables. It is considered time
+dependent if it contains at least one independent variable. It returns `true` for
+`is_observed(::SymbolCache, sym)` if `sym isa Expr`. Functions can be generated using
+`observed` for `Expr`s involving variables in the `SymbolCache` if it has at most one
+independent variable.
 
 The independent variable may be specified as a single symbolic variable instead of an
 array containing a single variable if the system has only one independent variable.
@@ -14,17 +15,22 @@ array containing a single variable if the system has only one independent variab
 struct SymbolCache{
     V <: Union{Nothing, AbstractVector},
     P <: Union{Nothing, AbstractVector},
-    I
+    I,
+    D <: Dict
 }
     variables::V
     parameters::P
     independent_variables::I
+    defaults::D
 end
 
-function SymbolCache(vars = nothing, params = nothing, indepvars = nothing)
-    return SymbolCache{typeof(vars), typeof(params), typeof(indepvars)}(vars,
+function SymbolCache(vars = nothing, params = nothing, indepvars = nothing;
+        defaults = Dict{Symbol, Union{Symbol, Expr, Number}}())
+    return SymbolCache{typeof(vars), typeof(params), typeof(indepvars), typeof(defaults)}(
+        vars,
         params,
-        indepvars)
+        indepvars,
+        defaults)
 end
 
 function is_variable(sc::SymbolCache, sym)
@@ -62,6 +68,45 @@ function independent_variable_symbols(sc::SymbolCache)
     end
 end
 is_observed(sc::SymbolCache, sym) = false
+is_observed(::SymbolCache, ::Expr) = true
+function observed(sc::SymbolCache, expr::Expr)
+    let cache = Dict{Expr, Function}()
+        return get!(cache, expr) do
+            fnbody = Expr(:block)
+            declared = Set{Symbol}()
+            MacroTools.postwalk(expr) do sym
+                sym isa Symbol || return
+                sym in declared && return
+                if sc.variables !== nothing &&
+                   (idx = findfirst(isequal(sym), sc.variables)) !== nothing
+                    push!(fnbody.args, :($sym = u[$idx]))
+                    push!(declared, sym)
+                elseif sc.parameters !== nothing &&
+                       (idx = findfirst(isequal(sym), sc.parameters)) !== nothing
+                    push!(fnbody.args, :($sym = p[$idx]))
+                    push!(declared, sym)
+                elseif sym === sc.independent_variables ||
+                       sc.independent_variables isa Vector &&
+                       sym == only(sc.independent_variables)
+                    push!(fnbody.args, :($sym = t))
+                    push!(declared, sym)
+                end
+            end
+            fnexpr = if is_time_dependent(sc)
+                :(function (u, p, t)
+                    $fnbody
+                    return $expr
+                end)
+            else
+                :(function (u, p)
+                    $fnbody
+                    return $expr
+                end)
+            end
+            return RuntimeGeneratedFunctions.@RuntimeGeneratedFunction(fnexpr)
+        end
+    end
+end
 function is_time_dependent(sc::SymbolCache)
     sc.independent_variables === nothing && return false
     if symbolic_type(sc.independent_variables) == NotSymbolic()
@@ -75,10 +120,11 @@ all_variable_symbols(sc::SymbolCache) = variable_symbols(sc)
 function all_symbols(sc::SymbolCache)
     vcat(variable_symbols(sc), parameter_symbols(sc), independent_variable_symbols(sc))
 end
+default_values(sc::SymbolCache) = sc.defaults
 
 function Base.copy(sc::SymbolCache)
     return SymbolCache(sc.variables === nothing ? nothing : copy(sc.variables),
         sc.parameters === nothing ? nothing : copy(sc.parameters),
         sc.independent_variables isa AbstractArray ? copy(sc.independent_variables) :
-        sc.independent_variables)
+        sc.independent_variables, copy(sc.defaults))
 end
