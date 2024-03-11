@@ -3,8 +3,14 @@ uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
 authors = ["Aayush Sabharwal <aayush.sabharwal@gmail.com> and contributors"]
 version = "0.3.10"
 
+[deps]
+MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+RuntimeGeneratedFunctions = "7e49a35a-f44a-4d26-94aa-eba1b4ca6b47"
+
 [compat]
 Aqua = "0.8"
+MacroTools = "0.5.13"
+RuntimeGeneratedFunctions = "0.5"
 SafeTestsets = "0.0.1"
 Test = "1"
 julia = "1.10"

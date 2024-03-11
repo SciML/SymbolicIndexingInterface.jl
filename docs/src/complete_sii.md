@@ -344,6 +344,37 @@ end
 [`hasname`](@ref) is not required to always be `true` for symbolic types. For example,
 `Symbolics.Num` returns `false` whenever the wrapped value is a number, or an expression.
 
+Introducing a type to represent expression trees:
+
+```julia
+struct MyExpr
+  op::Function
+  args::Vector{Union{MyExpr, MySym, MySymArr, Number, Array}}
+end
+```
+
+[`symbolic_evaluate`](@ref) can be implemented as follows:
+
+```julia
+function symbolic_evaluate(expr::Union{MySym, MySymArr}, syms::Dict)
+  get(syms, expr, expr)
+end
+function symbolic_evaluate(expr::MyExpr, syms::Dict)
+  for i in eachindex(expr.args)
+    if expr.args[i] isa Union{MySym, MySymArr, MyExpr}
+      expr.args[i] = symbolic_evaluate(expr.args[i], syms)
+    end
+  end
+  if all(x -> symbolic_type(x) === NotSymbolic(), expr.args)
+    return expr.op(expr.args...)
+  end
+end
+```
+
+Note the evaluation of the operation if all of the arguments are not symbolic. This is
+required since `symbolic_evaluate` must return an evaluated value if all symbolic variables
+are substituted.
+
 ## Parameter Timeseries
 
 If a solution object saves modified parameter values (such as through callbacks) during the

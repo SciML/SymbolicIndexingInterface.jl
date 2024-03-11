@@ -61,6 +61,33 @@ Get the name of a symbolic variable as a `Symbol`
 """
 function getname end
 
+"""
+    symbolic_evaluate(expr, syms::Dict)
+
+Return the value of symbolic expression `expr` where the values of variables involved are
+obtained from the dictionary `syms`. The keys of `syms` are symbolic variables (not
+expressions of variables). The values of `syms` can be values or symbolic
+expressions.
+
+The returned value should either be a value or an expression involving symbolic variables
+not present as keys in `syms`.
+
+This is already implemented for 
+`symbolic_evaluate(expr::Union{Symbol, Expr}, syms::Dict{Symbol})`.
+"""
+function symbolic_evaluate(expr::Union{Symbol, Expr}, syms::Dict{Symbol})
+    while (new_expr = MacroTools.postwalk(expr) do sym
+        return get(syms, sym, sym)
+    end) != expr
+        expr = new_expr
+    end
+    return try
+        eval(expr)
+    catch
+        expr
+    end
+end
+
 ############ IsTimeseriesTrait
 
 abstract type IsTimeseriesTrait end

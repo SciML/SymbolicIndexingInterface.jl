@@ -1,5 +1,9 @@
 module SymbolicIndexingInterface
 
+import MacroTools
+using RuntimeGeneratedFunctions
+RuntimeGeneratedFunctions.init(@__MODULE__)
+
 export ScalarSymbolic, ArraySymbolic, NotSymbolic, symbolic_type, hasname, getname,
        Timeseries, NotTimeseries, is_timeseries
 include("trait.jl")
@@ -9,7 +13,7 @@ export is_variable, variable_index, variable_symbols, is_parameter, parameter_in
        is_observed,
        observed, is_time_dependent, constant_structure, symbolic_container,
        all_variable_symbols,
-       all_symbols, solvedvariables, allvariables, default_values
+       all_symbols, solvedvariables, allvariables, default_values, symbolic_evaluate
 include("interface.jl")
 
 export SymbolCache
