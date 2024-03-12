@@ -7,6 +7,7 @@
   state_index::Dict{Symbol,Int}
   parameter_index::Dict{Symbol,Int}
   independent_variable::Union{Symbol,Nothing}
+  defaults::Dict{Symbol, Float64}
   # mapping from observed variable to Expr to calculate its value
   observed::Dict{Symbol,Expr}
 end</code></pre><p>Not all the methods in the interface are required. Some only need to be implemented if a type supports specific functionality. Consider the following struct, which needs to implement the interface:</p><h2 id="Mandatory-methods"><a class="docs-heading-anchor" href="#Mandatory-methods">Mandatory methods</a><a id="Mandatory-methods-1"></a><a class="docs-heading-anchor-permalink" href="#Mandatory-methods" title="Permalink"></a></h2><h3 id="Simple-Indexing-Functions"><a class="docs-heading-anchor" href="#Simple-Indexing-Functions">Simple Indexing Functions</a><a id="Simple-Indexing-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-Indexing-Functions" title="Permalink"></a></h3><p>These are the simple functions which describe how to turn symbols into indices.</p><pre><code class="language-julia hljs">function SymbolicIndexingInterface.is_variable(sys::ExampleSystem, sym)
@@ -62,6 +63,10 @@ function SymbolicIndexingInterface.all_symbols(sys::ExampleSystem)
     collect(keys(sys.parameter_index)),
     sys.independent_variable === nothing ? Symbol[] : sys.independent_variable
   )
+end
+
+function SymbolicIndexingInterface.default_values(sys::ExampleSystem)
+  return sys.defaults
 end</code></pre><h3 id="Observed-Equation-Handling"><a class="docs-heading-anchor" href="#Observed-Equation-Handling">Observed Equation Handling</a><a id="Observed-Equation-Handling-1"></a><a class="docs-heading-anchor-permalink" href="#Observed-Equation-Handling" title="Permalink"></a></h3><p>These are for handling symbolic expressions and generating equations which are not directly in the solution vector.</p><pre><code class="language-julia hljs">using RuntimeGeneratedFunctions
 RuntimeGeneratedFunctions.init(@__MODULE__)
 
@@ -181,7 +186,22 @@ function Base.collect(sym::MySymArr)
     MySym(Symbol(sym.name, :_, join(idxs, &quot;_&quot;)))
     for idxs in Iterators.product(Base.OneTo.(sym.size)...)
   ]
-end</code></pre><p><a href="../api/#SymbolicIndexingInterface.hasname"><code>hasname</code></a> is not required to always be <code>true</code> for symbolic types. For example, <code>Symbolics.Num</code> returns <code>false</code> whenever the wrapped value is a number, or an expression.</p><h2 id="Parameter-Timeseries"><a class="docs-heading-anchor" href="#Parameter-Timeseries">Parameter Timeseries</a><a id="Parameter-Timeseries-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-Timeseries" title="Permalink"></a></h2><p>If a solution object saves modified parameter values (such as through callbacks) during the simulation, it must implement <a href="../api/#SymbolicIndexingInterface.parameter_timeseries"><code>parameter_timeseries</code></a>, <a href="../api/#SymbolicIndexingInterface.parameter_values_at_time"><code>parameter_values_at_time</code></a> and <a href="../api/#SymbolicIndexingInterface.parameter_values_at_state_time"><code>parameter_values_at_state_time</code></a> for correct functioning of <a href="../api/#SymbolicIndexingInterface.getu"><code>getu</code></a> and <a href="../api/#SymbolicIndexingInterface.getp"><code>getp</code></a>. The following mockup gives an example of correct implementation of these functions and the indexing syntax they enable.</p><pre><code class="language-julia hljs">using SymbolicIndexingInterface
+end</code></pre><p><a href="../api/#SymbolicIndexingInterface.hasname"><code>hasname</code></a> is not required to always be <code>true</code> for symbolic types. For example, <code>Symbolics.Num</code> returns <code>false</code> whenever the wrapped value is a number, or an expression.</p><p>Introducing a type to represent expression trees:</p><pre><code class="language-julia hljs">struct MyExpr
+  op::Function
+  args::Vector{Union{MyExpr, MySym, MySymArr, Number, Array}}
+end</code></pre><p><a href="../api/#SymbolicIndexingInterface.symbolic_evaluate"><code>symbolic_evaluate</code></a> can be implemented as follows:</p><pre><code class="language-julia hljs">function symbolic_evaluate(expr::Union{MySym, MySymArr}, syms::Dict)
+  get(syms, expr, expr)
+end
+function symbolic_evaluate(expr::MyExpr, syms::Dict)
+  for i in eachindex(expr.args)
+    if expr.args[i] isa Union{MySym, MySymArr, MyExpr}
+      expr.args[i] = symbolic_evaluate(expr.args[i], syms)
+    end
+  end
+  if all(x -&gt; symbolic_type(x) === NotSymbolic(), expr.args)
+    return expr.op(expr.args...)
+  end
+end</code></pre><p>Note the evaluation of the operation if all of the arguments are not symbolic. This is required since <code>symbolic_evaluate</code> must return an evaluated value if all symbolic variables are substituted.</p><h2 id="Parameter-Timeseries"><a class="docs-heading-anchor" href="#Parameter-Timeseries">Parameter Timeseries</a><a id="Parameter-Timeseries-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-Timeseries" title="Permalink"></a></h2><p>If a solution object saves modified parameter values (such as through callbacks) during the simulation, it must implement <a href="../api/#SymbolicIndexingInterface.parameter_timeseries"><code>parameter_timeseries</code></a>, <a href="../api/#SymbolicIndexingInterface.parameter_values_at_time"><code>parameter_values_at_time</code></a> and <a href="../api/#SymbolicIndexingInterface.parameter_values_at_state_time"><code>parameter_values_at_state_time</code></a> for correct functioning of <a href="../api/#SymbolicIndexingInterface.getu"><code>getu</code></a> and <a href="../api/#SymbolicIndexingInterface.getp"><code>getp</code></a>. The following mockup gives an example of correct implementation of these functions and the indexing syntax they enable.</p><pre><code class="language-julia hljs">using SymbolicIndexingInterface
 
 struct ExampleSolution2
     sys::SymbolCache
@@ -235,10 +255,7 @@ sol.ps[:a] # returns the value at the last timestep</code></pre><pre class="docu
   6.0
  12.0
  16.0</code></pre><pre><code class="language-julia hljs">idxs = @show rand(Bool, 10) # boolean mask for indexing
-sol.ps[:a, idxs]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6-element Vector{Float64}:
-  2.0
- 12.0
- 14.0
- 16.0
- 18.0
- 20.0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../simple_sii_sys/">« Simple Demonstration of a Symbolic System Structure</a><a class="docs-footer-nextpage" href="../solution_wrappers/">Defining Solution Wrapper Fallbacks »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Friday 8 March 2024 15:11">Friday 8 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+sol.ps[:a, idxs]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Float64}:
+ 2.0
+ 6.0
+ 8.0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../simple_sii_sys/">« Simple Demonstration of a Symbolic System Structure</a><a class="docs-footer-nextpage" href="../solution_wrappers/">Defining Solution Wrapper Fallbacks »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Tuesday 12 March 2024 06:09">Tuesday 12 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
