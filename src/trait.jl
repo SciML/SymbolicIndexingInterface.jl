@@ -73,19 +73,31 @@ The returned value should either be a value or an expression involving symbolic 
 not present as keys in `syms`.
 
 This is already implemented for 
-`symbolic_evaluate(expr::Union{Symbol, Expr}, syms::Dict{Symbol})`.
+`symbolic_evaluate(expr::Union{Symbol, Expr}, syms::Dict)`.
 """
-function symbolic_evaluate(expr::Union{Symbol, Expr}, syms::Dict{Symbol})
-    while (new_expr = MacroTools.postwalk(expr) do sym
-        return get(syms, sym, sym)
-    end) != expr
-        expr = new_expr
+function symbolic_evaluate(expr::Union{Symbol, Expr}, syms::Dict)
+    while (newexpr = _symbolic_evaluate_helper(expr, syms)) != expr
+        expr = newexpr
     end
     return try
         eval(expr)
     catch
         expr
     end
+end
+
+function _symbolic_evaluate_helper(expr, syms::Dict)
+    if (res = get(syms, expr, nothing)) !== nothing
+        return res
+    end
+    expr isa Expr || return expr
+
+    newexpr = Expr(expr.head)
+    sizehint!(newexpr.args, length(expr.args))
+    for arg in expr.args
+        push!(newexpr.args, _symbolic_evaluate_helper(arg, syms))
+    end
+    newexpr
 end
 
 ############ IsTimeseriesTrait
