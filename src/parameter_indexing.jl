@@ -83,6 +83,16 @@ end
 set_parameter!(sys, val, idx) = set_parameter!(parameter_values(sys), val, idx)
 
 """
+    finalize_parameters_hook!(prob, p)
+
+This is a callback run one for each call to the function returned by [`setp`](@ref)
+which can be used to update internal data structures when parameters are modified.
+This is in contrast to [`set_parameter!`](@ref) which is run once for each parameter
+that is updated.
+"""
+finalize_parameters_hook!(prob, p) = nothing
+
+"""
     getp(sys, p)
 
 Return a function that takes an array representing the parameter object or an integrator
@@ -231,22 +241,36 @@ case `parameter_values` cannot return such a mutable reference, or additional ac
 need to be performed when updating parameters, [`set_parameter!`](@ref) must be
 implemented.
 """
-function setp(sys, p)
+function setp(sys, p; run_hook = true)
     symtype = symbolic_type(p)
     elsymtype = symbolic_type(eltype(p))
-    _setp(sys, symtype, elsymtype, p)
+    return if run_hook
+        let _setter! = _setp(sys, symtype, elsymtype, p), p = p
+            function setter!(prob, args...)
+                res = _setter!(prob, args...)
+                finalize_parameters_hook!(prob, p)
+                res
+            end
+        end
+    else
+        _setp(sys, symtype, elsymtype, p)
+    end
 end
 
 function _setp(sys, ::NotSymbolic, ::NotSymbolic, p)
-    return function setter!(sol, val)
-        set_parameter!(sol, val, p)
+    return let p = p
+        function setter!(sol, val)
+            set_parameter!(sol, val, p)
+        end
     end
 end
 
 function _setp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
     idx = parameter_index(sys, p)
-    return function setter!(sol, val)
-        set_parameter!(sol, val, idx)
+    return let idx = idx
+        function setter!(sol, val)
+            set_parameter!(sol, val, idx)
+        end
     end
 end
 
@@ -256,13 +280,15 @@ for (t1, t2) in [
     (NotSymbolic, Union{<:Tuple, <:AbstractArray})
 ]
     @eval function _setp(sys, ::NotSymbolic, ::$t1, p::$t2)
-        setters = setp.((sys,), p)
-        return function setter!(sol, val)
-            map((s!, v) -> s!(sol, v), setters, val)
+        setters = setp.((sys,), p; run_hook = false)
+        return let setters = setters
+            function setter!(sol, val)
+                map((s!, v) -> s!(sol, v), setters, val)
+            end
         end
     end
 end
 
 function _setp(sys, ::ArraySymbolic, ::NotSymbolic, p)
-    return setp(sys, collect(p))
+    return setp(sys, collect(p); run_hook = false)
 end

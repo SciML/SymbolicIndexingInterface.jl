@@ -4,6 +4,7 @@ using Test
 struct FakeIntegrator{S, P}
     sys::S
     p::P
+    counter::Ref{Int}
 end
 
 function Base.getproperty(fi::FakeIntegrator, s::Symbol)
@@ -11,10 +12,13 @@ function Base.getproperty(fi::FakeIntegrator, s::Symbol)
 end
 SymbolicIndexingInterface.symbolic_container(fp::FakeIntegrator) = fp.sys
 SymbolicIndexingInterface.parameter_values(fp::FakeIntegrator) = fp.p
+function SymbolicIndexingInterface.finalize_parameters_hook!(fi::FakeIntegrator, p)
+    fi.counter[] += 1
+end
 
 sys = SymbolCache([:x, :y, :z], [:a, :b, :c], [:t])
 p = [1.0, 2.0, 3.0]
-fi = FakeIntegrator(sys, copy(p))
+fi = FakeIntegrator(sys, copy(p), Ref(0))
 new_p = [4.0, 5.0, 6.0]
 @test parameter_timeseries(fi) == [0]
 for (sym, oldval, newval, check_inference) in [
@@ -39,19 +43,25 @@ for (sym, oldval, newval, check_inference) in [
     end
     @test get(fi) == fi.ps[sym]
     @test get(fi) == oldval
+    @test fi.counter[] == 0
     if check_inference
         @inferred set!(fi, newval)
     else
         set!(fi, newval)
     end
+    @test fi.counter[] == 1
+
     @test get(fi) == newval
     set!(fi, oldval)
     @test get(fi) == oldval
+    @test fi.counter[] == 2
 
     fi.ps[sym] = newval
     @test get(fi) == newval
+    @test fi.counter[] == 3
     fi.ps[sym] = oldval
     @test get(fi) == oldval
+    @test fi.counter[] == 4
 
     if check_inference
         @inferred get(p)
@@ -65,6 +75,8 @@ for (sym, oldval, newval, check_inference) in [
     @test get(p) == newval
     set!(p, oldval)
     @test get(p) == oldval
+    @test fi.counter[] == 4
+    fi.counter[] = 0
 end
 
 for (sym, val) in [
