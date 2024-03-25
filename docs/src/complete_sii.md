@@ -267,6 +267,15 @@ function SymbolicIndexingInterface.set_state!(integrator::ExampleIntegrator, val
 end
 ```
 
+### Using `finalize_parameters_hook!`
+
+The function [`finalize_parameters_hook!`](@ref) is called exactly _once_ every time the
+function returned by `setp` is called. This allows performing any additional bookkeeping
+required when parameter values are updated. [`set_parameter!`](@ref) also allows performing
+similar functionality, but is called for every parameter that is updated, instead of just
+once. Thus, `finalize_parameters_hook!` is better for expensive computations that can be
+performed for a bulk parameter update.
+
 # The `ParameterIndexingProxy`
 
 [`ParameterIndexingProxy`](@ref) is a wrapper around another type which implements the

@@ -35,6 +35,7 @@ observed
 ```@docs
 parameter_values
 set_parameter!
+finalize_parameters_hook!
 getp
 setp
 ParameterIndexingProxy
