@@ -452,3 +452,9 @@ idxs = @show rand(Bool, 10) # boolean mask for indexing
 sol.ps[:a, idxs]
 ```
 
+## Custom containers
+
+A custom container object (such as `ModelingToolkit.MTKParameters`) should implement
+[`remake_buffer`](@ref) to allow creating a new buffer with updated values, possibly
+with different types. This is already implemented for `AbstractArray`s (including static
+arrays).

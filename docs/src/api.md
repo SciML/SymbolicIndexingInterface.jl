@@ -53,6 +53,12 @@ getu
 setu
 ```
 
+## Container objects
+
+```@docs
+remake_buffer
+```
+
 ### Parameter timeseries
 
 If a solution object saves a timeseries of parameter values that are updated during the

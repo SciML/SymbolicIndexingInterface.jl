@@ -23,3 +23,6 @@ end
 @safetestset "State indexing test" begin
     @time include("state_indexing_test.jl")
 end
+@safetestset "Remake test" begin
+    @time include("remake_test.jl")
+end
