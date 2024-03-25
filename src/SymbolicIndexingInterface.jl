@@ -2,6 +2,9 @@ module SymbolicIndexingInterface
 
 import MacroTools
 using RuntimeGeneratedFunctions
+import StaticArraysCore: MArray, similar_type
+import ArrayInterface
+
 RuntimeGeneratedFunctions.init(@__MODULE__)
 
 export ScalarSymbolic, ArraySymbolic, NotSymbolic, symbolic_type, hasname, getname,
@@ -28,4 +31,7 @@ include("state_indexing.jl")
 
 export ParameterIndexingProxy
 include("parameter_indexing_proxy.jl")
+
+export remake_buffer
+include("remake.jl")
 end

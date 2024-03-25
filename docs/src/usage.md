@@ -182,3 +182,13 @@ parameter_values(prob)
     on other problem/solution instances can be the key to achieving good performance. Note
     that this caching is allowed only when the symbolic system is unchanged (it's fine for
     the numerical values to have changed, but not the underlying equations).
+
+## Re-creating a buffer
+
+To re-create a buffer (of unknowns or parameters) use [`remake_buffer`](@ref). This allows
+changing the type of values in the buffer (for example, changing the value of a parameter
+from `Float64` to `Float32`).
+
+```@example Usage
+remake_buffer(sys, prob.p, Dict(σ => 1f0, ρ => 2f0, β => 3f0))
+```
