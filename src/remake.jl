@@ -23,7 +23,7 @@ function remake_buffer(sys, oldbuffer::AbstractArray, vals::Dict)
         end
 
         newbuffer = similar(oldbuffer, elT)
-        setu(sys, keys(vals))(newbuffer, values(vals))
+        setu(sys, collect(keys(vals)))(newbuffer, values(vals))
     else
         mutbuffer = remake_buffer(sys, collect(oldbuffer), vals)
         newbuffer = similar_type(oldbuffer, eltype(mutbuffer))(mutbuffer)
