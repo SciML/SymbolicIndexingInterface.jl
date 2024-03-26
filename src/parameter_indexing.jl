@@ -7,12 +7,15 @@ argument version of this function returns the parameter value at index `i`. The
 two-argument version of this function will default to returning
 `parameter_values(p)[i]`.
 
-If this function is called with an `AbstractArray`, it will return the same array.
+If this function is called with an `AbstractArray` or `Tuple`, it will return the same
+array/tuple.
 """
 function parameter_values end
 
 parameter_values(arr::AbstractArray) = arr
+parameter_values(arr::Tuple) = arr
 parameter_values(arr::AbstractArray, i) = arr[i]
+parameter_values(arr::Tuple, i) = arr[i]
 parameter_values(prob, i) = parameter_values(parameter_values(prob), i)
 
 """
@@ -77,7 +80,8 @@ See: [`parameter_values`](@ref)
 """
 function set_parameter! end
 
-function set_parameter!(sys::AbstractArray, val, idx)
+# Tuple only included for the error message
+function set_parameter!(sys::Union{AbstractArray, Tuple}, val, idx)
     sys[idx] = val
 end
 set_parameter!(sys, val, idx) = set_parameter!(parameter_values(sys), val, idx)
