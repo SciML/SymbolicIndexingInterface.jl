@@ -88,4 +88,5 @@ symbolic_evaluate
 
 ```@docs
 SymbolCache
+ProblemState
 ```

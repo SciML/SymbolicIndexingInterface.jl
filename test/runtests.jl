@@ -26,3 +26,6 @@ end
 @safetestset "Remake test" begin
     @time include("remake_test.jl")
 end
+@safetestset "ProblemState test" begin
+    @time include("problem_state_test.jl")
+end
