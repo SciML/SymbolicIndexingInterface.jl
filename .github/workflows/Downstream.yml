@@ -20,6 +20,7 @@ jobs:
           - {user: SciML, repo: RecursiveArrayTools.jl, group: SymbolicIndexingInterface}
           - {user: JuliaSymbolics, repo: Symbolics.jl, group: SymbolicIndexingInterface}
           - {user: SciML, repo: SciMLBase.jl, group: SymbolicIndexingInterface}
+          - {user: SciML, repo: ModelingToolkit.jl, group: SymbolicIndexingInterface}
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v1

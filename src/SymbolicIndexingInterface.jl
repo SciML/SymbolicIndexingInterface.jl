@@ -31,6 +31,9 @@ include("parameter_indexing.jl")
 export state_values, set_state!, current_time, getu, setu
 include("state_indexing.jl")
 
+export ProblemState
+include("problem_state.jl")
+
 export ParameterIndexingProxy
 include("parameter_indexing_proxy.jl")
 
