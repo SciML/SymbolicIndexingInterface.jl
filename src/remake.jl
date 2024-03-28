@@ -30,3 +30,19 @@ function remake_buffer(sys, oldbuffer::AbstractArray, vals::Dict)
     end
     return newbuffer
 end
+
+mutable struct TupleRemakeWrapper
+    t::Tuple
+end
+
+function set_parameter!(sys::TupleRemakeWrapper, val, idx)
+    tp = sys.t
+    @reset tp[idx] = val
+    sys.t = tp
+end
+
+function remake_buffer(sys, oldbuffer::Tuple, vals::Dict)
+    wrap = TupleRemakeWrapper(oldbuffer)
+    setu(sys, collect(keys(vals)))(wrap, values(vals))
+    return wrap.t
+end
