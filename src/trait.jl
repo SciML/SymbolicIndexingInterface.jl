@@ -47,7 +47,7 @@ symbolic_type(::Type{Expr}) = ScalarSymbolic()
 """
     hasname(x)
 
-Check whether the given symbolic variable (for which `symbolic_type(x) != NotSymbolic()`) has a valid name as per `getname`.
+Check whether the given symbolic variable (for which `symbolic_type(x) != NotSymbolic()`) has a valid name as per `getname`. Defaults to `true` for `x::Symbol`.
 """
 function hasname end
 
@@ -57,9 +57,11 @@ hasname(::Any) = false
 """
     getname(x)::Symbol
 
-Get the name of a symbolic variable as a `Symbol`
+Get the name of a symbolic variable as a `Symbol`. Acts as the identity function for
+`x::Symbol`.
 """
 function getname end
+getname(x::Symbol) = x
 
 """
     symbolic_evaluate(expr, syms::Dict; kwargs...)

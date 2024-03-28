@@ -4,6 +4,7 @@ import MacroTools
 using RuntimeGeneratedFunctions
 import StaticArraysCore: MArray, similar_type
 import ArrayInterface
+using Accessors: @reset
 
 RuntimeGeneratedFunctions.init(@__MODULE__)
 
@@ -22,8 +23,9 @@ include("interface.jl")
 export SymbolCache
 include("symbol_cache.jl")
 
-export parameter_values, set_parameter!, parameter_values_at_time,
-       parameter_values_at_state_time, parameter_timeseries, getp, setp
+export parameter_values, set_parameter!, finalize_parameters_hook!,
+       parameter_values_at_time, parameter_values_at_state_time, parameter_timeseries, getp,
+       setp
 include("parameter_indexing.jl")
 
 export state_values, set_state!, current_time, getu, setu
