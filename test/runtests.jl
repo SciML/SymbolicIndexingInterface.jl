@@ -29,3 +29,6 @@ end
 @safetestset "ProblemState test" begin
     @time include("problem_state_test.jl")
 end
+@safetestset "BatchedInterface test" begin
+    @time include("batched_interface_test.jl")
+end
