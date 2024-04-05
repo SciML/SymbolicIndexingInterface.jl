@@ -47,3 +47,10 @@ setter!(probs..., buf)
 @test state_values(probs[3]) == [500.0, 100.0, 9.0]
 # Similarly for :f
 @test parameter_values(probs[3]) == [70.0, 80.0, 0.9]
+
+buf ./= 100
+setter!(probs[1], 1, buf)
+@test state_values(probs[1]) == [1.0, 2.0, 3.0]
+@test parameter_values(probs[1]) == [0.1, 0.2, 0.3]
+
+@test_throws ErrorException setter!(probs[1], 4, buf)
