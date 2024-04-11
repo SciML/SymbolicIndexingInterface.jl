@@ -11,7 +11,7 @@ returned buffer should be of the same type (ignoring type-parameters) as `oldbuf
 
 This method is already implemented for
 `remake_buffer(sys, oldbuffer::AbstractArray, vals::Dict)` and supports static arrays
-as well.
+as well. It is also implemented for `oldbuffer::Tuple`.
 """
 function remake_buffer(sys, oldbuffer::AbstractArray, vals::Dict)
     # similar when used with an `MArray` and nonconcrete eltype returns a
@@ -23,6 +23,7 @@ function remake_buffer(sys, oldbuffer::AbstractArray, vals::Dict)
         end
 
         newbuffer = similar(oldbuffer, elT)
+        copyto!(newbuffer, oldbuffer)
         setu(sys, collect(keys(vals)))(newbuffer, elT.(values(vals)))
     else
         mutbuffer = remake_buffer(sys, collect(oldbuffer), vals)
