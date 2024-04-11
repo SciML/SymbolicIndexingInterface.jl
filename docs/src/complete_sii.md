@@ -79,7 +79,7 @@ function SymbolicIndexingInterface.all_symbols(sys::ExampleSystem)
 end
 
 function SymbolicIndexingInterface.default_values(sys::ExampleSystem)
-  return sys.defaults
+    return sys.defaults
 end
 ```
 
@@ -360,8 +360,8 @@ Introducing a type to represent expression trees:
 
 ```julia
 struct MyExpr
-  op::Function
-  args::Vector{Union{MyExpr, MySym, MySymArr, Number, Array}}
+    op::Function
+    args::Vector{Union{MyExpr, MySym, MySymArr, Number, Array}}
 end
 ```
 
@@ -369,17 +369,17 @@ end
 
 ```julia
 function symbolic_evaluate(expr::Union{MySym, MySymArr}, syms::Dict)
-  get(syms, expr, expr)
+    get(syms, expr, expr)
 end
 function symbolic_evaluate(expr::MyExpr, syms::Dict)
-  for i in eachindex(expr.args)
-    if expr.args[i] isa Union{MySym, MySymArr, MyExpr}
-      expr.args[i] = symbolic_evaluate(expr.args[i], syms)
+    for i in eachindex(expr.args)
+        if expr.args[i] isa Union{MySym, MySymArr, MyExpr}
+            expr.args[i] = symbolic_evaluate(expr.args[i], syms)
+        end
     end
-  end
-  if all(x -> symbolic_type(x) === NotSymbolic(), expr.args)
-    return expr.op(expr.args...)
-  end
+    if all(x -> symbolic_type(x) === NotSymbolic(), expr.args)
+        return expr.op(expr.args...)
+    end
 end
 ```
 
@@ -429,7 +429,6 @@ end
 SymbolicIndexingInterface.parameter_timeseries(fs::ExampleSolution2) = fs.pt
 # Mark the object as a `Timeseries` object
 SymbolicIndexingInterface.is_timeseries(::Type{ExampleSolution2}) = Timeseries()
-    
 ```
 
 Now we can create an example object and observe the new functionality. Note that

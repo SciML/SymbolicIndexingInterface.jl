@@ -31,7 +31,7 @@ By default, this function returns `parameter_values(p)` regardless of `i`, and o
 to be specialized for timeseries objects where parameter values are not constant at all
 times. The resultant object should be indexable using [`parameter_values`](@ref).
 
-If this function is implemented, [`parameter_values_at_state_time`](@ref) must be 
+If this function is implemented, [`parameter_values_at_state_time`](@ref) must be
 implemented for [`getu`](@ref) to work correctly.
 """
 function parameter_values_at_time end

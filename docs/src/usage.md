@@ -218,5 +218,5 @@ changing the type of values in the buffer (for example, changing the value of a 
 from `Float64` to `Float32`).
 
 ```@example Usage
-remake_buffer(sys, prob.p, Dict(σ => 1f0, ρ => 2f0, β => 3f0))
+remake_buffer(sys, prob.p, Dict(σ => 1.0f0, ρ => 2.0f0, β => 3.0f0))
 ```
