@@ -90,3 +90,10 @@ symbolic_evaluate
 SymbolCache
 ProblemState
 ```
+
+### Batched Queries and Updates
+
+```@docs
+BatchedInterface
+associated_systems
+```
