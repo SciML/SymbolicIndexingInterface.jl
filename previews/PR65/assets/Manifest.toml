@@ -1084,9 +1084,9 @@ version = "0.1.2"
 
 [[deps.MatrixFactorizations]]
 deps = ["ArrayLayouts", "LinearAlgebra", "Printf", "Random"]
-git-tree-sha1 = "eecef9daff3b2b58cc666ee0c85d1b9889b6e98e"
+git-tree-sha1 = "58c42d3bc923cbad07c61770d513c33e08a23c5e"
 uuid = "a3b82374-2e81-5b9e-98ce-41277c0e4c87"
-version = "2.1.2"
+version = "2.1.3"
 
 [[deps.MaybeInplace]]
 deps = ["ArrayInterface", "LinearAlgebra", "MacroTools", "SparseArrays"]
