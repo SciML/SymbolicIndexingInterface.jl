@@ -50,10 +50,18 @@ function BatchedInterface(syssyms::Tuple...)
         symbol_subset = Int[]
         symbol_indexes = []
         system_isstate = BitVector()
+        allsyms = []
         for sym in syms
             if symbolic_type(sym) === NotSymbolic()
                 error("Only symbolic variables allowed in BatchedInterface.")
             end
+            if symbolic_type(sym) === ArraySymbolic()
+                append!(allsyms, collect(sym))
+            else
+                push!(allsyms, sym)
+            end
+        end
+        for sym in allsyms
             if !is_variable(sys, sym) && !is_parameter(sys, sym)
                 error("Only variables and parameters allowed in BatchedInterface.")
             end
