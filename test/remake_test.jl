@@ -7,17 +7,17 @@ for (buf, newbuf, newvals) in [
     # standard operation
     ([1.0, 2.0, 3.0], [2.0, 3.0, 4.0], Dict(:x => 2.0, :y => 3.0, :z => 4.0)),
     # buffer type "demotion"
-    ([1.0, 2.0, 3.0], [2, 3, 4], Dict(:x => 2, :y => 3, :z => 4)),
+    ([1.0, 2.0, 3.0], [2, 2, 3], Dict(:x => 2)),
     # buffer type promotion
-    ([1, 2, 3], [2.0, 3.0, 4.0], Dict(:x => 2.0, :y => 3.0, :z => 4.0)),
+    ([1, 2, 3], [2.0, 2.0, 3.0], Dict(:x => 2.0)),
     # value type promotion
     ([1, 2, 3], [2.0, 3.0, 4.0], Dict(:x => 2, :y => 3.0, :z => 4.0)),
     # standard operation
     ([1.0, 2.0, 3.0], [2.0, 3.0, 4.0], Dict(:a => 2.0, :b => 3.0, :c => 4.0)),
     # buffer type "demotion"
-    ([1.0, 2.0, 3.0], [2, 3, 4], Dict(:a => 2, :b => 3, :c => 4)),
+    ([1.0, 2.0, 3.0], [2, 2, 3], Dict(:a => 2)),
     # buffer type promotion
-    ([1, 2, 3], [2.0, 3.0, 4.0], Dict(:a => 2.0, :b => 3.0, :c => 4.0)),
+    ([1, 2, 3], [2.0, 2.0, 3.0], Dict(:a => 2.0)),
     # value type promotion
     ([1, 2, 3], [2, 3.0, 4.0], Dict(:a => 2, :b => 3.0, :c => 4.0))
 ]
