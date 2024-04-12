@@ -1738,7 +1738,7 @@ version = "7.2.1+1"
 deps = ["Accessors", "ArrayInterface", "MacroTools", "RuntimeGeneratedFunctions", "StaticArraysCore"]
 path = "/home/runner/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl"
 uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
-version = "0.3.15"
+version = "0.3.16"
 
 [[deps.SymbolicLimits]]
 deps = ["SymbolicUtils"]
