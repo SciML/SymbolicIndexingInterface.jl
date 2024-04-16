@@ -140,6 +140,11 @@ for (t1, t2) in [
 end
 
 function _getp(sys, ::ArraySymbolic, ::NotSymbolic, p)
+    if is_parameter(sys, p)
+        idx = parameter_index(sys, p)
+        return invoke(_getp, Tuple{Any, NotSymbolic, NotSymbolic, Any},
+            sys, NotSymbolic(), NotSymbolic(), idx)
+    end
     return getp(sys, collect(p))
 end
 
@@ -205,5 +210,9 @@ for (t1, t2) in [
 end
 
 function _setp(sys, ::ArraySymbolic, ::NotSymbolic, p)
+    if is_parameter(sys, p)
+        idx = parameter_index(sys, p)
+        return setp(sys, idx; run_hook = false)
+    end
     return setp(sys, collect(p); run_hook = false)
 end

@@ -165,6 +165,12 @@ for (t1, t2) in [
 end
 
 function _getu(sys, ::ArraySymbolic, ::NotSymbolic, sym)
+    if is_variable(sys, sym)
+        idx = variable_index(sys, sym)
+        return getu(sys, idx)
+    elseif is_parameter(sys, sym)
+        return getp(sys, sym)
+    end
     return getu(sys, collect(sym))
 end
 
@@ -221,5 +227,11 @@ for (t1, t2) in [
 end
 
 function _setu(sys, ::ArraySymbolic, ::NotSymbolic, sym)
+    if is_variable(sys, sym)
+        idx = variable_index(sys, sym)
+        return setu(sys, idx)
+    elseif is_parameter(sys, sym)
+        return setp(sys, sym)
+    end
     return setu(sys, collect(sym))
 end
