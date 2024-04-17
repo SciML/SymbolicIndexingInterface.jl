@@ -140,7 +140,13 @@ all_symbols(sys) = all_symbols(symbolic_container(sys))
 Return a dictionary mapping symbols in the system to their default value, if any. This
 includes parameter symbols. The dictionary must be mutable.
 """
-default_values(sys) = default_values(symbolic_container(sys))
+function default_values(sys)
+    if hasmethod(symbolic_container, Tuple{typeof(sys)})
+        default_values(symbolic_container(sys))
+    else
+        Dict()
+    end
+end
 
 struct SolvedVariables end
 
