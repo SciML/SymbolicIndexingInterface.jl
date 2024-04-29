@@ -5,9 +5,9 @@ All its methods can simply be forwarded to that object. To do so, SymbolicIndexi
 provides the [`symbolic_container`](@ref) method. For example,
 
 ```julia
-struct MySolutionWrapper{T<:SciMLBase.AbstractTimeseriesSolution}
-  sol::T
-  # other properties...
+struct MySolutionWrapper{T <: SciMLBase.AbstractTimeseriesSolution}
+    sol::T
+    # other properties...
 end
 
 symbolic_container(sys::MySolutionWrapper) = sys.sol

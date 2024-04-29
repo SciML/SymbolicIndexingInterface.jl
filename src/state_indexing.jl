@@ -41,7 +41,6 @@ the state value is saved. In this case, the two-argument version of the function
 also be implemented to efficiently return the time at timestep `i`. By default, the two-
 argument method calls `current_time(p)[i]`
 
-
 See: [`is_timeseries`](@ref)
 """
 function current_time end

@@ -77,7 +77,7 @@ not present as keys in `syms`.
 The function can take additional keyword arguments to control implementation-specific
 behavior.
 
-This is already implemented for 
+This is already implemented for
 `symbolic_evaluate(expr::Union{Symbol, Expr}, syms::Dict)`.
 """
 function symbolic_evaluate(expr::Union{Symbol, Expr}, syms::Dict)
