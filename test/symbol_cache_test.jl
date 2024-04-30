@@ -34,6 +34,17 @@ obsfn = observed(sc, :(x + a + t))
 obsfn2 = observed(sc, :(x + a + t))
 @test obsfn === obsfn2
 
+@test is_observed(sc, [:(x + a), :(a + t)])
+obsfn3 = observed(sc, [:(x + a), :(a + t)])
+@test obsfn3(ones(3), 2ones(2), 3.0) ≈ [3.0, 5.0]
+@test is_observed(sc, [:(x + a) :(y + b); :(x + y) :(a + b)])
+obsfn4 = observed(sc, [:(x + a) :(y + b); :(x + y) :(a + b)])
+@test size(obsfn4(ones(3), 2ones(2), 3.0)) == (2, 2)
+@test obsfn4(ones(3), 2ones(2), 3.0) ≈ [3.0 3.0; 2.0 4.0]
+@test is_observed(sc, (:(x + a), :(y + b)))
+obsfn5 = observed(sc, (:(x + a), :(y + b)))
+@test all(obsfn5(ones(3), 2ones(2), 3.0) .≈ (3.0, 3.0))
+
 sc = SymbolCache([:x, :y], [:a, :b])
 @test !is_time_dependent(sc)
 @test sort(all_symbols(sc)) == [:a, :b, :x, :y]

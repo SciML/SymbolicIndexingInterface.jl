@@ -1,6 +1,5 @@
 module SymbolicIndexingInterface
 
-import MacroTools
 using RuntimeGeneratedFunctions
 import StaticArraysCore: MArray, similar_type
 import ArrayInterface

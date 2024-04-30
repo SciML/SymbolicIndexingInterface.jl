@@ -69,37 +69,54 @@ function independent_variable_symbols(sc::SymbolCache)
 end
 is_observed(sc::SymbolCache, sym) = false
 is_observed(::SymbolCache, ::Expr) = true
+is_observed(::SymbolCache, ::AbstractArray{Expr}) = true
+is_observed(::SymbolCache, ::Tuple{Vararg{Expr}}) = true
+
+struct ExpressionSearcher
+    declared::Set{Symbol}
+    fnbody::Expr
+end
+
+ExpressionSearcher() = ExpressionSearcher(Set{Symbol}(), Expr(:block))
+
+function (exs::ExpressionSearcher)(sys, expr::Expr)
+    for arg in expr.args
+        exs(sys, arg)
+    end
+    exs(sys, expr.head)
+    return nothing
+end
+
+function (exs::ExpressionSearcher)(sys, sym::Symbol)
+    sym in exs.declared && return
+    if is_variable(sys, sym)
+        idx = variable_index(sys, sym)
+        push!(exs.fnbody.args, :($sym = u[$idx]))
+    elseif is_parameter(sys, sym)
+        idx = parameter_index(sys, sym)
+        push!(exs.fnbody.args, :($sym = p[$idx]))
+    elseif is_independent_variable(sys, sym)
+        push!(exs.fnbody.args, :($sym = t))
+    end
+    push!(exs.declared, sym)
+    return nothing
+end
+
+(::ExpressionSearcher)(sys, sym) = nothing
+
 function observed(sc::SymbolCache, expr::Expr)
     let cache = Dict{Expr, Function}()
         return get!(cache, expr) do
-            fnbody = Expr(:block)
-            declared = Set{Symbol}()
-            MacroTools.postwalk(expr) do sym
-                sym isa Symbol || return
-                sym in declared && return
-                if sc.variables !== nothing &&
-                   (idx = findfirst(isequal(sym), sc.variables)) !== nothing
-                    push!(fnbody.args, :($sym = u[$idx]))
-                    push!(declared, sym)
-                elseif sc.parameters !== nothing &&
-                       (idx = findfirst(isequal(sym), sc.parameters)) !== nothing
-                    push!(fnbody.args, :($sym = p[$idx]))
-                    push!(declared, sym)
-                elseif sym === sc.independent_variables ||
-                       sc.independent_variables isa Vector &&
-                       sym == only(sc.independent_variables)
-                    push!(fnbody.args, :($sym = t))
-                    push!(declared, sym)
-                end
-            end
+            exs = ExpressionSearcher()
+            exs(sc, expr)
             fnexpr = if is_time_dependent(sc)
                 :(function (u, p, t)
-                    $fnbody
+                    $(exs.fnbody)
                     return $expr
                 end)
             else
                 :(function (u, p)
-                    $fnbody
+                    $(exs.fnbody)
                     return $expr
                 end)
             end
@@ -107,6 +124,13 @@ function observed(sc::SymbolCache, expr::Expr)
         end
     end
 end
+function observed(sc::SymbolCache, exprs::AbstractArray{Expr})
+    return observed(sc, :(reshape([$(exprs...)], $(size(exprs)))))
+end
+function observed(sc::SymbolCache, exprs::Tuple{Vararg{Expr}})
+    return observed(sc, :(($(exprs...),)))
+end
+
 function is_time_dependent(sc::SymbolCache)
     sc.independent_variables === nothing && return false
     if symbolic_type(sc.independent_variables) == NotSymbolic()
