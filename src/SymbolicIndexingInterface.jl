@@ -24,11 +24,14 @@ export SymbolCache
 include("symbol_cache.jl")
 
 export parameter_values, set_parameter!, finalize_parameters_hook!,
-       parameter_values_at_time, parameter_values_at_state_time, parameter_timeseries, getp,
-       setp
+       parameter_values_at_time, parameter_values_at_state_time, parameter_timeseries,
+       state_values, set_state!, current_time
+include("value_provider_interface.jl")
+
+export getp, setp
 include("parameter_indexing.jl")
 
-export state_values, set_state!, current_time, getu, setu
+export getu, setu
 include("state_indexing.jl")
 
 export BatchedInterface, associated_systems

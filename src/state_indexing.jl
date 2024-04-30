@@ -1,50 +1,9 @@
-"""
-    state_values(p)
-    state_values(p, i)
-
-Return an indexable collection containing the values of all states in the integrator or
-problem `p`. If `is_timeseries(p)` is [`Timeseries`](@ref), return a vector of arrays,
-each of which contain the state values at the corresponding timestep. In this case, the
-two-argument version of the function can also be implemented to efficiently return
-the state values at timestep `i`. By default, the two-argument method calls
-`state_values(p)[i]`
-
-If this function is called with an `AbstractArray`, it will return the same array.
-
-See: [`is_timeseries`](@ref)
-"""
-function state_values end
 state_values(arr::AbstractArray) = arr
 state_values(arr, i) = state_values(arr)[i]
 
-"""
-    set_state!(sys, val, idx)
-
-Set the state at index `idx` to `val` for system `sys`. This defaults to modifying
-`state_values(sys)`. If any additional bookkeeping needs to be performed or the
-default implementation does not work for a particular type, this method needs to be
-defined to enable the proper functioning of [`setu`](@ref).
-
-See: [`state_values`](@ref)
-"""
 function set_state!(sys, val, idx)
     state_values(sys)[idx] = val
 end
-
-"""
-    current_time(p)
-    current_time(p, i)
-
-Return the current time in the integrator or problem `p`. If
-`is_timeseries(p)` is [`Timeseries`](@ref), return the vector of timesteps at which
-the state value is saved. In this case, the two-argument version of the function can
-also be implemented to efficiently return the time at timestep `i`. By default, the two-
-argument method calls `current_time(p)[i]`
-
-
-See: [`is_timeseries`](@ref)
-"""
-function current_time end
 
 current_time(p, i) = current_time(p)[i]
 
@@ -74,19 +33,68 @@ function getu(sys, sym)
     _getu(sys, symtype, elsymtype, sym)
 end
 
+struct GetStateIndex{I} <: AbstractIndexer
+    idx::I
+end
+function (gsi::GetStateIndex)(::Timeseries, prob)
+    getindex.(state_values(prob), (gsi.idx,))
+end
+function (gsi::GetStateIndex)(::Timeseries, prob, i)
+    getindex(state_values(prob, i), gsi.idx)
+end
+function (gsi::GetStateIndex)(::NotTimeseries, prob)
+    state_values(prob, gsi.idx)
+end
+
 function _getu(sys, ::NotSymbolic, ::NotSymbolic, sym)
-    _getter(::Timeseries, prob) = getindex.(state_values(prob), (sym,))
-    _getter(::Timeseries, prob, i) = getindex(state_values(prob, i), sym)
-    _getter(::NotTimeseries, prob) = state_values(prob, sym)
-    return let _getter = _getter
-        function getter(prob)
-            return _getter(is_timeseries(prob), prob)
-        end
-        function getter(prob, i)
-            return _getter(is_timeseries(prob), prob, i)
-        end
-        getter
-    end
+    return GetStateIndex(sym)
+end
+
+struct GetpAtStateTime{G} <: AbstractIndexer
+    getter::G
+end
+
+function (g::GetpAtStateTime)(::Timeseries, prob)
+    [g.getter(parameter_values_at_state_time(prob, i))
+     for i in eachindex(current_time(prob))]
+end
+function (g::GetpAtStateTime)(::Timeseries, prob, i)
+    g.getter(parameter_values_at_state_time(prob, i))
+end
+function (g::GetpAtStateTime)(::NotTimeseries, prob)
+    g.getter(prob)
+end
+
+struct GetIndepvar <: AbstractIndexer end
+
+(::GetIndepvar)(::IsTimeseriesTrait, prob) = current_time(prob)
+(::GetIndepvar)(::Timeseries, prob, i) = current_time(prob, i)
+
+struct TimeDependentObservedFunction{F} <: AbstractIndexer
+    obsfn::F
+end
+
+function (o::TimeDependentObservedFunction)(::Timeseries, prob)
+    curtime = current_time(prob)
+    return o.obsfn.(state_values(prob),
+        (parameter_values_at_state_time(prob, i) for i in eachindex(curtime)),
+        curtime)
+end
+function (o::TimeDependentObservedFunction)(::Timeseries, prob, i)
+    return o.obsfn(state_values(prob, i),
+        parameter_values_at_state_time(prob, i),
+        current_time(prob, i))
+end
+function (o::TimeDependentObservedFunction)(::NotTimeseries, prob)
+    return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
+end
+
+struct TimeIndependentObservedFunction{F} <: AbstractIndexer
+    obsfn::F
+end
+
+function (o::TimeIndependentObservedFunction)(::IsTimeseriesTrait, prob)
+    return o.obsfn(state_values(prob), parameter_values(prob))
 end
 
 function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
@@ -94,63 +102,41 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
         idx = variable_index(sys, sym)
         return getu(sys, idx)
     elseif is_parameter(sys, sym)
-        return let fn = getp(sys, sym)
-            _getter_p(::NotTimeseries, prob) = fn(prob)
-            function _getter_p(::Timeseries, prob)
-                [fn(parameter_values_at_state_time(prob, i))
-                 for i in eachindex(current_time(prob))]
-            end
-            _getter_p(::Timeseries, prob, i) = fn(parameter_values_at_state_time(prob, i))
-            let _getter = _getter_p
-                getter(prob, args...) = _getter(is_timeseries(prob), prob, args...)
-                getter
-            end
-        end
+        return GetpAtStateTime(getp(sys, sym))
     elseif is_independent_variable(sys, sym)
-        _getter(::IsTimeseriesTrait, prob) = current_time(prob)
-        _getter(::Timeseries, prob, i) = current_time(prob, i)
-        return let _getter = _getter
-            getter(prob) = _getter(is_timeseries(prob), prob)
-            getter(prob, i) = _getter(is_timeseries(prob), prob, i)
-            getter
-        end
+        return GetIndepvar()
     elseif is_observed(sys, sym)
         fn = observed(sys, sym)
         if is_time_dependent(sys)
-            function _getter2(::Timeseries, prob)
-                curtime = current_time(prob)
-                return fn.(state_values(prob),
-                    (parameter_values_at_state_time(prob, i) for i in eachindex(curtime)),
-                    curtime)
-            end
-            function _getter2(::Timeseries, prob, i)
-                return fn(state_values(prob, i),
-                    parameter_values_at_state_time(prob, i),
-                    current_time(prob, i))
-            end
-            function _getter2(::NotTimeseries, prob)
-                return fn(state_values(prob), parameter_values(prob), current_time(prob))
-            end
-
-            return let _getter2 = _getter2
-                function getter2(prob)
-                    return _getter2(is_timeseries(prob), prob)
-                end
-                function getter2(prob, i)
-                    return _getter2(is_timeseries(prob), prob, i)
-                end
-                getter2
-            end
+            return TimeDependentObservedFunction(fn)
         else
-            # if there is no time, there is no timeseries
-            return let fn = fn
-                function getter3(prob)
-                    return fn(state_values(prob), parameter_values(prob))
-                end
-            end
+            return TimeIndependentObservedFunction(fn)
         end
     end
     error("Invalid symbol $sym for `getu`")
+end
+
+struct MultipleGetters{G} <: AbstractIndexer
+    getters::G
+end
+
+function (mg::MultipleGetters)(::Timeseries, prob)
+    return broadcast(i -> map(g -> g(prob, i), mg.getters),
+        eachindex(state_values(prob)))
+end
+function (mg::MultipleGetters)(::Timeseries, prob, i)
+    return map(g -> g(prob, i), mg.getters)
+end
+function (mg::MultipleGetters)(::NotTimeseries, prob)
+    return map(g -> g(prob), mg.getters)
+end
+
+struct AsTupleWrapper{G} <: AbstractIndexer
+    getter::G
+end
+
+function (atw::AsTupleWrapper)(::IsTimeseriesTrait, args...)
+    return Tuple(atw.getter(args...))
 end
 
 for (t1, t2) in [
@@ -162,78 +148,18 @@ for (t1, t2) in [
         num_observed = count(x -> is_observed(sys, x), sym)
         if num_observed <= 1
             getters = getu.((sys,), sym)
-            _call(getter, args...) = getter(args...)
-            return let getters = getters, _call = _call
-                _getter(::NotTimeseries, prob) = map(g -> g(prob), getters)
-                function _getter(::Timeseries, prob)
-                    broadcast(i -> map(g -> _call(g, prob, i), getters),
-                        eachindex(state_values(prob)))
-                end
-                function _getter(::Timeseries, prob, i)
-                    return map(g -> _call(g, prob, i), getters)
-                end
-
-                # Need another scope for this to not box `_getter`
-                let _getter = _getter
-                    function getter(prob)
-                        return _getter(is_timeseries(prob), prob)
-                    end
-                    function getter(prob, i)
-                        return _getter(is_timeseries(prob), prob, i)
-                    end
-                    getter
-                end
-            end
+            return MultipleGetters(getters)
         else
             obs = observed(sys, sym isa Tuple ? collect(sym) : sym)
-            _getter2 = if is_time_dependent(sys)
-                let obs = obs, is_tuple = sym isa Tuple
-                    function _getter2a(::NotTimeseries, prob)
-                        obs(state_values(prob), parameter_values(prob), current_time(prob))
-                    end
-                    function _getter2a(::Timeseries, prob)
-                        curtime = current_time(prob)
-                        obs.(state_values(prob),
-                            (parameter_values_at_state_time(prob, i)
-                            for i in eachindex(curtime)),
-                            curtime)
-                    end
-                    function _getter2a(::Timeseries, prob, i)
-                        obs(state_values(prob, i),
-                            parameter_values_at_state_time(prob, i),
-                            current_time(prob, i))
-                    end
-                    _getter2a
-                end
+            getter = if is_timeseries(sys)
+                TimeDependentObservedFunction(obs)
             else
-                let obs = obs
-                    function _getter2b(::NotTimeseries, prob)
-                        obs(state_values(prob), parameter_values(prob))
-                    end
-                    _getter2b
-                end
+                TimeIndependentObservedFunction(obs)
             end
-            return if sym isa Tuple
-                let _getter2 = _getter2
-                    function getter2(prob)
-                        Tuple(_getter2(is_timeseries(prob), prob))
-                    end
-                    function getter2(prob, i)
-                        Tuple(_getter2(is_timeseries(prob), prob, i))
-                    end
-                    getter2
-                end
-            else
-                let _getter2 = _getter2
-                    function getter3(prob)
-                        _getter2(is_timeseries(prob), prob)
-                    end
-                    function getter3(prob, i)
-                        _getter2(is_timeseries(prob), prob, i)
-                    end
-                    getter3
-                end
+            if sym isa Tuple
+                getter = AsTupleWrapper(getter)
             end
+            return getter
         end
     end
 end
