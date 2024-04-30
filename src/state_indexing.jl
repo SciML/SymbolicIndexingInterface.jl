@@ -135,8 +135,14 @@ struct AsTupleWrapper{G} <: AbstractIndexer
     getter::G
 end
 
-function (atw::AsTupleWrapper)(::IsTimeseriesTrait, args...)
-    return Tuple(atw.getter(args...))
+function (atw::AsTupleWrapper)(::Timeseries, prob)
+    return Tuple.(atw.getter(prob))
+end
+function (atw::AsTupleWrapper)(::Timeseries, prob, i)
+    return Tuple(atw.getter(prob, i))
+end
+function (atw::AsTupleWrapper)(::NotTimeseries, prob)
+    return Tuple(atw.getter(prob))
 end
 
 for (t1, t2) in [
@@ -151,7 +157,7 @@ for (t1, t2) in [
             return MultipleGetters(getters)
         else
             obs = observed(sys, sym isa Tuple ? collect(sym) : sym)
-            getter = if is_timeseries(sys)
+            getter = if is_time_dependent(sys)
                 TimeDependentObservedFunction(obs)
             else
                 TimeIndependentObservedFunction(obs)

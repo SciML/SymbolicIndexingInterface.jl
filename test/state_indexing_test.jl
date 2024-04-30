@@ -75,6 +75,18 @@ for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
     @test get(u) == val
 end
 
+for (sym, val, check_inference) in [
+    (:(x + y), u[1] + u[2], true),
+    ([:(x + y), :z], [u[1] + u[2], u[3]], false),
+    ((:(x + y), :(z + y)), (u[1] + u[2], u[2] + u[3]), false)
+]
+    get = getu(sys, sym)
+    if check_inference
+        @inferred get(fi)
+    end
+    @test get(fi) == val
+end
+
 for (sym, oldval, newval, check_inference) in [(:a, p[1], 4.0, true)
                                                (:b, p[2], 5.0, true)
                                                (:c, p[3], 6.0, true)
@@ -101,7 +113,7 @@ end
 for (sym, val, check_inference) in [
     (:t, t, true),
     ([:x, :a, :t], [u[1], p[1], t], false),
-    ((:x, :a, :t), (u[1], p[1], t), true)
+    ((:x, :a, :t), (u[1], p[1], t), false)
 ]
     get = getu(fi, sym)
     if check_inference
@@ -180,6 +192,18 @@ for (sym, ans, check_inference) in [(:x, xvals, true)
         end
         @test get(sol, i) == ans[i]
     end
+end
+
+for (sym, val, check_inference) in [
+    (:(x + y), xvals .+ yvals, true),
+    ([:(x + y), :z], vcat.(xvals .+ yvals, zvals), false),
+    ((:(x + y), :(z + y)), tuple.(xvals .+ yvals, yvals .+ zvals), false)
+]
+    get = getu(sys, sym)
+    if check_inference
+        @inferred get(sol)
+    end
+    @test get(sol) == val
 end
 
 for (sym, val) in [(:a, p[1])
