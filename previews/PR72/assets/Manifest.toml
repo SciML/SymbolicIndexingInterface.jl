@@ -520,9 +520,9 @@ version = "0.3.2"
 
 [[deps.FastLapackInterface]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "0a59c7d1002f3131de53dc4568a47d15a44daef7"
+git-tree-sha1 = "f4102aab9c7df8691ed09f9c42e34f5ab5458ab9"
 uuid = "29a986be-02c6-4525-aec4-84b980013641"
-version = "2.0.2"
+version = "2.0.3"
 
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
@@ -1754,7 +1754,7 @@ version = "7.2.1+1"
 deps = ["Accessors", "ArrayInterface", "RuntimeGeneratedFunctions", "StaticArraysCore"]
 path = "/home/runner/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl"
 uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
-version = "0.3.19"
+version = "0.3.20"
 
 [[deps.SymbolicLimits]]
 deps = ["SymbolicUtils"]
