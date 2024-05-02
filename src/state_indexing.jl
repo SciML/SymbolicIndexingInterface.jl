@@ -8,21 +8,20 @@ end
 current_time(p, i) = current_time(p)[i]
 
 """
-    getu(sys, sym)
+    getu(indp, sym)
 
-Return a function that takes an integrator, problem or solution of `sys`, and returns
-the value of the symbolic `sym`. If `sym` is not an observed quantity, the returned
-function can also directly be called with an array of values representing the state
-vector. `sym` can be a direct index into the state vector, a symbolic state, a symbolic
-expression involving symbolic quantities in the system `sys`, a parameter symbol, or the
-independent variable symbol, or an array/tuple of the aforementioned. If the returned
-function is called with a timeseries object, it can also be given a second argument
-representing the index at which to find the value of `sym`.
+Return a function that takes a value provider and returns the value of the symbolic
+variable `sym`. If `sym` is not an observed quantity, the returned function can also
+directly be called with an array of values representing the state vector. `sym` can be an
+index into the state vector, a symbolic variable, a symbolic expression involving symbolic
+variables in the index provider `indp`, a parameter symbol, the independent variable
+symbol, or an array/tuple of the aforementioned. If the returned function is called with
+a timeseries object, it can also be given a second argument representing the index at
+which to return the value of `sym`.
 
-At minimum, this requires that the integrator, problem or solution implement
-[`state_values`](@ref). To support symbolic expressions, the integrator or problem
-must implement [`observed`](@ref), [`parameter_values`](@ref) and
-[`current_time`](@ref).
+At minimum, this requires that the value provider implement [`state_values`](@ref). To
+support symbolic expressions, the value provider must implement [`observed`](@ref),
+[`parameter_values`](@ref) and [`current_time`](@ref).
 
 This function typically does not need to be implemented, and has a default implementation
 relying on the above functions.
@@ -33,7 +32,7 @@ function getu(sys, sym)
     _getu(sys, symtype, elsymtype, sym)
 end
 
-struct GetStateIndex{I} <: AbstractIndexer
+struct GetStateIndex{I} <: AbstractGetIndexer
     idx::I
 end
 function (gsi::GetStateIndex)(::Timeseries, prob)
@@ -50,7 +49,7 @@ function _getu(sys, ::NotSymbolic, ::NotSymbolic, sym)
     return GetStateIndex(sym)
 end
 
-struct GetpAtStateTime{G} <: AbstractIndexer
+struct GetpAtStateTime{G} <: AbstractGetIndexer
     getter::G
 end
 
@@ -65,12 +64,12 @@ function (g::GetpAtStateTime)(::NotTimeseries, prob)
     g.getter(prob)
 end
 
-struct GetIndepvar <: AbstractIndexer end
+struct GetIndepvar <: AbstractGetIndexer end
 
 (::GetIndepvar)(::IsTimeseriesTrait, prob) = current_time(prob)
 (::GetIndepvar)(::Timeseries, prob, i) = current_time(prob, i)
 
-struct TimeDependentObservedFunction{F} <: AbstractIndexer
+struct TimeDependentObservedFunction{F} <: AbstractGetIndexer
     obsfn::F
 end
 
@@ -89,7 +88,7 @@ function (o::TimeDependentObservedFunction)(::NotTimeseries, prob)
     return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
 end
 
-struct TimeIndependentObservedFunction{F} <: AbstractIndexer
+struct TimeIndependentObservedFunction{F} <: AbstractGetIndexer
     obsfn::F
 end
 
@@ -116,7 +115,7 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     error("Invalid symbol $sym for `getu`")
 end
 
-struct MultipleGetters{G} <: AbstractIndexer
+struct MultipleGetters{G} <: AbstractGetIndexer
     getters::G
 end
 
@@ -131,12 +130,18 @@ function (mg::MultipleGetters)(::NotTimeseries, prob)
     return map(g -> g(prob), mg.getters)
 end
 
-struct AsTupleWrapper{G} <: AbstractIndexer
+struct AsTupleWrapper{G} <: AbstractGetIndexer
     getter::G
 end
 
-function (atw::AsTupleWrapper)(::IsTimeseriesTrait, args...)
-    return Tuple(atw.getter(args...))
+function (atw::AsTupleWrapper)(::Timeseries, prob)
+    return Tuple.(atw.getter(prob))
+end
+function (atw::AsTupleWrapper)(::Timeseries, prob, i)
+    return Tuple(atw.getter(prob, i))
+end
+function (atw::AsTupleWrapper)(::NotTimeseries, prob)
+    return Tuple(atw.getter(prob))
 end
 
 for (t1, t2) in [
@@ -151,7 +156,7 @@ for (t1, t2) in [
             return MultipleGetters(getters)
         else
             obs = observed(sys, sym isa Tuple ? collect(sym) : sym)
-            getter = if is_timeseries(sys)
+            getter = if is_time_dependent(sys)
                 TimeDependentObservedFunction(obs)
             else
                 TimeIndependentObservedFunction(obs)
@@ -179,15 +184,15 @@ end
 """
     setu(sys, sym)
 
-Return a function that takes an array representing the state vector or an integrator or
-problem of `sys`, and a value, and sets the the state `sym` to that value. Note that `sym`
-can be a direct index, a symbolic state, or an array/tuple of the aforementioned.
+Return a function that takes a value provider and a value, and sets the the state `sym` to
+that value. Note that `sym` can be an index, a symbolic variable, or an array/tuple of the
+aforementioned.
 
-Requires that the integrator implement [`state_values`](@ref) and the
-returned collection be a mutable reference to the state vector in the integrator/problem. Alternatively, if this is not possible or additional actions need to
-be performed when updating state, [`set_state!`](@ref) can be defined.
-This function does not work on types for which [`is_timeseries`](@ref) is
-[`Timeseries`](@ref).
+Requires that the value provider implement [`state_values`](@ref) and the returned
+collection be a mutable reference to the state vector in the value provider. Alternatively,
+if this is not possible or additional actions need to be performed when updating state,
+[`set_state!`](@ref) can be defined. This function does not work on types for which
+[`is_timeseries`](@ref) is [`Timeseries`](@ref).
 """
 function setu(sys, sym)
     symtype = symbolic_type(sym)
@@ -195,18 +200,22 @@ function setu(sys, sym)
     _setu(sys, symtype, elsymtype, sym)
 end
 
+struct SetStateIndex{I} <: AbstractSetIndexer
+    idx::I
+end
+
+function (ssi::SetStateIndex)(prob, val)
+    set_state!(prob, val, ssi.idx)
+end
+
 function _setu(sys, ::NotSymbolic, ::NotSymbolic, sym)
-    return function setter!(prob, val)
-        set_state!(prob, val, sym)
-    end
+    return SetStateIndex(sym)
 end
 
 function _setu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
-        return function setter!(prob, val)
-            set_state!(prob, val, idx)
-        end
+        return SetStateIndex(idx)
     elseif is_parameter(sys, sym)
         return setp(sys, sym)
     end
@@ -220,16 +229,18 @@ for (t1, t2) in [
 ]
     @eval function _setu(sys, ::NotSymbolic, ::$t1, sym::$t2)
         setters = setu.((sys,), sym)
-        return function setter!(prob, val)
-            map((s!, v) -> s!(prob, v), setters, val)
-        end
+        return MultipleSetters(setters)
     end
 end
 
 function _setu(sys, ::ArraySymbolic, ::NotSymbolic, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
-        return setu(sys, idx)
+        if idx isa AbstractArray
+            return MultipleSetters(SetStateIndex.(idx))
+        else
+            return SetStateIndex(idx)
+        end
     elseif is_parameter(sys, sym)
         return setp(sys, sym)
     end

@@ -17,7 +17,7 @@ export is_variable, variable_index, variable_symbols, is_parameter, parameter_in
        observed, is_time_dependent, constant_structure, symbolic_container,
        all_variable_symbols,
        all_symbols, solvedvariables, allvariables, default_values, symbolic_evaluate
-include("interface.jl")
+include("index_provider_interface.jl")
 
 export SymbolCache
 include("symbol_cache.jl")

@@ -1,14 +1,14 @@
 """
     struct BatchedInterface{S <: AbstractVector, I}
-    function BatchedInterface(syssyms::Tuple...)
+    function BatchedInterface(indp_syms::Tuple...)
 
 A struct which stores information for batched calls to [`getu`](@ref) or [`setu`](@ref).
-Given `Tuple`s, where the first element of each tuple is a system and the second an
-array of symbols (either variables or parameters) in the system, `BatchedInterface` will
-compute the union of all symbols and associate each symbol with the first system with
-which it occurs.
+Given `Tuple`s, where the first element of each tuple is an index provider and the second
+an array of symbolic variables (either states or parameters) in the index provider,
+`BatchedInterface` will compute the union of all symbols and associate each symbol with
+the first index provider with which it occurs.
 
-For example, given two systems `s1 = SymbolCache([:x, :y, :z])` and
+For example, given two index providers `s1 = SymbolCache([:x, :y, :z])` and
 `s2 = SymbolCache([:y, :z, :w])`, `BatchedInterface((s1, [:x, :y]), (s2, [:y, :z]))` will
 associate `:x` and `:y` with `s1` and `:z` with `s2`. The information that `s1` had
 associated symbols `:x` and `:y` and `s2` had associated symbols `:y` and `:z` will also
@@ -24,17 +24,17 @@ See also: [`associated_systems`](@ref).
 struct BatchedInterface{S <: AbstractVector, I, T}
     "Order of symbols in the union."
     symbol_order::S
-    "Index of the system each symbol in the union is associated with."
+    "Index of the index provider each symbol in the union is associated with."
     associated_systems::Vector{Int}
-    "Index of symbol in the system it is associated with."
+    "Index of symbol in the index provider it is associated with."
     associated_indexes::I
-    "Whether the symbol is a state in the system it is associated with."
+    "Whether the symbol is a state in the index provider it is associated with."
     isstate::BitVector
-    "Map from system to indexes of its symbols in the union."
+    "Map from index provider to indexes of its symbols in the union."
     system_to_symbol_subset::Vector{Vector{Int}}
-    "Map from system to indexes of its symbols in the system."
+    "Map from index provider to indexes of its symbols in the index provider."
     system_to_symbol_indexes::Vector{Vector{T}}
-    "Map from system to whether each of its symbols is a state in the system."
+    "Map from index provider to whether each of its symbols is a state in the index provider."
     system_to_isstate::Vector{BitVector}
 end
 
@@ -102,7 +102,7 @@ is_variable(bi::BatchedInterface, sym) = variable_index(bi, sym) !== nothing
     associated_systems(bi::BatchedInterface)
 
 Return an array of integers of the same length as `variable_symbols(bi)` where each value
-is the index of the system associated with the corresponding symbol in
+is the index of the index provider associated with the corresponding symbol in
 `variable_symbols(bi)`.
 """
 associated_systems(bi::BatchedInterface) = bi.associated_systems
@@ -110,18 +110,19 @@ associated_systems(bi::BatchedInterface) = bi.associated_systems
 """
     getu(bi::BatchedInterface)
 
-Given a [`BatchedInterface`](@ref) composed from `n` systems (and corresponding symbols),
-return a function which takes `n` corresponding problems and returns an array of the values
-of the symbols in the union. The returned function can also be passed an `AbstractArray` of
-the appropriate `eltype` and size as its first argument, in which case the operation will
-populate the array in-place with the values of the symbols in the union.
+Given a [`BatchedInterface`](@ref) composed from `n` index providers (and corresponding
+symbols), return a function which takes `n` corresponding value providers and returns an
+array of the values of the symbols in the union. The returned function can also be passed
+an `AbstractArray` of the appropriate `eltype` and size as its first argument, in which
+case the operation will populate the array in-place with the values of the symbols in the
+union.
 
-Note that all of the problems passed to the function returned by `getu` must satisfy
+Note that all of the value providers passed to the function returned by `getu` must satisfy
 `is_timeseries(prob) === NotTimeseries()`.
 
 The value of the `i`th symbol in the union (obtained through `variable_symbols(bi)[i]`) is
-obtained from the problem corresponding to the associated system (i.e. the problem at
-index `associated_systems(bi)[i]`).
+obtained from the problem corresponding to the associated index provider (i.e. the value
+provider at index `associated_systems(bi)[i]`).
 
 See also: [`variable_symbols`](@ref), [`associated_systems`](@ref), [`is_timeseries`](@ref),
 [`NotTimeseries`](@ref).
@@ -180,16 +181,16 @@ end
 """
     setu(bi::BatchedInterface)
 
-Given a [`BatchedInterface`](@ref) composed from `n` systems (and corresponding symbols),
-return a function which takes `n` corresponding problems and an array of the values, and
-updates each of the problems with the values of the corresponding symbols.
+Given a [`BatchedInterface`](@ref) composed from `n` index providers (and corresponding
+symbols), return a function which takes `n` corresponding problems and an array of the
+values, and updates each of the problems with the values of the corresponding symbols.
 
-Note that all of the problems passed to the function returned by `setu` must satisfy
+Note that all of the value providers passed to the function returned by `setu` must satisfy
 `is_timeseries(prob) === NotTimeseries()`.
 
-Note that if any subset of the `n` systems share common symbols (among those passed to
-`BatchedInterface`) then all of the corresponding problems in the subset will be updated
-with the values of the common symbols.
+Note that if any subset of the `n` index providers share common symbols (among those passed
+to `BatchedInterface`) then all of the corresponding value providers in the subset will be
+updated with the values of the common symbols.
 
 See also: [`is_timeseries`](@ref), [`NotTimeseries`](@ref).
 """

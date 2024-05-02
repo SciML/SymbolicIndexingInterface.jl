@@ -1,8 +1,8 @@
 """
-    remake_buffer(sys, oldbuffer, vals::Dict)
+    remake_buffer(indp, oldbuffer, vals::Dict)
 
 Return a copy of the buffer `oldbuffer` with values from `vals`. The keys of `vals`
-are symbolic variables whose index in the buffer is determined using `sys`. The types of
+are symbolic variables whose index in the buffer is determined using `indp`. The types of
 values in `vals` may not match the types of values stored at the corresponding indexes in
 the buffer, in which case the type of the buffer should be promoted accordingly. In
 general, this method should attempt to preserve the types of values stored in `vals` as
@@ -10,7 +10,7 @@ much as possible. Types can be promoted for type-stability, to maintain performa
 returned buffer should be of the same type (ignoring type-parameters) as `oldbuffer`.
 
 This method is already implemented for
-`remake_buffer(sys, oldbuffer::AbstractArray, vals::Dict)` and supports static arrays
+`remake_buffer(indp, oldbuffer::AbstractArray, vals::Dict)` and supports static arrays
 as well. It is also implemented for `oldbuffer::Tuple`.
 """
 function remake_buffer(sys, oldbuffer::AbstractArray, vals::Dict)

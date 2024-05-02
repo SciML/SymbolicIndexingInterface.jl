@@ -17,20 +17,21 @@ end
 set_parameter!(sys, val, idx) = set_parameter!(parameter_values(sys), val, idx)
 
 """
-    getp(sys, p)
+    getp(indp, sym)
 
-Return a function that takes an array representing the parameter object or an integrator
-or solution of `sys`, and returns the value of the parameter `p`. Note that `p` can be a
-direct index or a symbolic value, or an array/tuple of the aforementioned.
+Return a function that takes an value provider, and returns the value of the
+parameter `sym`. The value provider has to at least store the values of parameters
+in the corresponding index provider. Note that `sym` can be an index, symbolic variable,
+or an array/tuple of the aforementioned.
 
-If `p` is an array/tuple of parameters, then the returned function can also be used
-as an in-place getter function. The first argument is the buffer to which the parameter
-values should be written, and the second argument is the parameter object/integrator/
-solution from which the values are obtained.
+If `sym` is an array/tuple of parameters, then the returned function can also be used
+as an in-place getter function. The first argument is the buffer (must be an
+`AbstractArray`) to which the parameter values should be written, and the second argument
+is the value provider.
 
-Requires that the integrator or solution implement [`parameter_values`](@ref). This function
-typically does not need to be implemented, and has a default implementation relying on
-[`parameter_values`](@ref).
+Requires that the value provider implement [`parameter_values`](@ref). This function
+may not always need to be implemented, and has a default implementation for collections
+that implement `getindex`.
 
 If the returned function is used on a timeseries object which saves parameter timeseries, it
 can be used to index said timeseries. The timeseries object must implement
@@ -45,7 +46,7 @@ function getp(sys, p)
     _getp(sys, symtype, elsymtype, p)
 end
 
-struct GetParameterIndex{I} <: AbstractIndexer
+struct GetParameterIndex{I} <: AbstractGetIndexer
     idx::I
 end
 
@@ -78,7 +79,7 @@ function _getp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
         sys, NotSymbolic(), NotSymbolic(), idx)
 end
 
-struct MultipleParameterGetters{G}
+struct MultipleParameterGetters{G} <: AbstractGetIndexer
     getters::G
 end
 
@@ -148,50 +149,62 @@ function _getp(sys, ::ArraySymbolic, ::NotSymbolic, p)
     return getp(sys, collect(p))
 end
 
+struct ParameterHookWrapper{S, O} <: AbstractSetIndexer
+    setter::S
+    original_index::O
+end
+
+function (phw::ParameterHookWrapper)(prob, args...)
+    res = phw.setter(prob, args...)
+    finalize_parameters_hook!(prob, phw.original_index)
+    res
+end
+
 """
-    setp(sys, p)
+    setp(indp, sym)
 
-Return a function that takes an array representing the parameter vector or an integrator
-or problem of `sys`, and a value, and sets the parameter `p` to that value. Note that `p`
-can be a direct index or a symbolic value.
+Return a function that takes an index provider and a value, and sets the parameter `sym`
+to that value. Note that `sym` can be an index, a symbolic variable, or an array/tuple of
+the aforementioned.
 
-Requires that the integrator implement [`parameter_values`](@ref) and the returned
-collection be a mutable reference to the parameter vector in the integrator. In
-case `parameter_values` cannot return such a mutable reference, or additional actions
-need to be performed when updating parameters, [`set_parameter!`](@ref) must be
-implemented.
+Requires that the value provider implement [`parameter_values`](@ref) and the returned
+collection be a mutable reference to the parameter object. In case `parameter_values`
+cannot return such a mutable reference, or additional actions need to be performed when
+updating parameters, [`set_parameter!`](@ref) must be implemented.
 """
 function setp(sys, p; run_hook = true)
     symtype = symbolic_type(p)
     elsymtype = symbolic_type(eltype(p))
     return if run_hook
-        let _setter! = _setp(sys, symtype, elsymtype, p), p = p
-            function setter!(prob, args...)
-                res = _setter!(prob, args...)
-                finalize_parameters_hook!(prob, p)
-                res
-            end
-        end
+        return ParameterHookWrapper(_setp(sys, symtype, elsymtype, p), p)
     else
         _setp(sys, symtype, elsymtype, p)
     end
 end
 
+struct SetParameterIndex{I} <: AbstractSetIndexer
+    idx::I
+end
+
+function (spi::SetParameterIndex)(prob, val)
+    set_parameter!(prob, val, spi.idx)
+end
+
 function _setp(sys, ::NotSymbolic, ::NotSymbolic, p)
-    return let p = p
-        function setter!(sol, val)
-            set_parameter!(sol, val, p)
-        end
-    end
+    return SetParameterIndex(p)
 end
 
 function _setp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
     idx = parameter_index(sys, p)
-    return let idx = idx
-        function setter!(sol, val)
-            set_parameter!(sol, val, idx)
-        end
-    end
+    return SetParameterIndex(idx)
+end
+
+struct MultipleSetters{S} <: AbstractSetIndexer
+    setters::S
+end
+
+function (ms::MultipleSetters)(prob, val)
+    map((s!, v) -> s!(prob, v), ms.setters, val)
 end
 
 for (t1, t2) in [
@@ -201,11 +214,7 @@ for (t1, t2) in [
 ]
     @eval function _setp(sys, ::NotSymbolic, ::$t1, p::$t2)
         setters = setp.((sys,), p; run_hook = false)
-        return let setters = setters
-            function setter!(sol, val)
-                map((s!, v) -> s!(sol, v), setters, val)
-            end
-        end
+        return MultipleSetters(setters)
     end
 end
 

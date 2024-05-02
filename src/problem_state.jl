@@ -2,9 +2,9 @@
     struct ProblemState
     function ProblemState(; u = nothing, p = nothing, t = nothing)
 
-A struct which can be used as an argument to the function returned by [`getu`](@ref) or
-[`setu`](@ref). It stores the state vector, parameter object and current time, and
-forwards calls to [`state_values`](@ref), [`parameter_values`](@ref),
+A value provider struct which can be used as an argument to the function returned by
+[`getu`](@ref) or [`setu`](@ref). It stores the state vector, parameter object and
+current time, and forwards calls to [`state_values`](@ref), [`parameter_values`](@ref),
 [`current_time`](@ref), [`set_state!`](@ref), [`set_parameter!`](@ref) to the contained
 objects.
 """

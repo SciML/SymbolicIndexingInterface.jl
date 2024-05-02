@@ -1,6 +1,8 @@
 # Interface Functions
 
-## Mandatory methods
+## Index provider interface
+
+### Mandatory methods
 
 ```@docs
 symbolic_container
@@ -22,13 +24,15 @@ solvedvariables
 allvariables
 ```
 
-## Optional Methods
+### Optional Methods
 
-### Observed equation handling
+#### Observed equation handling
 
 ```@docs
 observed
 ```
+
+## Value provider interface
 
 ### Parameter indexing
 
@@ -40,6 +44,19 @@ getp
 setp
 ParameterIndexingProxy
 ```
+
+#### Parameter timeseries
+
+If a solution object saves a timeseries of parameter values that are updated during the
+simulation (such as by callbacks), it must implement the following methods to ensure
+correct functioning of [`getu`](@ref) and [`getp`](@ref).
+
+```@docs
+parameter_timeseries
+parameter_values_at_time
+parameter_values_at_state_time
+```
+
 
 ### State indexing
 
@@ -54,22 +71,17 @@ getu
 setu
 ```
 
+### Batched Queries and Updates
+
+```@docs
+BatchedInterface
+associated_systems
+```
+
 ## Container objects
 
 ```@docs
 remake_buffer
-```
-
-### Parameter timeseries
-
-If a solution object saves a timeseries of parameter values that are updated during the
-simulation (such as by callbacks), it must implement the following methods to ensure
-correct functioning of [`getu`](@ref) and [`getp`](@ref).
-
-```@docs
-parameter_timeseries
-parameter_values_at_time
-parameter_values_at_state_time
 ```
 
 # Symbolic Trait
@@ -89,11 +101,4 @@ symbolic_evaluate
 ```@docs
 SymbolCache
 ProblemState
-```
-
-### Batched Queries and Updates
-
-```@docs
-BatchedInterface
-associated_systems
 ```

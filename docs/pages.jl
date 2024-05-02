@@ -2,6 +2,7 @@
 
 pages = [
     "Home" => "index.md",
+    "Terminology" => "terminology.md",
     "Tutorials" => [
         "Using the SciML Symbolic Indexing Interface" => "usage.md",
         "Simple Demonstration of a Symbolic System Structure" => "simple_sii_sys.md",
