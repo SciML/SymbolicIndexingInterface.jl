@@ -33,7 +33,7 @@ function getu(sys, sym)
     _getu(sys, symtype, elsymtype, sym)
 end
 
-struct GetStateIndex{I} <: AbstractIndexer
+struct GetStateIndex{I} <: AbstractGetIndexer
     idx::I
 end
 function (gsi::GetStateIndex)(::Timeseries, prob)
@@ -50,7 +50,7 @@ function _getu(sys, ::NotSymbolic, ::NotSymbolic, sym)
     return GetStateIndex(sym)
 end
 
-struct GetpAtStateTime{G} <: AbstractIndexer
+struct GetpAtStateTime{G} <: AbstractGetIndexer
     getter::G
 end
 
@@ -65,12 +65,12 @@ function (g::GetpAtStateTime)(::NotTimeseries, prob)
     g.getter(prob)
 end
 
-struct GetIndepvar <: AbstractIndexer end
+struct GetIndepvar <: AbstractGetIndexer end
 
 (::GetIndepvar)(::IsTimeseriesTrait, prob) = current_time(prob)
 (::GetIndepvar)(::Timeseries, prob, i) = current_time(prob, i)
 
-struct TimeDependentObservedFunction{F} <: AbstractIndexer
+struct TimeDependentObservedFunction{F} <: AbstractGetIndexer
     obsfn::F
 end
 
@@ -89,7 +89,7 @@ function (o::TimeDependentObservedFunction)(::NotTimeseries, prob)
     return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
 end
 
-struct TimeIndependentObservedFunction{F} <: AbstractIndexer
+struct TimeIndependentObservedFunction{F} <: AbstractGetIndexer
     obsfn::F
 end
 
@@ -116,7 +116,7 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     error("Invalid symbol $sym for `getu`")
 end
 
-struct MultipleGetters{G} <: AbstractIndexer
+struct MultipleGetters{G} <: AbstractGetIndexer
     getters::G
 end
 
@@ -131,7 +131,7 @@ function (mg::MultipleGetters)(::NotTimeseries, prob)
     return map(g -> g(prob), mg.getters)
 end
 
-struct AsTupleWrapper{G} <: AbstractIndexer
+struct AsTupleWrapper{G} <: AbstractGetIndexer
     getter::G
 end
 
@@ -201,18 +201,22 @@ function setu(sys, sym)
     _setu(sys, symtype, elsymtype, sym)
 end
 
+struct SetStateIndex{I} <: AbstractSetIndexer
+    idx::I
+end
+
+function (ssi::SetStateIndex)(prob, val)
+    set_state!(prob, val, ssi.idx)
+end
+
 function _setu(sys, ::NotSymbolic, ::NotSymbolic, sym)
-    return function setter!(prob, val)
-        set_state!(prob, val, sym)
-    end
+    return SetStateIndex(sym)
 end
 
 function _setu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
-        return function setter!(prob, val)
-            set_state!(prob, val, idx)
-        end
+        return SetStateIndex(idx)
     elseif is_parameter(sys, sym)
         return setp(sys, sym)
     end
@@ -226,16 +230,18 @@ for (t1, t2) in [
 ]
     @eval function _setu(sys, ::NotSymbolic, ::$t1, sym::$t2)
         setters = setu.((sys,), sym)
-        return function setter!(prob, val)
-            map((s!, v) -> s!(prob, v), setters, val)
-        end
+        return MultipleSetters(setters)
     end
 end
 
 function _setu(sys, ::ArraySymbolic, ::NotSymbolic, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
-        return setu(sys, idx)
+        if idx isa AbstractArray
+            return MultipleSetters(SetStateIndex.(idx))
+        else
+            return SetStateIndex(idx)
+        end
     elseif is_parameter(sys, sym)
         return setp(sys, sym)
     end

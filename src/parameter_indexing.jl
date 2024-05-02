@@ -45,7 +45,7 @@ function getp(sys, p)
     _getp(sys, symtype, elsymtype, p)
 end
 
-struct GetParameterIndex{I} <: AbstractIndexer
+struct GetParameterIndex{I} <: AbstractGetIndexer
     idx::I
 end
 
@@ -78,7 +78,7 @@ function _getp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
         sys, NotSymbolic(), NotSymbolic(), idx)
 end
 
-struct MultipleParameterGetters{G}
+struct MultipleParameterGetters{G} <: AbstractGetIndexer
     getters::G
 end
 
@@ -148,6 +148,17 @@ function _getp(sys, ::ArraySymbolic, ::NotSymbolic, p)
     return getp(sys, collect(p))
 end
 
+struct ParameterHookWrapper{S, O} <: AbstractSetIndexer
+    setter::S
+    original_index::O
+end
+
+function (phw::ParameterHookWrapper)(prob, args...)
+    res = phw.setter(prob, args...)
+    finalize_parameters_hook!(prob, phw.original_index)
+    res
+end
+
 """
     setp(sys, p)
 
@@ -165,33 +176,35 @@ function setp(sys, p; run_hook = true)
     symtype = symbolic_type(p)
     elsymtype = symbolic_type(eltype(p))
     return if run_hook
-        let _setter! = _setp(sys, symtype, elsymtype, p), p = p
-            function setter!(prob, args...)
-                res = _setter!(prob, args...)
-                finalize_parameters_hook!(prob, p)
-                res
-            end
-        end
+        return ParameterHookWrapper(_setp(sys, symtype, elsymtype, p), p)
     else
         _setp(sys, symtype, elsymtype, p)
     end
 end
 
+struct SetParameterIndex{I} <: AbstractSetIndexer
+    idx::I
+end
+
+function (spi::SetParameterIndex)(prob, val)
+    set_parameter!(prob, val, spi.idx)
+end
+
 function _setp(sys, ::NotSymbolic, ::NotSymbolic, p)
-    return let p = p
-        function setter!(sol, val)
-            set_parameter!(sol, val, p)
-        end
-    end
+    return SetParameterIndex(p)
 end
 
 function _setp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
     idx = parameter_index(sys, p)
-    return let idx = idx
-        function setter!(sol, val)
-            set_parameter!(sol, val, idx)
-        end
-    end
+    return SetParameterIndex(idx)
+end
+
+struct MultipleSetters{S} <: AbstractSetIndexer
+    setters::S
+end
+
+function (ms::MultipleSetters)(prob, val)
+    map((s!, v) -> s!(prob, v), ms.setters, val)
 end
 
 for (t1, t2) in [
@@ -201,11 +214,7 @@ for (t1, t2) in [
 ]
     @eval function _setp(sys, ::NotSymbolic, ::$t1, p::$t2)
         setters = setp.((sys,), p; run_hook = false)
-        return let setters = setters
-            function setter!(sol, val)
-                map((s!, v) -> s!(sol, v), setters, val)
-            end
-        end
+        return MultipleSetters(setters)
     end
 end
 

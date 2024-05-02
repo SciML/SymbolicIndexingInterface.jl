@@ -139,5 +139,8 @@ function current_time end
 
 abstract type AbstractIndexer end
 
-(ai::AbstractIndexer)(prob) = ai(is_timeseries(prob), prob)
-(ai::AbstractIndexer)(prob, i) = ai(is_timeseries(prob), prob, i)
+abstract type AbstractGetIndexer <: AbstractIndexer end
+abstract type AbstractSetIndexer <: AbstractIndexer end
+
+(ai::AbstractGetIndexer)(prob) = ai(is_timeseries(prob), prob)
+(ai::AbstractGetIndexer)(prob, i) = ai(is_timeseries(prob), prob, i)
