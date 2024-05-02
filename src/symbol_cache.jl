@@ -2,7 +2,7 @@
     struct SymbolCache{V,P,I}
     function SymbolCache(vars, [params, [indepvars]])
 
-A struct implementing the symbolic indexing interface for the trivial case of having a
+A struct implementing the index provider interface for the trivial case of having a
 vector of variables, parameters, and independent variables. It is considered time
 dependent if it contains at least one independent variable. It returns `true` for
 `is_observed(::SymbolCache, sym)` if `sym isa Expr`. Functions can be generated using

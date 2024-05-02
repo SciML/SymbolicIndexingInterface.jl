@@ -8,21 +8,20 @@ end
 current_time(p, i) = current_time(p)[i]
 
 """
-    getu(sys, sym)
+    getu(indp, sym)
 
-Return a function that takes an integrator, problem or solution of `sys`, and returns
-the value of the symbolic `sym`. If `sym` is not an observed quantity, the returned
-function can also directly be called with an array of values representing the state
-vector. `sym` can be a direct index into the state vector, a symbolic state, a symbolic
-expression involving symbolic quantities in the system `sys`, a parameter symbol, or the
-independent variable symbol, or an array/tuple of the aforementioned. If the returned
-function is called with a timeseries object, it can also be given a second argument
-representing the index at which to find the value of `sym`.
+Return a function that takes a value provider and returns the value of the symbolic
+variable `sym`. If `sym` is not an observed quantity, the returned function can also
+directly be called with an array of values representing the state vector. `sym` can be an
+index into the state vector, a symbolic variable, a symbolic expression involving symbolic
+variables in the index provider `indp`, a parameter symbol, the independent variable
+symbol, or an array/tuple of the aforementioned. If the returned function is called with
+a timeseries object, it can also be given a second argument representing the index at
+which to return the value of `sym`.
 
-At minimum, this requires that the integrator, problem or solution implement
-[`state_values`](@ref). To support symbolic expressions, the integrator or problem
-must implement [`observed`](@ref), [`parameter_values`](@ref) and
-[`current_time`](@ref).
+At minimum, this requires that the value provider implement [`state_values`](@ref). To
+support symbolic expressions, the value provider must implement [`observed`](@ref),
+[`parameter_values`](@ref) and [`current_time`](@ref).
 
 This function typically does not need to be implemented, and has a default implementation
 relying on the above functions.
@@ -185,15 +184,15 @@ end
 """
     setu(sys, sym)
 
-Return a function that takes an array representing the state vector or an integrator or
-problem of `sys`, and a value, and sets the the state `sym` to that value. Note that `sym`
-can be a direct index, a symbolic state, or an array/tuple of the aforementioned.
+Return a function that takes a value provider and a value, and sets the the state `sym` to
+that value. Note that `sym` can be an index, a symbolic variable, or an array/tuple of the
+aforementioned.
 
-Requires that the integrator implement [`state_values`](@ref) and the
-returned collection be a mutable reference to the state vector in the integrator/problem. Alternatively, if this is not possible or additional actions need to
-be performed when updating state, [`set_state!`](@ref) can be defined.
-This function does not work on types for which [`is_timeseries`](@ref) is
-[`Timeseries`](@ref).
+Requires that the value provider implement [`state_values`](@ref) and the returned
+collection be a mutable reference to the state vector in the value provider. Alternatively,
+if this is not possible or additional actions need to be performed when updating state,
+[`set_state!`](@ref) can be defined. This function does not work on types for which
+[`is_timeseries`](@ref) is [`Timeseries`](@ref).
 """
 function setu(sys, sym)
     symtype = symbolic_type(sym)
