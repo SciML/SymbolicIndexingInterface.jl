@@ -34,6 +34,19 @@ observed
 
 ## Value provider interface
 
+### State indexing
+
+```@docs
+Timeseries
+NotTimeseries
+is_timeseries
+state_values
+set_state!
+current_time
+getu
+setu
+```
+
 ### Parameter indexing
 
 ```@docs
@@ -52,23 +65,10 @@ simulation (such as by callbacks), it must implement the following methods to en
 correct functioning of [`getu`](@ref) and [`getp`](@ref).
 
 ```@docs
+is_parameter_timeseries
 parameter_timeseries
 parameter_values_at_time
 parameter_values_at_state_time
-```
-
-
-### State indexing
-
-```@docs
-Timeseries
-NotTimeseries
-is_timeseries
-state_values
-set_state!
-current_time
-getu
-setu
 ```
 
 ### Batched Queries and Updates

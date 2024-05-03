@@ -8,7 +8,7 @@ using Accessors: @reset
 RuntimeGeneratedFunctions.init(@__MODULE__)
 
 export ScalarSymbolic, ArraySymbolic, NotSymbolic, symbolic_type, hasname, getname,
-       Timeseries, NotTimeseries, is_timeseries
+       Timeseries, NotTimeseries, is_timeseries, is_parameter_timeseries
 include("trait.jl")
 
 export is_variable, variable_index, variable_symbols, is_parameter, parameter_index,

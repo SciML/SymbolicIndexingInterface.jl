@@ -56,6 +56,12 @@ In code samples, a value provider is typically denoted with the name `valp`.
     providers. This allows for several syntactic improvements. The [`symbolic_container`](@ref)
     function is useful in defining such objects.
 
-!!! note "Timeseries objects"
-    The documentation uses "Timeseries objects" to refer to value providers which implement
-    the [`Timeseries`](@ref) variant of the [`is_timeseries`](@ref) trait.
+### Timeseries objects
+
+Timeseries objects are value providers which implement the [`Timeseries`](@ref) variant of
+the [`is_timeseries`](@ref) trait.
+
+### Parameter timeseries objects
+
+Parameter timeseries objects are timeseries objects which implement the
+[`Timeseries`](@ref) variant of the [`is_parameter_timeseries`](@ref) trait.
