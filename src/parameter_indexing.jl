@@ -140,7 +140,7 @@ for (t1, t2) in [
     end
 end
 
-function _getp(sys, ::ArraySymbolic, ::NotSymbolic, p)
+function _getp(sys, ::ArraySymbolic, ::SymbolicTypeTrait, p)
     if is_parameter(sys, p)
         idx = parameter_index(sys, p)
         return invoke(_getp, Tuple{Any, NotSymbolic, NotSymbolic, Any},
@@ -218,7 +218,7 @@ for (t1, t2) in [
     end
 end
 
-function _setp(sys, ::ArraySymbolic, ::NotSymbolic, p)
+function _setp(sys, ::ArraySymbolic, ::SymbolicTypeTrait, p)
     if is_parameter(sys, p)
         idx = parameter_index(sys, p)
         return setp(sys, idx; run_hook = false)
