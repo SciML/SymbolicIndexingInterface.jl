@@ -124,6 +124,7 @@ function SymbolicIndexingInterface.parameter_values_at_state_time(fs::FakeSoluti
 end
 SymbolicIndexingInterface.parameter_timeseries(fs::FakeSolution) = fs.pt
 SymbolicIndexingInterface.is_timeseries(::Type{FakeSolution}) = Timeseries()
+SymbolicIndexingInterface.is_parameter_timeseries(::Type{FakeSolution}) = Timeseries()
 sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
 fs = FakeSolution(
     sys,
