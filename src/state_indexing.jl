@@ -169,7 +169,7 @@ for (t1, t2) in [
     end
 end
 
-function _getu(sys, ::ArraySymbolic, ::NotSymbolic, sym)
+function _getu(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
         return getu(sys, idx)
@@ -233,7 +233,7 @@ for (t1, t2) in [
     end
 end
 
-function _setu(sys, ::ArraySymbolic, ::NotSymbolic, sym)
+function _setu(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
         if idx isa AbstractArray
