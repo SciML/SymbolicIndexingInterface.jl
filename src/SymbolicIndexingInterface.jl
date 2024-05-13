@@ -27,6 +27,9 @@ export parameter_values, set_parameter!, finalize_parameters_hook!,
        state_values, set_state!, current_time
 include("value_provider_interface.jl")
 
+export ParameterTimeseriesCollection
+include("parameter_timeseries_collection.jl")
+
 export getp, setp
 include("parameter_indexing.jl")
 
