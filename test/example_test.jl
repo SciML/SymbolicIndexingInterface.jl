@@ -71,6 +71,8 @@ sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], :t)
 @test all(.!is_parameter.((sys,), [:x, :y, :z, :t, :p, :q, :r]))
 @test all(parameter_index.((sys,), [:c, :a, :b]) .== [3, 1, 2])
 @test all(parameter_index.((sys,), [:x, :y, :z, :t, :p, :q, :r]) .=== nothing)
+@test all(.!is_timeseries_parameter.((sys,), [:x, :y, :z, :t, :p, :q, :r])) # fallback even if not implemented
+@test all(timeseries_parameter_index.((sys,), [:x, :y, :z, :t, :p, :q, :r]) .=== nothing) # fallback
 @test is_independent_variable(sys, :t)
 @test all(.!is_independent_variable.((sys,), [:x, :y, :z, :a, :b, :c, :p, :q, :r]))
 @test all(is_observed.((sys,), [:x, :y, :z, :a, :b, :c, :t]))
@@ -88,6 +90,7 @@ sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], :t)
 @test independent_variable_symbols(sys) == [:t]
 @test all_variable_symbols(sys) == [:x, :y, :z]
 @test sort(all_symbols(sys)) == [:a, :b, :c, :t, :x, :y, :z]
+@test default_values(sys) == Dict() # fallback even if not implemented
 
 sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], nothing)
 

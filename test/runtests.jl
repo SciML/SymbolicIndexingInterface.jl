@@ -27,6 +27,9 @@ if GROUP == "All" || GROUP == "Core"
     @safetestset "Fallback test" begin
         @time include("fallback_test.jl")
     end
+    @safetestset "ParameterTimeseriesCollection test" begin
+        @time include("parameter_timeseries_collection_test.jl")
+    end
     @safetestset "Parameter indexing test" begin
         @time include("parameter_indexing_test.jl")
     end
