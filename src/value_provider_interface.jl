@@ -23,10 +23,12 @@ parameter_values(arr::Tuple, i) = arr[i]
 parameter_values(prob, i) = parameter_values(parameter_values(prob), i)
 
 """
-    get_parameter_timeseries_collection(valp)
+    parameter_values_at_time(valp, t)
 
-Return the [`ParameterTimeseriesCollection`](@ref) stored in `valp`. Only required for
-parameter timeseries objects.
+Return an indexable collection containing the value of all parameters in `valp` at time
+`t`. Note that `t` here is a floating-point time, and not an index into a timeseries.
+
+This is useful for parameter timeseries objects, since some parameters change over time.
 """
 function get_parameter_timeseries_collection end
 

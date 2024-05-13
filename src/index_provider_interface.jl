@@ -98,6 +98,23 @@ function timeseries_parameter_index(indp, sym)
     end
 end
 
+"""
+    struct ParameterObservedFunction
+    function ParameterObservedFunction(timeseries_idx, observed_fn::Function)
+    function ParameterObservedFunction(observed_fn::Function)
+
+A struct which stores the parameter observed function and optional timeseries index for
+a particular symbol. The timeseries index is optional and may be omitted. Specifying the
+timeseries index allows [`getp`](@ref) to return the appropriate timeseries for a
+timeseries parameter.
+
+For time-dependent index providers (where `is_time_dependent(indp)`) `observed_fn` must
+have the signature `(p, t) -> [values...]`. For non-time-dependent index providers
+(where `!is_time_dependent(indp)`) `observed_fn` must have the signature
+`(p) -> [values...]`. To support in-place `getp` methods, `observed_fn` must also have an
+additional method which takes `buffer::AbstractArray` as its first argument. The required
+values must be written to the buffer in the appropriate order.
+"""
 struct ParameterObservedFunction{I, F <: Function}
     timeseries_idx::I
     observed_fn::F
@@ -106,10 +123,11 @@ end
 """
     parameter_observed(indp, sym)
 
-Return the observed function of `sym` in `indp`. The returned function must have the
-signature `(p, t) -> [values...]` where `p` is the parameter object and `t` is the
-current time. If `!is_time_dependent(indp)` then the returned function must have the
-signature `(p) -> [values...]`.
+Return the observed function of `sym` in `indp` as a [`ParameterObservedFunction`](@ref).
+If `sym` only involves variables from a single parameter timeseries (optionally along
+with non-timeseries parameters) the timeseries index of the parameter timeseries should
+be provided in the `ParameterObservedFunction`. In all other cases, just the observed
+function should be returned as part of the object.
 """
 parameter_observed(indp, sym) = parameter_observed(symbolic_container(indp), sym)
 
