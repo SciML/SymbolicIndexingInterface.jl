@@ -19,12 +19,24 @@ function remake_buffer(sys, oldbuffer::AbstractArray, vals::Dict)
     if ArrayInterface.ismutable(oldbuffer) && !isa(oldbuffer, MArray)
         elT = Union{}
         for val in values(vals)
-            elT = promote_type(elT, typeof(val))
+            if val isa AbstractArray
+                valT = eltype(val)
+            else
+                valT = typeof(val)
+            end
+            elT = promote_type(elT, valT)
         end
 
         newbuffer = similar(oldbuffer, elT)
         copyto!(newbuffer, oldbuffer)
-        setu(sys, collect(keys(vals)))(newbuffer, elT.(values(vals)))
+        for (k, v) in vals
+            if v isa AbstractArray
+                v = elT.(v)
+            else
+                v = elT(v)
+            end
+            setu(sys, k)(newbuffer, v)
+        end
     else
         mutbuffer = remake_buffer(sys, collect(oldbuffer), vals)
         newbuffer = similar_type(oldbuffer, eltype(mutbuffer))(mutbuffer)
