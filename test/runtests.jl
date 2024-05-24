@@ -45,6 +45,9 @@ if GROUP == "All" || GROUP == "Core"
     @safetestset "BatchedInterface test" begin
         @time include("batched_interface_test.jl")
     end
+    @safetestset "Simple Adjoints test" begin
+        @time include("simple_adjoints_test.jl")
+    end
 end
 
 if GROUP == "All" || GROUP == "Downstream"

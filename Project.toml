@@ -19,6 +19,7 @@ SafeTestsets = "0.0.1"
 StaticArrays = "1.9"
 StaticArraysCore = "1.4"
 Test = "1"
+Zygote = "0.6.67"
 julia = "1.10"
 
 [extras]
@@ -27,6 +28,7 @@ Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["Aqua", "Pkg", "Test", "SafeTestsets", "StaticArrays"]
+test = ["Aqua", "Pkg", "Test", "SafeTestsets", "StaticArrays", "Zygote"]
