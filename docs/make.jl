@@ -12,7 +12,8 @@ makedocs(sitename = "SymbolicIndexingInterface.jl",
     format = Documenter.HTML(analytics = "UA-90474609-3",
         assets = ["assets/favicon.ico"],
         canonical = "https://docs.sciml.ai/SymbolicIndexingInterface/stable/"),
-    pages = pages)
+    pages = pages,
+    checkdocs = :exports)
 
 deploydocs(repo = "github.com/SciML/SymbolicIndexingInterface.jl.git";
     push_preview = true)
