@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Implementing the Complete Symbolic Indexing Interface · SymbolicIndexingInterface.jl</title><meta name="title" content="Implementing the Complete Symbolic Indexing Interface · SymbolicIndexingInterface.jl"/><meta property="og:title" content="Implementing the Complete Symbolic Indexing Interface · SymbolicIndexingInterface.jl"/><meta property="twitter:title" content="Implementing the Complete Symbolic Indexing Interface · SymbolicIndexingInterface.jl"/><meta name="description" content="Documentation for SymbolicIndexingInterface.jl."/><meta property="og:description" content="Documentation for SymbolicIndexingInterface.jl."/><meta property="twitter:description" content="Documentation for SymbolicIndexingInterface.jl."/><meta property="og:url" content="https://docs.sciml.ai/SymbolicIndexingInterface/stable/complete_sii/"/><meta property="twitter:url" content="https://docs.sciml.ai/SymbolicIndexingInterface/stable/complete_sii/"/><link rel="canonical" href="https://docs.sciml.ai/SymbolicIndexingInterface/stable/complete_sii/"/><script async src="https://www.googletagmanager.com/gtag/js?id=UA-90474609-3"></script><script>  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-90474609-3', {'page_path': location.pathname + location.search + location.hash});
+</script><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="SymbolicIndexingInterface.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">SymbolicIndexingInterface.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../terminology/">Terminology</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../usage/">Using the SciML Symbolic Indexing Interface</a></li><li><a class="tocitem" href="../simple_sii_sys/">Simple Demonstration of a Symbolic System Structure</a></li><li class="is-active"><a class="tocitem" href>Implementing the Complete Symbolic Indexing Interface</a><ul class="internal"><li><a class="tocitem" href="#Index-Provider-Interface"><span>Index Provider Interface</span></a></li><li><a class="tocitem" href="#Value-Provider-Interface"><span>Value Provider Interface</span></a></li><li><a class="tocitem" href="#The-ParameterIndexingProxy"><span>The <code>ParameterIndexingProxy</code></span></a></li><li><a class="tocitem" href="#Parameter-Timeseries"><span>Parameter Timeseries</span></a></li><li><a class="tocitem" href="#Custom-containers"><span>Custom containers</span></a></li><li class="toplevel"><a class="tocitem" href="#Implementing-the-SymbolicTypeTrait-for-a-type"><span>Implementing the <code>SymbolicTypeTrait</code> for a type</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../solution_wrappers/">Defining Solution Wrapper Fallbacks</a></li><li><a class="tocitem" href="../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Implementing the Complete Symbolic Indexing Interface</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Implementing the Complete Symbolic Indexing Interface</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/SymbolicIndexingInterface.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/SymbolicIndexingInterface.jl/blob/master/docs/src/complete_sii.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Implementing-the-Complete-Symbolic-Indexing-Interface"><a class="docs-heading-anchor" href="#Implementing-the-Complete-Symbolic-Indexing-Interface">Implementing the Complete Symbolic Indexing Interface</a><a id="Implementing-the-Complete-Symbolic-Indexing-Interface-1"></a><a class="docs-heading-anchor-permalink" href="#Implementing-the-Complete-Symbolic-Indexing-Interface" title="Permalink"></a></h1><h2 id="Index-Provider-Interface"><a class="docs-heading-anchor" href="#Index-Provider-Interface">Index Provider Interface</a><a id="Index-Provider-Interface-1"></a><a class="docs-heading-anchor-permalink" href="#Index-Provider-Interface" title="Permalink"></a></h2><p>This tutorial will show how to define the entire Symbolic Indexing Interface on an <code>ExampleSystem</code>:</p><pre><code class="language-julia hljs">struct ExampleSystem
+  state_index::Dict{Symbol,Int}
+  parameter_index::Dict{Symbol,Int}
+  independent_variable::Union{Symbol,Nothing}
+  defaults::Dict{Symbol, Float64}
+  # mapping from observed variable to Expr to calculate its value
+  observed::Dict{Symbol,Expr}
+end</code></pre><p>Not all the methods in the interface are required. Some only need to be implemented if a type supports specific functionality. Consider the following struct, which needs to implement the interface:</p><h3 id="Mandatory-methods"><a class="docs-heading-anchor" href="#Mandatory-methods">Mandatory methods</a><a id="Mandatory-methods-1"></a><a class="docs-heading-anchor-permalink" href="#Mandatory-methods" title="Permalink"></a></h3><h4 id="Simple-Indexing-Functions"><a class="docs-heading-anchor" href="#Simple-Indexing-Functions">Simple Indexing Functions</a><a id="Simple-Indexing-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-Indexing-Functions" title="Permalink"></a></h4><p>These are the simple functions which describe how to turn symbols into indices.</p><pre><code class="language-julia hljs">function SymbolicIndexingInterface.is_variable(sys::ExampleSystem, sym)
+  haskey(sys.state_index, sym)
+end
+
+function SymbolicIndexingInterface.variable_index(sys::ExampleSystem, sym)
+  get(sys.state_index, sym, nothing)
+end
+
+function SymbolicIndexingInterface.variable_symbols(sys::ExampleSystem)
+  collect(keys(sys.state_index))
+end
+
+function SymbolicIndexingInterface.is_parameter(sys::ExampleSystem, sym)
+  haskey(sys.parameter_index, sym)
+end
+
+function SymbolicIndexingInterface.parameter_index(sys::ExampleSystem, sym)
+  get(sys.parameter_index, sym, nothing)
+end
+
+function SymbolicIndexingInterface.parameter_symbols(sys::ExampleSystem)
+  collect(keys(sys.parameter_index))
+end
+
+function SymbolicIndexingInterface.is_independent_variable(sys::ExampleSystem, sym)
+  # note we have to check separately for `nothing`, otherwise
+  # `is_independent_variable(p, nothing)` would return `true`.
+  sys.independent_variable !== nothing &amp;&amp; sym === sys.independent_variable
+end
+
+function SymbolicIndexingInterface.independent_variable_symbols(sys::ExampleSystem)
+  sys.independent_variable === nothing ? [] : [sys.independent_variable]
+end
+
+function SymbolicIndexingInterface.is_time_dependent(sys::ExampleSystem)
+  sys.independent_variable !== nothing
+end
+
+SymbolicIndexingInterface.constant_structure(::ExampleSystem) = true
+
+function SymbolicIndexingInterface.all_solvable_symbols(sys::ExampleSystem)
+  return vcat(
+    collect(keys(sys.state_index)),
+    collect(keys(sys.observed)),
+  )
+end
+
+function SymbolicIndexingInterface.all_symbols(sys::ExampleSystem)
+  return vcat(
+    all_solvable_symbols(sys),
+    collect(keys(sys.parameter_index)),
+    sys.independent_variable === nothing ? Symbol[] : sys.independent_variable
+  )
+end
+
+function SymbolicIndexingInterface.default_values(sys::ExampleSystem)
+  return sys.defaults
+end</code></pre><h4 id="Observed-Equation-Handling"><a class="docs-heading-anchor" href="#Observed-Equation-Handling">Observed Equation Handling</a><a id="Observed-Equation-Handling-1"></a><a class="docs-heading-anchor-permalink" href="#Observed-Equation-Handling" title="Permalink"></a></h4><p>These are for handling symbolic expressions and generating equations which are not directly in the solution vector.</p><pre><code class="language-julia hljs">using RuntimeGeneratedFunctions
+RuntimeGeneratedFunctions.init(@__MODULE__)
+
+# this type accepts `Expr` for observed expressions involving state/parameter/observed
+# variables
+SymbolicIndexingInterface.is_observed(sys::ExampleSystem, sym) = sym isa Expr || sym isa Symbol &amp;&amp; haskey(sys.observed, sym)
+
+function SymbolicIndexingInterface.observed(sys::ExampleSystem, sym::Expr)
+  # generate a function with the appropriate signature
+  if is_time_dependent(sys)
+    fn_expr = :(
+      function gen(u, p, t)
+        # assign a variable for each state symbol it&#39;s value in u
+        $([:($var = u[$idx]) for (var, idx) in pairs(sys.state_index)]...)
+        # assign a variable for each parameter symbol it&#39;s value in p
+        $([:($var = p[$idx]) for (var, idx) in pairs(sys.parameter_index)]...)
+        # assign a variable for the independent variable
+        $(sys.independent_variable) = t
+        # return the value of the expression
+        return $sym
+      end
+    )
+  else
+    fn_expr = :(
+      function gen(u, p)
+        # assign a variable for each state symbol it&#39;s value in u
+        $([:($var = u[$idx]) for (var, idx) in pairs(sys.state_index)]...)
+        # assign a variable for each parameter symbol it&#39;s value in p
+        $([:($var = p[$idx]) for (var, idx) in pairs(sys.parameter_index)]...)
+        # return the value of the expression
+        return $sym
+      end
+    )
+  end
+  return @RuntimeGeneratedFunction(fn_expr)
+end</code></pre><p>In case a type does not support such observed quantities, <code>is_observed</code> must be defined to always return <code>false</code>, and <code>observed</code> does not need to be implemented.</p><p>The same process can be followed for <a href="../api/#SymbolicIndexingInterface.parameter_observed"><code>parameter_observed</code></a>, with the exception that the returned function must not have <code>u</code> in its signature, and must be wrapped in a <a href="../api/#SymbolicIndexingInterface.ParameterObservedFunction"><code>ParameterObservedFunction</code></a>. In-place versions can also be implemented for <code>parameter_observed</code>.</p><h4 id="Note-about-constant-structure"><a class="docs-heading-anchor" href="#Note-about-constant-structure">Note about constant structure</a><a id="Note-about-constant-structure-1"></a><a class="docs-heading-anchor-permalink" href="#Note-about-constant-structure" title="Permalink"></a></h4><p>Note that the method definitions are all assuming <code>constant_structure(p) == true</code>.</p><p>In case <code>constant_structure(p) == false</code>, the following methods would change:</p><ul><li><code>constant_structure(::ExampleSystem) = false</code></li><li><code>variable_index(sys::ExampleSystem, sym)</code> would become <code>variable_index(sys::ExampleSystem, sym i)</code> where <code>i</code> is the time index at which the index of <code>sym</code> is required.</li><li><code>variable_symbols(sys::ExampleSystem)</code> would become <code>variable_symbols(sys::ExampleSystem, i)</code> where <code>i</code> is the time index at which the variable symbols are required.</li><li><code>observed(sys::ExampleSystem, sym)</code> would become <code>observed(sys::ExampleSystem, sym, i)</code> where <code>i</code> is either the time index at which the index of <code>sym</code> is required or a <code>Vector</code> of state symbols at the current time index.</li></ul><h3 id="Optional-methods"><a class="docs-heading-anchor" href="#Optional-methods">Optional methods</a><a id="Optional-methods-1"></a><a class="docs-heading-anchor-permalink" href="#Optional-methods" title="Permalink"></a></h3><p>Note that <code>observed</code> is optional if <code>is_observed</code> is always <code>false</code>, or the type is only responsible for identifying observed values and <code>observed</code> will always be called on a type that wraps this type. An example is <code>ModelingToolkit.AbstractSystem</code>, which can identify whether a value is observed, but cannot implement <code>observed</code> itself.</p><h2 id="Value-Provider-Interface"><a class="docs-heading-anchor" href="#Value-Provider-Interface">Value Provider Interface</a><a id="Value-Provider-Interface-1"></a><a class="docs-heading-anchor-permalink" href="#Value-Provider-Interface" title="Permalink"></a></h2><p>Other interface methods relate to indexing functions. If a type contains the values of parameter variables, it must implement <a href="../api/#SymbolicIndexingInterface.parameter_values"><code>parameter_values</code></a>. This allows the default definitions of <a href="../api/#SymbolicIndexingInterface.getp"><code>getp</code></a> and <a href="../api/#SymbolicIndexingInterface.setp"><code>setp</code></a> to work. While <code>setp</code> is not typically useful for solution objects, it may be useful for integrators. Typically, the default implementations for <code>getp</code> and <code>setp</code> will suffice, and manually defining them is not necessary.</p><pre><code class="language-julia hljs">function SymbolicIndexingInterface.parameter_values(sys::ExampleSystem)
+  sys.p
+end</code></pre><p>If a type contains the value of state variables, it can define <a href="../api/#SymbolicIndexingInterface.state_values"><code>state_values</code></a> to enable the usage of <a href="../api/#SymbolicIndexingInterface.getu"><code>getu</code></a> and <a href="../api/#SymbolicIndexingInterface.setu"><code>setu</code></a>. These methods retturn getter/ setter functions to access or update the value of a state variable (or a collection of them). If the type also supports generating <a href="../api/#SymbolicIndexingInterface.observed"><code>observed</code></a> functions, <code>getu</code> also enables returning functions to access the value of arbitrary expressions involving the system&#39;s symbols. This also requires that the type implement <a href="../api/#SymbolicIndexingInterface.parameter_values"><code>parameter_values</code></a> and <a href="../api/#SymbolicIndexingInterface.current_time"><code>current_time</code></a> (if the system is time-dependent).</p><p>Consider the following <code>ExampleIntegrator</code></p><pre><code class="language-julia hljs">mutable struct ExampleIntegrator
+  u::Vector{Float64}
+  p::Vector{Float64}
+  t::Float64
+  sys::ExampleSystem
+end
+
+# define a fallback for the interface methods
+SymbolicIndexingInterface.symbolic_container(integ::ExampleIntegrator) = integ.sys
+SymbolicIndexingInterface.state_values(sys::ExampleIntegrator) = sys.u
+SymbolicIndexingInterface.parameter_values(sys::ExampleIntegrator) = sys.p
+SymbolicIndexingInterface.current_time(sys::ExampleIntegrator) = sys.t</code></pre><p>Then the following example would work:</p><pre><code class="language-julia hljs">sys = ExampleSystem(Dict(:x =&gt; 1, :y =&gt; 2, :z =&gt; 3), Dict(:a =&gt; 1, :b =&gt; 2), :t, Dict())
+integrator = ExampleIntegrator([1.0, 2.0, 3.0], [4.0, 5.0], 6.0, sys)
+getx = getu(sys, :x)
+getx(integrator) # 1.0
+
+get_expr = getu(sys, :(x + y + t))
+get_expr(integrator) # 13.0
+
+setx! = setu(sys, :y)
+setx!(integrator, 0.0)
+getx(integrator) # 0.0</code></pre><p>In case a type stores timeseries data (such as solutions), then it must also implement the <a href="../api/#SymbolicIndexingInterface.Timeseries"><code>Timeseries</code></a> trait. The type would then return a timeseries from <a href="../api/#SymbolicIndexingInterface.state_values"><code>state_values</code></a> and <a href="../api/#SymbolicIndexingInterface.current_time"><code>current_time</code></a> and the function returned from <a href="../api/#SymbolicIndexingInterface.getu"><code>getu</code></a> would then return a timeseries as well. For example, consider the <code>ExampleSolution</code> below:</p><pre><code class="language-julia hljs">struct ExampleSolution
+  u::Vector{Vector{Float64}}
+  t::Vector{Float64}
+  p::Vector{Float64}
+  sys::ExampleSystem
+end
+
+# define a fallback for the interface methods
+SymbolicIndexingInterface.symbolic_container(sol::ExampleSolution) = sol.sys
+SymbolicIndexingInterface.parameter_values(sol::ExampleSolution) = sol.p
+# define the trait
+SymbolicIndexingInterface.is_timeseries(::Type{ExampleSolution}) = Timeseries()
+# both state_values and current_time return a timeseries, which must be
+# the same length
+SymbolicIndexingInterface.state_values(sol::ExampleSolution) = sol.u
+SymbolicIndexingInterface.current_time(sol::ExampleSolution) = sol.t</code></pre><p>Then the following example would work:</p><pre><code class="language-julia hljs"># using the same system that the ExampleIntegrator used
+sol = ExampleSolution([[1.0, 2.0, 3.0], [1.5, 2.5, 3.5]], [4.0, 5.0], [6.0, 7.0], sys)
+getx = getu(sys, :x)
+getx(sol) # [1.0, 1.5]
+
+get_expr = getu(sys, :(x + y + t))
+get_expr(sol) # [9.0, 11.0]
+
+get_arr = getu(sys, [:y, :(x + a)])
+get_arr(sol) # [[2.0, 5.0], [2.5, 5.5]]
+
+get_tuple = getu(sys, (:z, :(z * t)))
+get_tuple(sol) # [(3.0, 18.0), (3.5, 24.5)]</code></pre><p>Note that <code>setu</code> is not designed to work for <code>Timeseries</code> objects.</p><p>If a type needs to perform some additional actions when updating the state/parameters or if it is not possible to return a mutable reference to the state/parameter vector which can directly be modified, the functions <a href="../api/#SymbolicIndexingInterface.set_state!"><code>set_state!</code></a> and/or <a href="../api/#SymbolicIndexingInterface.set_parameter!"><code>set_parameter!</code></a> can be used. For example, suppose our <code>ExampleIntegrator</code> had an additional field <code>u_modified::Bool</code> to allow it to keep track of when a discontinuity occurs and handle it appropriately. This flag needs to be set to <code>true</code> whenever the state is modified. The <code>set_state!</code> function can then be implemented as follows:</p><pre><code class="language-julia hljs">function SymbolicIndexingInterface.set_state!(integrator::ExampleIntegrator, val, idx)
+  integrator.u[idx] = val
+  integrator.u_modified = true
+end</code></pre><h3 id="Using-finalize_parameters_hook!"><a class="docs-heading-anchor" href="#Using-finalize_parameters_hook!">Using <code>finalize_parameters_hook!</code></a><a id="Using-finalize_parameters_hook!-1"></a><a class="docs-heading-anchor-permalink" href="#Using-finalize_parameters_hook!" title="Permalink"></a></h3><p>The function <a href="../api/#SymbolicIndexingInterface.finalize_parameters_hook!"><code>finalize_parameters_hook!</code></a> is called exactly <em>once</em> every time the function returned by <code>setp</code> is called. This allows performing any additional bookkeeping required when parameter values are updated. <a href="../api/#SymbolicIndexingInterface.set_parameter!"><code>set_parameter!</code></a> also allows performing similar functionality, but is called for every parameter that is updated, instead of just once. Thus, <code>finalize_parameters_hook!</code> is better for expensive computations that can be performed for a bulk parameter update.</p><h2 id="The-ParameterIndexingProxy"><a class="docs-heading-anchor" href="#The-ParameterIndexingProxy">The <code>ParameterIndexingProxy</code></a><a id="The-ParameterIndexingProxy-1"></a><a class="docs-heading-anchor-permalink" href="#The-ParameterIndexingProxy" title="Permalink"></a></h2><p><a href="../api/#SymbolicIndexingInterface.ParameterIndexingProxy"><code>ParameterIndexingProxy</code></a> is a wrapper around another type which implements the interface and allows using <a href="../api/#SymbolicIndexingInterface.getp"><code>getp</code></a> and <a href="../api/#SymbolicIndexingInterface.setp"><code>setp</code></a> to get and set parameter  values. This allows for a cleaner interface for parameter indexing. Consider the following example for <code>ExampleIntegrator</code>:</p><pre><code class="language-julia hljs">function Base.getproperty(obj::ExampleIntegrator, sym::Symbol)
+  if sym === :ps
+    return ParameterIndexingProxy(obj)
+  else
+    return getfield(obj, sym)
+  end
+end</code></pre><p>This enables the following API:</p><pre><code class="language-julia hljs">integrator = ExampleIntegrator([1.0, 2.0, 3.0], [4.0, 5.0], 6.0, Dict(:x =&gt; 1, :y =&gt; 2, :z =&gt; 3), Dict(:a =&gt; 1, :b =&gt; 2), :t)
+
+integrator.ps[:a] # 4.0
+getp(integrator, :a)(integrator) # functionally the same as above
+
+integrator.ps[:b] = 3.0
+setp(integrator, :b)(integrator, 3.0) # functionally the same as above</code></pre><h2 id="Parameter-Timeseries"><a class="docs-heading-anchor" href="#Parameter-Timeseries">Parameter Timeseries</a><a id="Parameter-Timeseries-1"></a><a class="docs-heading-anchor-permalink" href="#Parameter-Timeseries" title="Permalink"></a></h2><p>If a solution object includes modified parameter values (such as through callbacks) during the simulation, it must implement several additional functions for correct functioning of <a href="../api/#SymbolicIndexingInterface.getu"><code>getu</code></a> and <a href="../api/#SymbolicIndexingInterface.getp"><code>getp</code></a>. <a href="../api/#SymbolicIndexingInterface.ParameterTimeseriesCollection"><code>ParameterTimeseriesCollection</code></a> helps in implementing parameter timeseries objects. The following mockup gives an example of correct implementation of these functions and the indexing syntax they enable.</p><pre><code class="language-julia hljs">using SymbolicIndexingInterface
+
+# First, we must implement a parameter object that knows where the parameters in
+# each parameter timeseries are stored
+struct MyParameterObject
+    p::Vector{Float64}
+    disc_idxs::Vector{Vector{Int}}
+end
+
+# To be able to access parameter values
+SymbolicIndexingInterface.parameter_values(mpo::MyParameterObject) = mpo.p
+# Update the parameter object with new values
+function SymbolicIndexingInterface.with_updated_parameter_timeseries_values(mpo::MyParameterObject, args::Pair...)
+    for (ts_idx, val) in args
+        mpo.p[mpo.disc_idxs[ts_idx]] = val
+    end
+    return mpo
+end
+
+struct ExampleSolution2
+    sys::SymbolCache
+    u::Vector{Vector{Float64}}
+    t::Vector{Float64}
+    p::MyParameterObject # the parameter object. Only some parameters are timeseries params
+    p_ts::ParameterTimeseriesCollection
+end
+
+# Add the `:ps` property to automatically wrap in `ParameterIndexingProxy`
+function Base.getproperty(fs::ExampleSolution2, s::Symbol)
+    s === :ps ? ParameterIndexingProxy(fs) : getfield(fs, s)
+end
+# Use the contained `SymbolCache` for indexing
+SymbolicIndexingInterface.symbolic_container(fs::ExampleSolution2) = fs.sys
+# State indexing methods
+SymbolicIndexingInterface.state_values(fs::ExampleSolution2) = fs.u
+SymbolicIndexingInterface.current_time(fs::ExampleSolution2) = fs.t
+# By default, `parameter_values` refers to the last value
+SymbolicIndexingInterface.parameter_values(fs::ExampleSolution2) = fs.p
+SymbolicIndexingInterface.get_parameter_timeseries_collection(fs::ExampleSolution2) = fs.p_ts
+# Mark the object as a timeseries object
+SymbolicIndexingInterface.is_timeseries(::Type{ExampleSolution2}) = Timeseries()
+# Mark the object as a parameter timeseries object
+SymbolicIndexingInterface.is_parameter_timeseries(::Type{ExampleSolution2}) = Timeseries()</code></pre><p>We will also need a timeseries object which will store individual parameter timeseries. <code>DiffEqArray</code> in <code>RecursiveArrayTools.jl</code> satisfies this use case, but we will implement one manually here.</p><pre><code class="language-julia hljs">struct MyDiffEqArray
+  t::Vector{Float64}
+  u::Vector{Vector{Float64}}
+end
+
+# Must be a timeseries object, and implement `current_time` and `state_values`
+SymbolicIndexingInterface.is_timeseries(::Type{MyDiffEqArray}) = Timeseries()
+SymbolicIndexingInterface.current_time(a::MyDiffEqArray) = a.t
+SymbolicIndexingInterface.state_values(a::MyDiffEqArray) = a.u</code></pre><p>Now we can create an example object and observe the new functionality. Note that <code>sol.ps[sym, args...]</code> is identical to <code>getp(sol, sym)(sol, args...)</code>. In a real application, the solution object will be populated during the solve process. We manually construct the object here for demonstration.</p><pre><code class="language-julia hljs">sys = SymbolCache(
+  [:x, :y, :z], [:a, :b, :c, :d], :t;
+  # specify that :b, :c and :d are timeseries parameters
+  # :b and :c belong to the same timeseries
+  # :d is in a different timeseries
+  timeseries_parameters = Dict(
+    :b =&gt; ParameterTimeseriesIndex(1, 1),
+    :c =&gt; ParameterTimeseriesIndex(1, 2),
+    :d =&gt; ParameterTimeseriesIndex(2, 1),
+  ))
+b_c_timeseries = MyDiffEqArray(
+  collect(0.0:0.1:1.0),
+  [[0.25i, 0.35i] for i in 1:11]
+)
+d_timeseries = MyDiffEqArray(
+  collect(0.0:0.2:1.0),
+  [[0.17i] for i in 1:6]
+)
+p = MyParameterObject(
+  # parameter values at the final time
+  [4.2, b_c_timeseries.u[end]..., d_timeseries.u[end]...],
+  [[2, 3], [4]]
+)
+sol = ExampleSolution2(
+    sys,
+    [i * ones(3) for i in 1:5], # u
+    collect(0.0:0.25:1.0), # t
+    p,
+    ParameterTimeseriesCollection([b_c_timeseries, d_timeseries], deepcopy(p))
+)
+sol.ps[:a] # returns the value of non-timeseries parameter</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4.2</code></pre><pre><code class="language-julia hljs">sol.ps[:b] # returns the timeseries of :b</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">11-element Vector{Float64}:
+ 0.25
+ 0.5
+ 0.75
+ 1.0
+ 1.25
+ 1.5
+ 1.75
+ 2.0
+ 2.25
+ 2.5
+ 2.75</code></pre><pre><code class="language-julia hljs">sol.ps[:b, 3] # index at a specific index in the parameter timeseries</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.75</code></pre><pre><code class="language-julia hljs">sol.ps[:b, [3, 6, 8]] # index using arrays</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Float64}:
+ 0.75
+ 1.5
+ 2.0</code></pre><pre><code class="language-julia hljs">idxs = @show rand(Bool, 11) # boolean mask for indexing
+sol.ps[:b, idxs]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">9-element Vector{Float64}:
+ 0.25
+ 0.5
+ 1.0
+ 1.5
+ 1.75
+ 2.0
+ 2.25
+ 2.5
+ 2.75</code></pre><pre><code class="language-julia hljs">sol.ps[[:a, :b]] # returns the values at the last timestep, since :a is not timeseries</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Float64}:
+ 4.2
+ 2.75</code></pre><pre><code class="language-julia hljs"># throws an error since :b and :d belong to different timeseries
+try
+  sol.ps[[:b, :d]]
+catch e
+  @show e
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">SymbolicIndexingInterface.MixedParameterTimeseriesIndexError(Main.ExampleSolution2(SymbolCache{Dict{Symbol, Int64}, Dict{Symbol, Int64}, Dict{Symbol, ParameterTimeseriesIndex{Int64, Int64}}, Symbol, Dict{Any, Any}}(Dict(:y =&gt; 2, :z =&gt; 3, :x =&gt; 1), Dict(:a =&gt; 1, :b =&gt; 2, :d =&gt; 4, :c =&gt; 3), Dict{Symbol, ParameterTimeseriesIndex{Int64, Int64}}(:b =&gt; ParameterTimeseriesIndex{Int64, Int64}(1, 1), :d =&gt; ParameterTimeseriesIndex{Int64, Int64}(2, 1), :c =&gt; ParameterTimeseriesIndex{Int64, Int64}(1, 2)), :t, Dict{Any, Any}()), [[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0], [4.0, 4.0, 4.0], [5.0, 5.0, 5.0]], [0.0, 0.25, 0.5, 0.75, 1.0], Main.MyParameterObject([4.2, 2.75, 3.8499999999999996, 1.02], [[2, 3], [4]]), ParameterTimeseriesCollection{Vector{Main.MyDiffEqArray}, Main.MyParameterObject}(Main.MyDiffEqArray[Main.MyDiffEqArray([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], [[0.25, 0.35], [0.5, 0.7], [0.75, 1.0499999999999998], [1.0, 1.4], [1.25, 1.75], [1.5, 2.0999999999999996], [1.75, 2.4499999999999997], [2.0, 2.8], [2.25, 3.15], [2.5, 3.5], [2.75, 3.8499999999999996]]), Main.MyDiffEqArray([0.0, 0.2, 0.4, 0.6, 0.8, 1.0], [[0.17], [0.34], [0.51], [0.68], [0.8500000000000001], [1.02]])], Main.MyParameterObject([4.2, 2.75, 3.8499999999999996, 1.02], [[2, 3], [4]]))), [1, 2])</code></pre><pre><code class="language-julia hljs">sol.ps[:(b + c)] # observed quantities work too</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">11-element Vector{Float64}:
+ 0.6
+ 1.2
+ 1.7999999999999998
+ 2.4
+ 3.0
+ 3.5999999999999996
+ 4.199999999999999
+ 4.8
+ 5.4
+ 6.0
+ 6.6</code></pre><pre><code class="language-julia hljs">getu(sol, :b)(sol) # returns the values :b takes at the times in the state timeseries</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5-element Vector{Float64}:
+ 0.25
+ 0.75
+ 1.5
+ 2.0
+ 2.75</code></pre><pre><code class="language-julia hljs">getu(sol, [:b, :d])(sol) # works</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5-element Vector{Vector{Float64}}:
+ [0.25, 0.17]
+ [0.75, 0.34]
+ [1.5, 0.51]
+ [2.0, 0.68]
+ [2.75, 1.02]</code></pre><h2 id="Custom-containers"><a class="docs-heading-anchor" href="#Custom-containers">Custom containers</a><a id="Custom-containers-1"></a><a class="docs-heading-anchor-permalink" href="#Custom-containers" title="Permalink"></a></h2><p>A custom container object (such as <code>ModelingToolkit.MTKParameters</code>) should implement <a href="../api/#SymbolicIndexingInterface.remake_buffer"><code>remake_buffer</code></a> to allow creating a new buffer with updated values, possibly with different types. This is already implemented for <code>AbstractArray</code>s (including static arrays).</p><h1 id="Implementing-the-SymbolicTypeTrait-for-a-type"><a class="docs-heading-anchor" href="#Implementing-the-SymbolicTypeTrait-for-a-type">Implementing the <code>SymbolicTypeTrait</code> for a type</a><a id="Implementing-the-SymbolicTypeTrait-for-a-type-1"></a><a class="docs-heading-anchor-permalink" href="#Implementing-the-SymbolicTypeTrait-for-a-type" title="Permalink"></a></h1><p>The <code>SymbolicTypeTrait</code> is used to identify values that can act as symbolic variables. It has three variants:</p><ul><li><a href="../api/#SymbolicIndexingInterface.NotSymbolic"><code>NotSymbolic</code></a> for quantities that are not symbolic. This is the default for all types.</li><li><a href="../api/#SymbolicIndexingInterface.ScalarSymbolic"><code>ScalarSymbolic</code></a> for quantities that are symbolic, and represent a single logical value.</li><li><a href="../api/#SymbolicIndexingInterface.ArraySymbolic"><code>ArraySymbolic</code></a> for quantities that are symbolic, and represent an array of values. Types implementing this trait must return an array of <code>ScalarSymbolic</code> variables of the appropriate size and dimensions when <code>collect</code>ed.</li></ul><p>The trait is implemented through the <a href="../api/#SymbolicIndexingInterface.symbolic_type"><code>symbolic_type</code></a> function. Consider the following example types:</p><pre><code class="language-julia hljs">struct MySym
+  name::Symbol
+end
+
+struct MySymArr{N}
+  name::Symbol
+  size::NTuple{N,Int}
+end</code></pre><p>They must implement the following functions:</p><pre><code class="language-julia hljs">SymbolicIndexingInterface.symbolic_type(::Type{MySym}) = ScalarSymbolic()
+SymbolicIndexingInterface.hasname(::MySym) = true
+SymbolicIndexingInterface.getname(sym::MySym) = sym.name
+
+SymbolicIndexingInterface.symbolic_type(::Type{&lt;:MySymArr}) = ArraySymbolic()
+SymbolicIndexingInterface.hasname(::MySymArr) = true
+SymbolicIndexingInterface.getname(sym::MySymArr) = sym.name
+function Base.collect(sym::MySymArr)
+  [
+    MySym(Symbol(sym.name, :_, join(idxs, &quot;_&quot;)))
+    for idxs in Iterators.product(Base.OneTo.(sym.size)...)
+  ]
+end</code></pre><p><a href="../api/#SymbolicIndexingInterface.hasname"><code>hasname</code></a> is not required to always be <code>true</code> for symbolic types. For example, <code>Symbolics.Num</code> returns <code>false</code> whenever the wrapped value is a number, or an expression.</p><p>Introducing a type to represent expression trees:</p><pre><code class="language-julia hljs">struct MyExpr
+  op::Function
+  args::Vector{Union{MyExpr, MySym, MySymArr, Number, Array}}
+end</code></pre><p><a href="../api/#SymbolicIndexingInterface.symbolic_evaluate"><code>symbolic_evaluate</code></a> can be implemented as follows:</p><pre><code class="language-julia hljs">function symbolic_evaluate(expr::Union{MySym, MySymArr}, syms::Dict)
+  get(syms, expr, expr)
+end
+function symbolic_evaluate(expr::MyExpr, syms::Dict)
+  for i in eachindex(expr.args)
+    if expr.args[i] isa Union{MySym, MySymArr, MyExpr}
+      expr.args[i] = symbolic_evaluate(expr.args[i], syms)
+    end
+  end
+  if all(x -&gt; symbolic_type(x) === NotSymbolic(), expr.args)
+    return expr.op(expr.args...)
+  end
+end</code></pre><p>Note the evaluation of the operation if all of the arguments are not symbolic. This is required since <code>symbolic_evaluate</code> must return an evaluated value if all symbolic variables are substituted.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../simple_sii_sys/">« Simple Demonstration of a Symbolic System Structure</a><a class="docs-footer-nextpage" href="../solution_wrappers/">Defining Solution Wrapper Fallbacks »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Friday 31 May 2024 10:43">Friday 31 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
