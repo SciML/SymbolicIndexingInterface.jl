@@ -176,16 +176,12 @@ function _getu(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
     elseif is_parameter(sys, sym)
         return getp(sys, sym)
     elseif is_observed(sys, sym)
-        obs = observed(sys, sym isa Tuple ? collect(sym) : sym)
-        getter = if is_time_dependent(sys)
-            TimeDependentObservedFunction(obs)
+        obs = observed(sys, sym)
+        if is_time_dependent(sys)
+            return TimeDependentObservedFunction(obs)
         else
-            TimeIndependentObservedFunction(obs)
+            return TimeIndependentObservedFunction(obs)
         end
-        if sym isa Tuple
-            getter = AsTupleWrapper(getter)
-        end
-        return getter
     end
     return getu(sys, collect(sym))
 end
