@@ -175,6 +175,13 @@ function _getu(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
         return getu(sys, idx)
     elseif is_parameter(sys, sym)
         return getp(sys, sym)
+    elseif is_observed(sys, sym)
+        obs = observed(sys, sym)
+        if is_time_dependent(sys)
+            return TimeDependentObservedFunction(obs)
+        else
+            return TimeIndependentObservedFunction(obs)
+        end
     end
     return getu(sys, collect(sym))
 end
