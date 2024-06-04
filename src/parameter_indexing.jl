@@ -301,6 +301,9 @@ function _getp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
         end
     elseif is_observed(sys, p)
         pofn = parameter_observed(sys, p)
+        if pofn === nothing
+            throw(ArgumentError("Index provider does not support `parameter_observed`; cannot use generate function for $p"))
+        end
         if !is_time_dependent(sys)
             return GetParameterObservedNoTime(pofn.observed_fn)
         end
@@ -624,6 +627,8 @@ function _setp(sys, ::ArraySymbolic, ::SymbolicTypeTrait, p)
     if is_parameter(sys, p)
         idx = parameter_index(sys, p)
         return setp(sys, idx; run_hook = false)
+    elseif is_observed(sys, p) && (pobsfn = parameter_observed(sys, p)) !== nothing
+        return GetParameterObserved{false}(pobsfn.timeseries_idx, pobsfn.observed_fn)
     end
     return setp(sys, collect(p); run_hook = false)
 end

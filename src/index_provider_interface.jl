@@ -126,10 +126,18 @@ end
 Return the observed function of `sym` in `indp` as a [`ParameterObservedFunction`](@ref).
 If `sym` only involves variables from a single parameter timeseries (optionally along
 with non-timeseries parameters) the timeseries index of the parameter timeseries should
-be provided in the `ParameterObservedFunction`. In all other cases, just the observed
-function should be returned as part of the object.
+be provided in the [`ParameterObservedFunction`](@ref). In all other cases, just the
+observed function should be returned as part of the `ParameterObservedFunction` object.
+
+By default, this function returns `nothing`.
 """
-parameter_observed(indp, sym) = parameter_observed(symbolic_container(indp), sym)
+function parameter_observed(indp, sym)
+    if hasmethod(symbolic_container, Tuple{typeof(indp)})
+        return parameter_observed(symbolic_container(indp), sym)
+    else
+        return nothing
+    end
+end
 
 """
     parameter_symbols(indp)
