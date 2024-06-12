@@ -7,7 +7,7 @@
 Pkg.add(&quot;SymbolicIndexingInterface&quot;)</code></pre><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>The symbolic indexing interface has 2 levels:</p><ol><li>The user level. At the user level, a modeler or engineer simply uses terms from a domain-specific language (DSL) inside of SciML functionality and will receive the requested values. For example, if a DSL defines a symbol <code>x</code>, then <code>sol[x]</code> returns the solution value(s) for <code>x</code>.</li><li>The DSL system structure level. This is the structure which defines the symbolic indexing for a given problem/solution. DSLs can tag a constructed problem/solution with this object in order to endow the SciML tools with the ability to index symbolically according to the definitions the DSL writer wants.</li></ol><h2 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h2><ul><li>Please refer to the <a href="https://github.com/SciML/ColPrac/blob/master/README.md">SciML ColPrac: Contributor&#39;s Guide on Collaborative Practices for Community Packages</a> for guidance on PRs, issues, and other matters relating to contributing to SciML.</li><li>There are a few community forums:<ul><li>the #diffeq-bridged channel in the <a href="https://julialang.org/slack/">Julia Slack</a></li><li><a href="https://gitter.im/JuliaDiffEq/Lobby">JuliaDiffEq</a> on Gitter</li><li>on the <a href="https://discourse.julialang.org">Julia Discourse forums</a></li><li>see also <a href="https://sciml.ai/community/">SciML Community page</a></li></ul></li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Project.toml`
   [e30172f5] Documenter v1.4.1
   [961ee093] ModelingToolkit v9.16.0
-  [1dea7af3] OrdinaryDiffEq v6.81.1
+  [1dea7af3] OrdinaryDiffEq v6.82.0
   [91a5bcdd] Plots v1.40.4
   [2efcf032] SymbolicIndexingInterface v0.3.22 `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.10.4
 Commit 48d4fd48430 (2024-06-04 10:41 UTC)
@@ -20,7 +20,7 @@ Platform Info:
   LIBM: libopenlibm
   LLVM: libLLVM-15.0.7 (ORCJIT, znver3)
 Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Manifest.toml`
-  [47edcb42] ADTypes v1.2.1
+  [47edcb42] ADTypes v1.3.0
   [a4c015fc] ANSIColoredPrinters v0.0.1
   [1520ce14] AbstractTrees v0.4.5
   [7d9f7c33] Accessors v0.1.36
@@ -63,7 +63,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [459566f4] DiffEqCallbacks v3.6.2
   [163ba53b] DiffResults v1.1.0
   [b552c78f] DiffRules v1.15.1
-⌅ [a0c0ee7d] DifferentiationInterface v0.4.2
+  [a0c0ee7d] DifferentiationInterface v0.5.5
   [31c24e10] Distributions v0.25.109
   [ffbed154] DocStringExtensions v0.9.3
   [e30172f5] Documenter v1.4.1
@@ -72,7 +72,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [7c1d4256] DynamicPolynomials v0.5.7
 ⌅ [06fc5a27] DynamicQuantities v0.13.2
   [4e289a0a] EnumX v1.0.4
-  [f151be2c] EnzymeCore v0.7.3
+  [f151be2c] EnzymeCore v0.7.4
   [460bff9d] ExceptionUnwrapping v0.1.10
   [d4d017d3] ExponentialUtilities v1.26.1
   [e2ba6199] ExprTools v0.1.10
@@ -94,7 +94,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [c145ed77] GenericSchur v0.5.4
   [d7ba0133] Git v1.3.1
   [c27321d9] Glob v1.3.1
-  [86223c79] Graphs v1.11.0
+  [86223c79] Graphs v1.11.1
   [42e2da0e] Grisu v1.0.2
   [cd3eb016] HTTP v1.10.8
   [3e5b6fbb] HostCPUFeatures v0.1.16
@@ -143,7 +143,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [6fe1bfb0] OffsetArrays v1.14.0
   [4d8831e6] OpenSSL v1.4.3
   [bac558e1] OrderedCollections v1.6.3
-  [1dea7af3] OrdinaryDiffEq v6.81.1
+  [1dea7af3] OrdinaryDiffEq v6.82.0
   [90014a1f] PDMats v0.11.31
   [65ce6f38] PackageExtensionCompat v1.0.2
   [d96e819e] Parameters v0.12.3
@@ -163,7 +163,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [e6cf234a] RandomNumbers v1.5.3
   [3cdcf5f2] RecipesBase v1.3.4
   [01d81517] RecipesPipeline v0.6.12
-  [731186ca] RecursiveArrayTools v3.22.0
+  [731186ca] RecursiveArrayTools v3.23.0
   [f2c3362d] RecursiveFactorization v0.2.23
   [189a3867] Reexport v1.2.2
   [2792f1a3] RegistryInstances v0.1.0
@@ -180,18 +180,18 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [efcf1570] Setfield v1.1.1
   [992d4aef] Showoff v1.0.3
   [777ac1f9] SimpleBufferStream v1.1.0
-  [727e6d20] SimpleNonlinearSolve v1.9.0
+  [727e6d20] SimpleNonlinearSolve v1.10.0
   [699a6c99] SimpleTraits v0.9.4
   [ce78b400] SimpleUnPack v1.1.0
   [a2af1166] SortingAlgorithms v1.2.1
   [47a9eef4] SparseDiffTools v2.19.0
-  [0a514795] SparseMatrixColorings v0.3.2
+  [0a514795] SparseMatrixColorings v0.3.3
   [e56a9233] Sparspak v0.3.9
   [276daf66] SpecialFunctions v2.4.0
   [aedffcd0] Static v0.8.10
   [0d7ed370] StaticArrayInterface v1.5.0
-  [90137ffa] StaticArrays v1.9.4
-  [1e83bf80] StaticArraysCore v1.4.2
+  [90137ffa] StaticArrays v1.9.5
+  [1e83bf80] StaticArraysCore v1.4.3
   [82ae8749] StatsAPI v1.7.0
   [2913bbd2] StatsBase v0.34.3
   [4c63d2b9] StatsFuns v1.3.1
@@ -199,7 +199,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [2efcf032] SymbolicIndexingInterface v0.3.22 `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`
   [19f23fe9] SymbolicLimits v0.2.1
   [d1185830] SymbolicUtils v2.0.2
-  [0c5d862f] Symbolics v5.30.1
+  [0c5d862f] Symbolics v5.30.3
   [3783bdb8] TableTraits v1.0.1
   [bd369af6] Tables v1.11.1
   [62fd8b95] TensorCore v0.1.1
@@ -251,7 +251,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [38a345b3] Libuuid_jll v2.40.1+0
   [856f044c] MKL_jll v2024.1.0+0
   [e7412a2a] Ogg_jll v1.3.5+1
-  [458c3c95] OpenSSL_jll v3.0.13+1
+  [458c3c95] OpenSSL_jll v3.0.14+0
   [efe28fd5] OpenSpecFun_jll v0.5.5+0
   [91d4177d] Opus_jll v1.3.2+0
   [30392449] Pixman_jll v0.43.4+0
@@ -351,4 +351,4 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [8e850b90] libblastrampoline_jll v5.8.0+1
   [8e850ede] nghttp2_jll v1.52.0+1
   [3f19e933] p7zip_jll v17.4.0+2
-Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.22/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.22/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="terminology/">Terminology »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Monday 10 June 2024 06:04">Monday 10 June 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.22/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.22/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="terminology/">Terminology »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Wednesday 12 June 2024 05:37">Wednesday 12 June 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
