@@ -1,5 +1,6 @@
 # Implementing the Complete Symbolic Indexing Interface
 
+## Index Provider Interface
 This tutorial will show how to define the entire Symbolic Indexing Interface on an
 `ExampleSystem`:
 
@@ -17,9 +18,9 @@ end
 Not all the methods in the interface are required. Some only need to be implemented if a type
 supports specific functionality. Consider the following struct, which needs to implement the interface:
 
-## Mandatory methods
+### Mandatory methods
 
-### Simple Indexing Functions
+#### Simple Indexing Functions
 
 These are the simple functions which describe how to turn symbols into indices.
 
@@ -84,7 +85,7 @@ function SymbolicIndexingInterface.default_values(sys::ExampleSystem)
 end
 ```
 
-### Observed Equation Handling
+#### Observed Equation Handling
 
 These are for handling symbolic expressions and generating equations which are not directly
 in the solution vector.
@@ -131,7 +132,12 @@ end
 In case a type does not support such observed quantities, `is_observed` must be
 defined to always return `false`, and `observed` does not need to be implemented.
 
-### Note about constant structure
+The same process can be followed for [`parameter_observed`](@ref), with the exception
+that the returned function must not have `u` in its signature, and must be wrapped in a
+[`ParameterObservedFunction`](@ref). In-place versions can also be implemented for
+`parameter_observed`.
+
+#### Note about constant structure
 
 Note that the method definitions are all assuming `constant_structure(p) == true`.
 
@@ -147,14 +153,16 @@ In case `constant_structure(p) == false`, the following methods would change:
   `observed(sys::ExampleSystem, sym, i)` where `i` is either the time index at which
   the index of `sym` is required or a `Vector` of state symbols at the current time index.
 
-## Optional methods
+### Optional methods
 
 Note that `observed` is optional if `is_observed` is always `false`, or the type is
 only responsible for identifying observed values and `observed` will always be called
 on a type that wraps this type. An example is `ModelingToolkit.AbstractSystem`, which
 can identify whether a value is observed, but cannot implement `observed` itself.
 
-Other optional methods relate to indexing functions. If a type contains the values of
+## Value Provider Interface
+
+Other interface methods relate to indexing functions. If a type contains the values of
 parameter variables, it must implement [`parameter_values`](@ref). This allows the
 default definitions of [`getp`](@ref) and [`setp`](@ref) to work. While `setp` is
 not typically useful for solution objects, it may be useful for integrators. Typically,
@@ -276,7 +284,7 @@ similar functionality, but is called for every parameter that is updated, instea
 once. Thus, `finalize_parameters_hook!` is better for expensive computations that can be
 performed for a bulk parameter update.
 
-# The `ParameterIndexingProxy`
+## The `ParameterIndexingProxy`
 
 [`ParameterIndexingProxy`](@ref) is a wrapper around another type which implements the
 interface and allows using [`getp`](@ref) and [`setp`](@ref) to get and set parameter 
@@ -304,6 +312,164 @@ getp(integrator, :a)(integrator) # functionally the same as above
 integrator.ps[:b] = 3.0
 setp(integrator, :b)(integrator, 3.0) # functionally the same as above
 ```
+
+## Parameter Timeseries
+
+If a solution object includes modified parameter values (such as through callbacks) during the
+simulation, it must implement several additional functions for correct functioning of
+[`getu`](@ref) and [`getp`](@ref). [`ParameterTimeseriesCollection`](@ref) helps in
+implementing parameter timeseries objects. The following mockup gives an example of
+correct implementation of these functions and the indexing syntax they enable.
+
+```@example param_timeseries
+using SymbolicIndexingInterface
+
+# First, we must implement a parameter object that knows where the parameters in
+# each parameter timeseries are stored
+struct MyParameterObject
+    p::Vector{Float64}
+    disc_idxs::Vector{Vector{Int}}
+end
+
+# To be able to access parameter values
+SymbolicIndexingInterface.parameter_values(mpo::MyParameterObject) = mpo.p
+# Update the parameter object with new values
+function SymbolicIndexingInterface.with_updated_parameter_timeseries_values(mpo::MyParameterObject, args::Pair...)
+    for (ts_idx, val) in args
+        mpo.p[mpo.disc_idxs[ts_idx]] = val
+    end
+    return mpo
+end
+
+struct ExampleSolution2
+    sys::SymbolCache
+    u::Vector{Vector{Float64}}
+    t::Vector{Float64}
+    p::MyParameterObject # the parameter object. Only some parameters are timeseries params
+    p_ts::ParameterTimeseriesCollection
+end
+
+# Add the `:ps` property to automatically wrap in `ParameterIndexingProxy`
+function Base.getproperty(fs::ExampleSolution2, s::Symbol)
+    s === :ps ? ParameterIndexingProxy(fs) : getfield(fs, s)
+end
+# Use the contained `SymbolCache` for indexing
+SymbolicIndexingInterface.symbolic_container(fs::ExampleSolution2) = fs.sys
+# State indexing methods
+SymbolicIndexingInterface.state_values(fs::ExampleSolution2) = fs.u
+SymbolicIndexingInterface.current_time(fs::ExampleSolution2) = fs.t
+# By default, `parameter_values` refers to the last value
+SymbolicIndexingInterface.parameter_values(fs::ExampleSolution2) = fs.p
+SymbolicIndexingInterface.get_parameter_timeseries_collection(fs::ExampleSolution2) = fs.p_ts
+# Mark the object as a timeseries object
+SymbolicIndexingInterface.is_timeseries(::Type{ExampleSolution2}) = Timeseries()
+# Mark the object as a parameter timeseries object
+SymbolicIndexingInterface.is_parameter_timeseries(::Type{ExampleSolution2}) = Timeseries()
+```
+
+We will also need a timeseries object which will store individual parameter timeseries.
+`DiffEqArray` in `RecursiveArrayTools.jl` satisfies this use case, but we will implement
+one manually here.
+
+```@example param_timeseries
+struct MyDiffEqArray
+  t::Vector{Float64}
+  u::Vector{Vector{Float64}}
+end
+
+# Must be a timeseries object, and implement `current_time` and `state_values`
+SymbolicIndexingInterface.is_timeseries(::Type{MyDiffEqArray}) = Timeseries()
+SymbolicIndexingInterface.current_time(a::MyDiffEqArray) = a.t
+SymbolicIndexingInterface.state_values(a::MyDiffEqArray) = a.u
+```
+
+Now we can create an example object and observe the new functionality. Note that
+`sol.ps[sym, args...]` is identical to `getp(sol, sym)(sol, args...)`. In a real
+application, the solution object will be populated during the solve process. We manually
+construct the object here for demonstration.
+
+```@example param_timeseries
+sys = SymbolCache(
+  [:x, :y, :z], [:a, :b, :c, :d], :t;
+  # specify that :b, :c and :d are timeseries parameters
+  # :b and :c belong to the same timeseries
+  # :d is in a different timeseries
+  timeseries_parameters = Dict(
+    :b => ParameterTimeseriesIndex(1, 1),
+    :c => ParameterTimeseriesIndex(1, 2),
+    :d => ParameterTimeseriesIndex(2, 1),
+  ))
+b_c_timeseries = MyDiffEqArray(
+  collect(0.0:0.1:1.0),
+  [[0.25i, 0.35i] for i in 1:11]
+)
+d_timeseries = MyDiffEqArray(
+  collect(0.0:0.2:1.0),
+  [[0.17i] for i in 1:6]
+)
+p = MyParameterObject(
+  # parameter values at the final time
+  [4.2, b_c_timeseries.u[end]..., d_timeseries.u[end]...],
+  [[2, 3], [4]]
+)
+sol = ExampleSolution2(
+    sys,
+    [i * ones(3) for i in 1:5], # u
+    collect(0.0:0.25:1.0), # t
+    p,
+    ParameterTimeseriesCollection([b_c_timeseries, d_timeseries], deepcopy(p))
+)
+sol.ps[:a] # returns the value of non-timeseries parameter
+```
+
+```@example param_timeseries
+sol.ps[:b] # returns the timeseries of :b
+```
+
+```@example param_timeseries
+sol.ps[:b, 3] # index at a specific index in the parameter timeseries
+```
+
+```@example param_timeseries
+sol.ps[:b, [3, 6, 8]] # index using arrays
+```
+
+```@example param_timeseries
+idxs = @show rand(Bool, 11) # boolean mask for indexing
+sol.ps[:b, idxs]
+```
+
+```@example param_timeseries
+sol.ps[[:a, :b]] # returns the values at the last timestep, since :a is not timeseries
+```
+
+```@example param_timeseries
+# throws an error since :b and :d belong to different timeseries
+try
+  sol.ps[[:b, :d]]
+catch e
+  @show e
+end
+```
+
+```@example param_timeseries
+sol.ps[:(b + c)] # observed quantities work too
+```
+
+```@example param_timeseries
+getu(sol, :b)(sol) # returns the values :b takes at the times in the state timeseries
+```
+
+```@example param_timeseries
+getu(sol, [:b, :d])(sol) # works
+```
+
+## Custom containers
+
+A custom container object (such as `ModelingToolkit.MTKParameters`) should implement
+[`remake_buffer`](@ref) to allow creating a new buffer with updated values, possibly
+with different types. This is already implemented for `AbstractArray`s (including static
+arrays).
 
 # Implementing the `SymbolicTypeTrait` for a type
 
@@ -383,87 +549,3 @@ end
 Note the evaluation of the operation if all of the arguments are not symbolic. This is
 required since `symbolic_evaluate` must return an evaluated value if all symbolic variables
 are substituted.
-
-## Parameter Timeseries
-
-If a solution object saves modified parameter values (such as through callbacks) during the
-simulation, it must implement [`parameter_timeseries`](@ref),
-[`parameter_values_at_time`](@ref) and [`parameter_values_at_state_time`](@ref) for correct
-functioning of [`getu`](@ref) and [`getp`](@ref). The following mockup gives an example
-of correct implementation of these functions and the indexing syntax they enable.
-
-```@example param_timeseries
-using SymbolicIndexingInterface
-
-struct ExampleSolution2
-    sys::SymbolCache
-    u::Vector{Vector{Float64}}
-    t::Vector{Float64}
-    p::Vector{Vector{Float64}}
-    pt::Vector{Float64}
-end
-
-# Add the `:ps` property to automatically wrap in `ParameterIndexingProxy`
-function Base.getproperty(fs::ExampleSolution2, s::Symbol)
-    s === :ps ? ParameterIndexingProxy(fs) : getfield(fs, s)
-end
-# Use the contained `SymbolCache` for indexing
-SymbolicIndexingInterface.symbolic_container(fs::ExampleSolution2) = fs.sys
-# By default, `parameter_values` refers to the last value
-SymbolicIndexingInterface.parameter_values(fs::ExampleSolution2) = fs.p[end]
-SymbolicIndexingInterface.parameter_values(fs::ExampleSolution2, i) = fs.p[end][i]
-# Index into the parameter timeseries vector
-function SymbolicIndexingInterface.parameter_values_at_time(fs::ExampleSolution2, t)
-    fs.p[t]
-end
-# Find the first index in the parameter timeseries vector with a time smaller
-# than the time from the state timeseries, and use that to index the parameter
-# timeseries
-function SymbolicIndexingInterface.parameter_values_at_state_time(fs::ExampleSolution2, t)
-    ptind = searchsortedfirst(fs.pt, fs.t[t]; lt = <=)
-    fs.p[ptind - 1]
-end
-SymbolicIndexingInterface.parameter_timeseries(fs::ExampleSolution2) = fs.pt
-# Mark the object as a `Timeseries` object
-SymbolicIndexingInterface.is_timeseries(::Type{ExampleSolution2}) = Timeseries()
-    
-```
-
-Now we can create an example object and observe the new functionality. Note that
-`sol.ps[sym, args...]` is identical to `getp(sol, sym)(sol, args...)`.
-
-```@example param_timeseries
-sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
-sol = ExampleSolution2(
-    sys,
-    [i * ones(3) for i in 1:5],
-    [0.2i for i in 1:5],
-    [2i * ones(3) for i in 1:10],
-    [0.1i for i in 1:10]
-)
-sol.ps[:a] # returns the value at the last timestep
-```
-
-```@example param_timeseries
-sol.ps[:a, :] # use Colon to fetch the entire parameter timeseries
-```
-
-```@example param_timeseries
-sol.ps[:a, 3] # index at a specific index in the parameter timeseries
-```
-
-```@example param_timeseries
-sol.ps[:a, [3, 6, 8]] # index using arrays
-```
-
-```@example param_timeseries
-idxs = @show rand(Bool, 10) # boolean mask for indexing
-sol.ps[:a, idxs]
-```
-
-## Custom containers
-
-A custom container object (such as `ModelingToolkit.MTKParameters`) should implement
-[`remake_buffer`](@ref) to allow creating a new buffer with updated values, possibly
-with different types. This is already implemented for `AbstractArray`s (including static
-arrays).

@@ -129,7 +129,7 @@ data. It may still be time-dependent. For example, an `ODEProblem` only stores
 the initial state of a system, so it is `NotTimeseries`, but still time-dependent.
 This is the default trait variant for all types.
 
-See also: [`Timeseries`](@ref), [`is_timeseries`](@ref)
+See also: [`Timeseries`](@ref), [`is_timeseries`](@ref).
 """
 struct NotTimeseries <: IsTimeseriesTrait end
 
@@ -138,10 +138,27 @@ struct NotTimeseries <: IsTimeseriesTrait end
     is_timeseries(::Type)
 
 Get the timeseries trait of a type. Defaults to [`NotTimeseries`](@ref) for all types.
+A type for which `is_timeseries(T) == Timeseries()` may also have a parameter timeseries.
+This is determined by the [`is_parameter_timeseries`](@ref) trait.
 
-See also: [`Timeseries`](@ref), [`NotTimeseries`](@ref)
+See also: [`Timeseries`](@ref), [`NotTimeseries`](@ref), [`is_parameter_timeseries`](@ref).
 """
 function is_timeseries end
 
 is_timeseries(x) = is_timeseries(typeof(x))
 is_timeseries(::Type) = NotTimeseries()
+
+"""
+    is_parameter_timeseries(x) = is_parameter_timeseries(typeof(x))
+    is_parameter_timeseries(::Type)
+
+Get the parameter timeseries trait of a type. Defaults to [`NotTimeseries`](@ref) for all
+types. A type for which `is_parameter_timeseries(T) == Timeseries()` must also have
+`is_timeseries(T) == Timeseries()`.
+
+See also: [`Timeseries`](@ref), [`NotTimeseries`](@ref), [`is_timeseries`](@ref).
+"""
+function is_parameter_timeseries end
+
+is_parameter_timeseries(x) = is_parameter_timeseries(typeof(x))
+is_parameter_timeseries(::Type) = NotTimeseries()

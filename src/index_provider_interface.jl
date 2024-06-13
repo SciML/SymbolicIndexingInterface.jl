@@ -54,6 +54,92 @@ Return the index of the given parameter `sym` in `indp`, or `nothing` otherwise.
 parameter_index(indp, sym) = parameter_index(symbolic_container(indp), sym)
 
 """
+    is_timeseries_parameter(indp, sym)
+
+Check whether the given `sym` is a timeseries parameter in `indp`.
+"""
+function is_timeseries_parameter(indp, sym)
+    if hasmethod(symbolic_container, Tuple{typeof(indp)})
+        is_timeseries_parameter(symbolic_container(indp), sym)
+    else
+        return false
+    end
+end
+
+"""
+    struct ParameterTimeseriesIndex
+    function ParameterTimeseriesIndex(timeseries_idx, parameter_idx)
+
+A struct storing the index of the timeseries of a timeseries parameter in a parameter
+timeseries object. `timeseries_idx` refers to an index that identifies the timeseries
+that the parameter belongs to. `parameter_idx` refers to the index of the parameter's
+timeseries in that timeseries object. Note that `parameter_idx` may be different from
+the object returned by [`parameter_index`](@ref) for a given parameter. The two fields in
+this struct are `timeseries_idx` and `parameter_idx`.
+"""
+struct ParameterTimeseriesIndex{T, I}
+    timeseries_idx::T
+    parameter_idx::I
+end
+
+"""
+    timeseries_parameter_index(indp, sym)
+
+Return the index of timeseries parameter `sym` in `indp`. Must return this index as a
+[`ParameterTimeseriesIndex`](@ref) object. Return `nothing` if `sym` is not a timeseries
+parameter in `indp`. Defaults to returning `nothing`. Respects the
+[`symbolic_container`](@ref) fallback for `indp` if present.
+"""
+function timeseries_parameter_index(indp, sym)
+    if hasmethod(symbolic_container, Tuple{typeof(indp)})
+        timeseries_parameter_index(symbolic_container(indp), sym)
+    else
+        return nothing
+    end
+end
+
+"""
+    struct ParameterObservedFunction
+    function ParameterObservedFunction(timeseries_idx, observed_fn::Function)
+    function ParameterObservedFunction(observed_fn::Function)
+
+A struct which stores the parameter observed function and optional timeseries index for
+a particular symbol. The timeseries index is optional and may be omitted. Specifying the
+timeseries index allows [`getp`](@ref) to return the appropriate timeseries for a
+timeseries parameter.
+
+For time-dependent index providers (where `is_time_dependent(indp)`) `observed_fn` must
+have the signature `(p, t) -> [values...]`. For non-time-dependent index providers
+(where `!is_time_dependent(indp)`) `observed_fn` must have the signature
+`(p) -> [values...]`. To support in-place `getp` methods, `observed_fn` must also have an
+additional method which takes `buffer::AbstractArray` as its first argument. The required
+values must be written to the buffer in the appropriate order.
+"""
+struct ParameterObservedFunction{I, F <: Function}
+    timeseries_idx::I
+    observed_fn::F
+end
+
+"""
+    parameter_observed(indp, sym)
+
+Return the observed function of `sym` in `indp` as a [`ParameterObservedFunction`](@ref).
+If `sym` only involves variables from a single parameter timeseries (optionally along
+with non-timeseries parameters) the timeseries index of the parameter timeseries should
+be provided in the [`ParameterObservedFunction`](@ref). In all other cases, just the
+observed function should be returned as part of the `ParameterObservedFunction` object.
+
+By default, this function returns `nothing`.
+"""
+function parameter_observed(indp, sym)
+    if hasmethod(symbolic_container, Tuple{typeof(indp)})
+        return parameter_observed(symbolic_container(indp), sym)
+    else
+        return nothing
+    end
+end
+
+"""
     parameter_symbols(indp)
 
 Return a vector of the symbolic parameters of the given index provider `indp`. The returned
@@ -88,7 +174,7 @@ is_observed(indp, sym) = is_observed(symbolic_container(indp), sym)
 
 Return the observed function of the given `sym` in `indp`. The returned function should
 have the signature `(u, p) -> [values...]` where `u` and `p` is the current state and
-parameter vector, respectively. If `istimedependent(indp) == true`, the function should
+parameter object, respectively. If `istimedependent(indp) == true`, the function should
 accept the current time `t` as its third parameter. If `constant_structure(indp) == false`,
 `observed` accepts a third parameter, which can either be a vector of symbols indicating
 the order of states or a time index, which identifies the order of states. This function

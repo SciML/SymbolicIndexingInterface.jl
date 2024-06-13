@@ -13,6 +13,10 @@ SymbolicIndexingInterface.parameter_values(fp::FakeIntegrator) = fp.p
 SymbolicIndexingInterface.current_time(fp::FakeIntegrator) = fp.t
 
 sys = SymbolCache([:x, :y, :z], [:a, :b, :c], [:t])
+
+@test_throws ErrorException getu(sys, :q)
+@test_throws ErrorException setu(sys, :q)
+
 u = [1.0, 2.0, 3.0]
 p = [11.0, 12.0, 13.0]
 t = 0.5
@@ -130,14 +134,18 @@ struct FakeSolution{S, U, P, T}
 end
 
 SymbolicIndexingInterface.is_timeseries(::Type{<:FakeSolution}) = Timeseries()
+function SymbolicIndexingInterface.is_timeseries(::Type{<:FakeSolution{
+        S, U, P, Nothing}}) where {S, U, P}
+    NotTimeseries()
+end
 SymbolicIndexingInterface.symbolic_container(fp::FakeSolution) = fp.sys
 SymbolicIndexingInterface.state_values(fp::FakeSolution) = fp.u
 SymbolicIndexingInterface.parameter_values(fp::FakeSolution) = fp.p
 SymbolicIndexingInterface.current_time(fp::FakeSolution) = fp.t
 
 sys = SymbolCache([:x, :y, :z], [:a, :b, :c], [:t])
-u = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
-t = [1.5, 2.0]
+u = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0], [10.0, 11.0, 12.0]]
+t = [1.5, 2.0, 2.3, 4.0]
 sol = FakeSolution(sys, u, p, t)
 
 xvals = getindex.(sol.u, 1)
@@ -150,7 +158,7 @@ for (sym, ans, check_inference) in [(:x, xvals, true)
                                     (1, xvals, true)
                                     ([:x, :y], vcat.(xvals, yvals), true)
                                     (1:2, vcat.(xvals, yvals), true)
-                                    ([:x, 2], vcat.(xvals, yvals), false)
+                                    ([:x, 2], vcat.(xvals, yvals), true)
                                     ((:z, :y), tuple.(zvals, yvals), true)
                                     ((3, 2), tuple.(zvals, yvals), true)
                                     ([:x, [:y, :z]],
@@ -186,7 +194,8 @@ for (sym, ans, check_inference) in [(:x, xvals, true)
         @inferred get(sol)
     end
     @test get(sol) == ans
-    for i in eachindex(u)
+    for i in [rand(eachindex(u)), CartesianIndex(1), :,
+        rand(Bool, length(u)), rand(eachindex(u), 3), 1:3]
         if check_inference
             @inferred get(sol, i)
         end
@@ -204,6 +213,13 @@ for (sym, val, check_inference) in [
         @inferred get(sol)
     end
     @test get(sol) == val
+    for i in [rand(eachindex(u)), CartesianIndex(1), :,
+        rand(Bool, length(u)), rand(eachindex(u), 3), 1:3]
+        if check_inference
+            @inferred get(sol, i)
+        end
+        @test get(sol, i) == val[i]
+    end
 end
 
 for (sym, val) in [(:a, p[1])
@@ -211,7 +227,41 @@ for (sym, val) in [(:a, p[1])
                    (:c, p[3])
                    ([:a, :b], p[1:2])
                    ((:c, :b), (p[3], p[2]))]
-    get = getu(fi, sym)
-    @inferred get(fi)
-    @test get(fi) == val
+    get = getu(sys, sym)
+    @inferred get(sol)
+    @test get(sol) == val
+end
+
+sys = SymbolCache([:x, :y, :z], [:a, :b, :c])
+u = [1.0, 2.0, 3.0]
+p = [10.0, 20.0, 30.0]
+fs = FakeSolution(sys, u, p, nothing)
+@test is_timeseries(fs) == NotTimeseries()
+
+for (sym, val, check_inference) in [
+    (:x, u[1], true),
+    (1, u[1], true),
+    ([:x, :y], u[1:2], true),
+    ((:x, :y), Tuple(u[1:2]), true),
+    (1:2, u[1:2], true),
+    ([:x, 2], u[1:2], true),
+    ((:x, 2), Tuple(u[1:2]), true),
+    ([1, 2], u[1:2], true),
+    ((1, 2), Tuple(u[1:2]), true),
+    (:a, p[1], true),
+    ([:a, :b], p[1:2], true),
+    ((:a, :b), Tuple(p[1:2]), true),
+    ([:x, :a], [u[1], p[1]], false),
+    ((:x, :a), (u[1], p[1]), true),
+    ([1, :a], [u[1], p[1]], false),
+    ((1, :a), (u[1], p[1]), true),
+    (:(x + y + a + b), u[1] + u[2] + p[1] + p[2], true),
+    ([:(x + a), :(y + b)], [u[1] + p[1], u[2] + p[2]], true),
+    ((:(x + a), :(y + b)), (u[1] + p[1], u[2] + p[2]), true)
+]
+    getter = getu(sys, sym)
+    if check_inference
+        @inferred getter(fs)
+    end
+    @test getter(fs) == val
 end
