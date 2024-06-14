@@ -90,6 +90,8 @@ sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], :t)
 @test independent_variable_symbols(sys) == [:t]
 @test all_variable_symbols(sys) == [:x, :y, :z]
 @test sort(all_symbols(sys)) == [:a, :b, :c, :t, :x, :y, :z]
+@test name_to_symbolic.((sys,), all_symbols(sys)) == all_symbols(sys)
+@test name_to_symbolic(sys, :q) === nothing
 @test default_values(sys) == Dict() # fallback even if not implemented
 
 sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], nothing)

@@ -223,6 +223,25 @@ independent variables.
 all_symbols(indp) = all_symbols(symbolic_container(indp))
 
 """
+    name_to_symbolic(indp, sym::Symbol)
+
+Return the symbolic variable in `indp` with name `sym`. If there is no such variable,
+return `nothing`. This roughly corresponds to the reverse operation of [`getname`](@ref),
+in the context of index provider `indp`. By default, this method will search through
+`all_symbols(indp)` for one with the required name.
+
+See also: [`all_symbols`](@ref).
+"""
+function name_to_symbolic(indp, sym::Symbol)
+    for s in all_symbols(indp)
+        if hasname(s) && getname(s) == sym
+            return s
+        end
+    end
+    return nothing
+end
+
+"""
     default_values(indp)
 
 Return a dictionary mapping symbols in the index provider to their default value, if any.

@@ -8,7 +8,8 @@ using Accessors: @reset
 RuntimeGeneratedFunctions.init(@__MODULE__)
 
 export ScalarSymbolic, ArraySymbolic, NotSymbolic, symbolic_type, hasname, getname,
-       Timeseries, NotTimeseries, is_timeseries, is_parameter_timeseries
+       Timeseries, NotTimeseries, is_timeseries, is_parameter_timeseries,
+       symbolic_evaluate
 include("trait.jl")
 
 export is_variable, variable_index, variable_symbols, is_parameter, parameter_index,
@@ -17,7 +18,7 @@ export is_variable, variable_index, variable_symbols, is_parameter, parameter_in
        is_observed, observed, parameter_observed, ParameterObservedFunction,
        is_time_dependent, constant_structure, symbolic_container,
        all_variable_symbols, all_symbols, solvedvariables, allvariables, default_values,
-       symbolic_evaluate
+       name_to_symbolic
 include("index_provider_interface.jl")
 
 export SymbolCache
