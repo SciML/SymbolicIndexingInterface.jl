@@ -55,7 +55,7 @@ for sys in [
             ([1, (:b, :c)], [p[1], (p[2], p[3])], [new_p[1], (new_p[2], new_p[3])], false),
             ((1, [:b, :c]), (p[1], p[2:3]), (new_p[1], new_p[2:3]), true),
             ((1, (:b, :c)), (p[1], (p[2], p[3])), (new_p[1], (new_p[2], new_p[3])), true),
-            ([:a, :b], p[1:2], 42, true),
+            ([:a, :b], p[1:2], 42, true)
         ]
             get = getp(sys, sym)
             set! = setp(sys, sym)
