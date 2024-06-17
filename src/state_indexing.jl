@@ -236,7 +236,7 @@ for (t1, t2) in [
     @eval function _getu(sys, ::NotSymbolic, ::$t1, sym::$t2)
         num_observed = count(x -> is_observed(sys, x), sym)
         if num_observed == 0 || num_observed == 1 && sym isa Tuple
-            if all(Base.Fix1(is_parameter, sys), sym) &&
+            if !isempty(sym) && all(Base.Fix1(is_parameter, sys), sym) &&
                all(!Base.Fix1(is_timeseries_parameter, sys), sym)
                 GetpAtStateTime(getp(sys, sym))
             else

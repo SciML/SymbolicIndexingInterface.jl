@@ -323,6 +323,10 @@ struct MultipleParametersGetter{T <: IsIndexerTimeseries, G, I} <:
 end
 
 function MultipleParametersGetter(getters)
+    if isempty(getters)
+        return MultipleParametersGetter{IndexerNotTimeseries, typeof(getters), Nothing}(
+            getters, nothing)
+    end
     has_timeseries_indexers = any(getters) do g
         is_indexer_timeseries(g) == IndexerTimeseries()
     end

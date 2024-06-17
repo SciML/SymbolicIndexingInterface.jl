@@ -91,6 +91,19 @@ for (sym, val, check_inference) in [
     @test get(fi) == val
 end
 
+let fi = fi, sys = sys
+    getter = getu(sys, [])
+    @test getter(fi) == []
+    getter = getu(sys, ())
+    @test getter(fi) == ()
+    sc = SymbolCache(nothing, [:a, :b], :t)
+    fi = FakeIntegrator(sys, nothing, [1.0, 2.0], 3.0)
+    getter = getu(sc, [])
+    @test getter(fi) == []
+    getter = getu(sc, ())
+    @test getter(fi) == ()
+end
+
 for (sym, oldval, newval, check_inference) in [(:a, p[1], 4.0, true)
                                                (:b, p[2], 5.0, true)
                                                (:c, p[3], 6.0, true)
@@ -230,6 +243,19 @@ for (sym, val) in [(:a, p[1])
     get = getu(sys, sym)
     @inferred get(sol)
     @test get(sol) == val
+end
+
+let sol = sol, sys = sys
+    getter = getu(sys, [])
+    @test getter(sol) == [[] for _ in 1:length(sol.t)]
+    getter = getu(sys, ())
+    @test getter(sol) == [() for _ in 1:length(sol.t)]
+    sc = SymbolCache(nothing, [:a, :b], :t)
+    sol = FakeSolution(sys, [], [1.0, 2.0], [])
+    getter = getu(sc, [])
+    @test getter(sol) == []
+    getter = getu(sc, ())
+    @test getter(sol) == []
 end
 
 sys = SymbolCache([:x, :y, :z], [:a, :b, :c])
