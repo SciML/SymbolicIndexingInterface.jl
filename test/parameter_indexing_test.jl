@@ -123,7 +123,21 @@ for sys in [
                 @test buffer == collect(val)
             end
         end
+
+        getter = getp(sys, [])
+        @test getter(fi) == []
+        getter = getp(sys, ())
+        @test getter(fi) == ()
     end
+end
+
+let
+    sc = SymbolCache(nothing, nothing, :t)
+    fi = FakeIntegrator(sc, nothing, 0.0, Ref(0))
+    getter = getp(sc, [])
+    @test getter(fi) == []
+    getter = getp(sc, ())
+    @test getter(fi) == ()
 end
 
 struct MyDiffEqArray
@@ -386,6 +400,13 @@ for (sym, val_is_timeseries, val, check_inference) in [
 end
 
 @test_throws ErrorException getp(sys, :not_a_param)
+
+let fs = fs, sys = sys
+    getter = getp(sys, [])
+    @test getter(fs) == []
+    getter = getp(sys, ())
+    @test getter(fs) == ()
+end
 
 struct FakeNoTimeSolution
     sys::SymbolCache
