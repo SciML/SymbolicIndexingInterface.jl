@@ -613,7 +613,7 @@ struct MultipleSetters{S} <: AbstractSetIndexer
 end
 
 function (ms::MultipleSetters)(prob, val)
-    map((s!, v) -> s!(prob, v), ms.setters, val)
+    broadcast((s!, v) -> s!(prob, v), ms.setters, val)
 end
 
 for (t1, t2) in [
