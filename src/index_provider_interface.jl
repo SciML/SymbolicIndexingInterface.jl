@@ -99,43 +99,54 @@ function timeseries_parameter_index(indp, sym)
 end
 
 """
-    struct ParameterObservedFunction
-    function ParameterObservedFunction(timeseries_idx, observed_fn::Function)
-    function ParameterObservedFunction(observed_fn::Function)
-
-A struct which stores the parameter observed function and optional timeseries index for
-a particular symbol. The timeseries index is optional and may be omitted. Specifying the
-timeseries index allows [`getp`](@ref) to return the appropriate timeseries for a
-timeseries parameter.
-
-For time-dependent index providers (where `is_time_dependent(indp)`) `observed_fn` must
-have the signature `(p, t) -> [values...]`. For non-time-dependent index providers
-(where `!is_time_dependent(indp)`) `observed_fn` must have the signature
-`(p) -> [values...]`. To support in-place `getp` methods, `observed_fn` must also have an
-additional method which takes `buffer::AbstractArray` as its first argument. The required
-values must be written to the buffer in the appropriate order.
-"""
-struct ParameterObservedFunction{I, F <: Function}
-    timeseries_idx::I
-    observed_fn::F
-end
-
-"""
     parameter_observed(indp, sym)
 
-Return the observed function of `sym` in `indp` as a [`ParameterObservedFunction`](@ref).
-If `sym` only involves variables from a single parameter timeseries (optionally along
-with non-timeseries parameters) the timeseries index of the parameter timeseries should
-be provided in the [`ParameterObservedFunction`](@ref). In all other cases, just the
-observed function should be returned as part of the `ParameterObservedFunction` object.
+Return the observed function of `sym` in `indp`. This functions similarly to
+[`observed`](@ref) except that `u` is not an argument of the returned function. For time-
+dependent systems, the returned function must have the signature `(p, t) -> [values...]`.
+For time-independent systems, the returned function must have the signature
+`(p) -> [values...]`.
 
-By default, this function returns `nothing`.
+By default, this function returns `nothing`, indicating that the index provider does not
+support generating parameter observed functions.
 """
 function parameter_observed(indp, sym)
     if hasmethod(symbolic_container, Tuple{typeof(indp)})
         return parameter_observed(symbolic_container(indp), sym)
     else
         return nothing
+    end
+end
+
+"""
+    struct ContinuousTimeseries end
+
+A singleton struct corresponding to the timeseries index of the continuous timeseries.
+"""
+struct ContinuousTimeseries end
+
+"""
+    get_all_timeseries_indexes(indp, sym)
+
+Return a `Set` of all unique timeseries indexes of variables in symbolic variable
+`sym`. `sym` may be a symbolic variable or expression, an array of symbolics, an index,
+or an array of indices. Continuous variables correspond to the
+[`ContinuousTimeseries`](@ref) timeseries index. Non-timeseries parameters do not have a
+timeseries index. Timeseries parameters have the same timeseries index as that returned by
+[`timeseries_parameter_index`](@ref). Note that the independent variable corresponds to
+the `ContinuousTimeseries` timeseries index.
+
+Any ambiguities should be resolved in favor of variables. For example, if `1` could refer
+to the variable at index `1` or parameter at index `1`, it should be interpreted as the
+variable.
+
+By default, this function returns `Set([ContinuousTimeseries()])`.
+"""
+function get_all_timeseries_indexes(indp, sym)
+    if hasmethod(symbolic_container, Tuple{typeof(indp)})
+        return get_all_timeseries_indexes(symbolic_container(indp), sym)
+    else
+        return Set([ContinuousTimeseries()])
     end
 end
 

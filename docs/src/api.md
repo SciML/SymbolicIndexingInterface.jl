@@ -31,7 +31,6 @@ allvariables
 ```@docs
 observed
 parameter_observed
-ParameterObservedFunction
 ```
 
 #### Parameter timeseries
@@ -46,6 +45,8 @@ may change at different times.
 is_timeseries_parameter
 timeseries_parameter_index
 ParameterTimeseriesIndex
+get_all_timeseries_indexes
+ContinuousTimeseries
 ```
 
 ## Value provider interface

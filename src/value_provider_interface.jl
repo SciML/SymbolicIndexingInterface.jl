@@ -23,25 +23,30 @@ parameter_values(arr::Tuple, i) = arr[i]
 parameter_values(prob, i) = parameter_values(parameter_values(prob), i)
 
 """
-    parameter_values_at_time(valp, t)
+    get_parameter_timeseries_collection(valp)
 
-Return an indexable collection containing the value of all parameters in `valp` at time
-`t`. Note that `t` here is a floating-point time, and not an index into a timeseries.
-
-This is useful for parameter timeseries objects, since some parameters change over time.
+Return the [`ParameterTimeseriesCollection`](@ref) contained in timeseries value provider
+`valp`. Valid only for value providers where [`is_parameter_timeseries`](@ref) returns
+[`Timeseries`](@ref).
 """
 function get_parameter_timeseries_collection end
 
 """
-    with_updated_parameter_timeseries_values(valp, args::Pair...)
+    with_updated_parameter_timeseries_values(indp, params, args::Pair...)
 
-Return an indexable collection containing the value of all parameters in `valp`, with
+Return an indexable collection containing the value of all parameters in `params`, with
 parameters belonging to specific timeseries updated to different values. Each element in
 `args...` contains the timeseries index as the first value, and the saved parameter values
 in that partition. Not all parameter timeseries have to be updated using this method. If
-an in-place update can be performed, it should be done and the modified `valp` returned.
+an in-place update can be performed, it should be done and the modified `params` returned.
+This method falls back on the basis of `symbolic_container(indp)`.
+
+Note that here `params` is the parameter object.
 """
-function with_updated_parameter_timeseries_values end
+function with_updated_parameter_timeseries_values(indp, params, args...)
+    return with_updated_parameter_timeseries_values(
+        symbolic_container(indp), params, args...)
+end
 
 """
     set_parameter!(valp, val, idx)
@@ -159,34 +164,38 @@ function (ai::AbstractParameterGetIndexer)(buffer::AbstractArray, prob, i)
     ai(buffer, is_parameter_timeseries(prob), prob, i)
 end
 
-abstract type IsIndexerTimeseries end
+abstract type IndexerTimeseriesType end
 
-struct IndexerTimeseries <: IsIndexerTimeseries end
-struct IndexerNotTimeseries <: IsIndexerTimeseries end
-struct IndexerBoth <: IsIndexerTimeseries end
-
-const AtLeastTimeseriesIndexer = Union{IndexerTimeseries, IndexerBoth}
-const AtLeastNotTimeseriesIndexer = Union{IndexerNotTimeseries, IndexerBoth}
+# Can only index parameter timeseries
+struct IndexerOnlyTimeseries <: IndexerTimeseriesType end
+# Can only index non-timeseries objects
+struct IndexerMixedTimeseries <: IndexerTimeseriesType end
+# Can index timeseres and non-timeseries objects, has the same value at all times
+struct IndexerNotTimeseries <: IndexerTimeseriesType end
+# Value changes over time, can index timeseries and non-timeseries objects
+struct IndexerBoth <: IndexerTimeseriesType end
 
 is_indexer_timeseries(x) = is_indexer_timeseries(typeof(x))
 function indexer_timeseries_index end
 
-as_not_timeseries_indexer(x) = as_not_timeseries_indexer(is_indexer_timeseries(x), x)
-as_not_timeseries_indexer(::IndexerNotTimeseries, x) = x
-function as_not_timeseries_indexer(::IndexerTimeseries, x)
-    error("""
-        Tried to convert an `$IndexerTimeseries` to an `$IndexerNotTimeseries`. This \
-        should never happen. Please file an issue with an MWE.
-    """)
-end
+const AtLeastTimeseriesIndexer = Union{IndexerOnlyTimeseries, IndexerBoth}
+const AtLeastNotTimeseriesIndexer = Union{IndexerNotTimeseries, IndexerBoth}
 
 as_timeseries_indexer(x) = as_timeseries_indexer(is_indexer_timeseries(x), x)
-as_timeseries_indexer(::IndexerTimeseries, x) = x
-function as_timeseries_indexer(::IndexerNotTimeseries, x)
-    error("""
-        Tried to convert an `$IndexerNotTimeseries` to an `$IndexerTimeseries`. This \
-        should never happen. Please file an issue with an MWE.
-    """)
+as_timeseries_indexer(::IndexerOnlyTimeseries, x) = x
+as_timeseries_indexer(::IndexerNotTimeseries, x) = x
+as_not_timeseries_indexer(x) = as_not_timeseries_indexer(is_indexer_timeseries(x), x)
+as_not_timeseries_indexer(::IndexerNotTimeseries, x) = x
+
+function _postprocess_tsidxs(ts_idxs)
+    delete!(ts_idxs, ContinuousTimeseries())
+    if isempty(ts_idxs)
+        return nothing
+    elseif length(ts_idxs) == 1
+        return only(ts_idxs)
+    else
+        return collect(ts_idxs)
+    end
 end
 
 struct CallWith{A}
@@ -201,6 +210,15 @@ end
 
 function _call(f, args...)
     return f(args...)
+end
+
+struct Fix1Multiple{F, A}
+    f::F
+    arg::A
+end
+
+function (fn::Fix1Multiple)(args...)
+    fn.f(fn.arg, args...)
 end
 
 ###########
@@ -219,12 +237,6 @@ struct ParameterTimeseriesValueIndexMismatchError{P <: IsTimeseriesTrait} <: Exc
                 got $(valp). Open an issue in SymbolicIndexingInterface.jl with an MWE.
             """))
         end
-        if is_indexer_timeseries(indexer) != IndexerNotTimeseries()
-            throw(ArgumentError("""
-                This should never happen. Expected non-timeseries indexer, got \
-                $(indexer). Open an issue in SymbolicIndexingInterface.jl with an MWE.
-            """))
-        end
         return new{Timeseries}(valp, indexer, args)
     end
     function ParameterTimeseriesValueIndexMismatchError{NotTimeseries}(valp, indexer)
@@ -235,7 +247,7 @@ struct ParameterTimeseriesValueIndexMismatchError{P <: IsTimeseriesTrait} <: Exc
                 with an MWE.
             """))
         end
-        if is_indexer_timeseries(indexer) != IndexerTimeseries()
+        if is_indexer_timeseries(indexer) != IndexerOnlyTimeseries()
             throw(ArgumentError("""
                 This should never happen. Expected timeseries indexer, got $(indexer). \
                 Open an issue in SymbolicIndexingInterface.jl with an MWE.
@@ -263,13 +275,13 @@ function Base.showerror(
 end
 
 struct MixedParameterTimeseriesIndexError <: Exception
-    valp::Any
+    obj::Any
     ts_idxs::Any
 end
 
 function Base.showerror(io::IO, err::MixedParameterTimeseriesIndexError)
     print(io, """
-        Invalid indexing operation: tried to access object of type $(typeof(err.valp)) \
+        Invalid indexing operation: tried to access object of type $(typeof(err.obj)) \
         (which is a parameter timeseries object) with variables having mixed timeseries \
         indexes $(err.ts_idxs).
     """)

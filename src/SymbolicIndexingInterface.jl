@@ -14,7 +14,8 @@ include("trait.jl")
 export is_variable, variable_index, variable_symbols, is_parameter, parameter_index,
        is_timeseries_parameter, timeseries_parameter_index, ParameterTimeseriesIndex,
        parameter_symbols, is_independent_variable, independent_variable_symbols,
-       is_observed, observed, parameter_observed, ParameterObservedFunction,
+       is_observed, observed, parameter_observed,
+       ContinuousTimeseries, get_all_timeseries_indexes,
        is_time_dependent, constant_structure, symbolic_container,
        all_variable_symbols, all_symbols, solvedvariables, allvariables, default_values,
        symbolic_evaluate
