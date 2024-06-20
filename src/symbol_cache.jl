@@ -106,7 +106,7 @@ function is_independent_variable(sc::SymbolCache, sym)
     if symbolic_type(sc.independent_variables) == NotSymbolic()
         return any(isequal(sym), sc.independent_variables)
     elseif symbolic_type(sc.independent_variables) == ScalarSymbolic()
-        return sym == sc.independent_variables
+        return isequal(sym, sc.independent_variables)
     else
         return any(isequal(sym), collect(sc.independent_variables))
     end
