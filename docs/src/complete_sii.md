@@ -132,10 +132,8 @@ end
 In case a type does not support such observed quantities, `is_observed` must be
 defined to always return `false`, and `observed` does not need to be implemented.
 
-The same process can be followed for [`parameter_observed`](@ref), with the exception
-that the returned function must not have `u` in its signature, and must be wrapped in a
-[`ParameterObservedFunction`](@ref). In-place versions can also be implemented for
-`parameter_observed`.
+The same process can be followed for [`parameter_observed`](@ref). In-place versions
+can also be implemented for `parameter_observed`.
 
 #### Note about constant structure
 
@@ -334,7 +332,9 @@ end
 # To be able to access parameter values
 SymbolicIndexingInterface.parameter_values(mpo::MyParameterObject) = mpo.p
 # Update the parameter object with new values
-function SymbolicIndexingInterface.with_updated_parameter_timeseries_values(mpo::MyParameterObject, args::Pair...)
+# Here, we don't need the index provider but it may be necessary for other implementations
+function SymbolicIndexingInterface.with_updated_parameter_timeseries_values(
+      ::SymbolCache, mpo::MyParameterObject, args::Pair...)
     for (ts_idx, val) in args
         mpo.p[mpo.disc_idxs[ts_idx]] = val
     end

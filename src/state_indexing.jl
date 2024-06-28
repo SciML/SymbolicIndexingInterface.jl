@@ -51,107 +51,60 @@ function _getu(sys, ::NotSymbolic, ::NotSymbolic, sym)
     return GetStateIndex(sym)
 end
 
-struct GetpAtStateTime{G} <: AbstractStateGetIndexer
-    getter::G
-end
-
-function (g::GetpAtStateTime)(ts::Timeseries, prob)
-    g(ts, is_parameter_timeseries(prob), prob)
-end
-function (g::GetpAtStateTime)(ts::Timeseries, prob, i)
-    g(ts, is_parameter_timeseries(prob), prob, i)
-end
-function (g::GetpAtStateTime)(::Timeseries, ::NotTimeseries, prob, _...)
-    g.getter(prob)
-end
-function (g::GetpAtStateTime)(ts::Timeseries, p_ts::Timeseries, prob)
-    g(ts, p_ts, is_indexer_timeseries(g.getter), prob)
-end
-function (g::GetpAtStateTime)(
-        ::Timeseries, ::Timeseries, ::Union{IndexerTimeseries, IndexerBoth}, prob)
-    g.getter.((prob,),
-        parameter_timeseries_at_state_time(prob, indexer_timeseries_index(g.getter)))
-end
-function (g::GetpAtStateTime)(::Timeseries, ::Timeseries, ::IndexerNotTimeseries, prob)
-    g.getter(prob)
-end
-function (g::GetpAtStateTime)(ts::Timeseries, p_ts::Timeseries, prob, i)
-    g(ts, p_ts, is_indexer_timeseries(g.getter), prob, i)
-end
-function (g::GetpAtStateTime)(
-        ::Timeseries, ::Timeseries, ::Union{IndexerTimeseries, IndexerBoth}, prob, i)
-    g.getter(prob,
-        parameter_timeseries_at_state_time(prob, indexer_timeseries_index(g.getter), i))
-end
-function (g::GetpAtStateTime)(::Timeseries, ::Timeseries, ::IndexerNotTimeseries,
-        prob, ::Union{Int, CartesianIndex})
-    g.getter(prob)
-end
-function (g::GetpAtStateTime)(
-        ::Timeseries, ::Timeseries, ::IndexerNotTimeseries, prob, ::Colon)
-    map(_ -> g.getter(prob), current_time(prob))
-end
-function (g::GetpAtStateTime)(
-        ::Timeseries, ::Timeseries, ::IndexerNotTimeseries, prob, i::AbstractArray{Bool})
-    num_ones = sum(i)
-    map(_ -> g.getter(prob), 1:num_ones)
-end
-function (g::GetpAtStateTime)(::Timeseries, ::Timeseries, ::IndexerNotTimeseries, prob, i)
-    map(_ -> g.getter(prob), 1:length(i))
-end
-function (g::GetpAtStateTime)(::NotTimeseries, prob)
-    g.getter(prob)
-end
-
 struct GetIndepvar <: AbstractStateGetIndexer end
 
 (::GetIndepvar)(::IsTimeseriesTrait, prob) = current_time(prob)
 (::GetIndepvar)(::Timeseries, prob, i) = current_time(prob, i)
 
-struct TimeDependentObservedFunction{F} <: AbstractStateGetIndexer
+struct TimeDependentObservedFunction{I, F} <: AbstractStateGetIndexer
+    ts_idxs::I
     obsfn::F
 end
 
-function (o::TimeDependentObservedFunction)(ts::Timeseries, prob)
-    return o(ts, is_parameter_timeseries(prob), prob)
+indexer_timeseries_index(t::TimeDependentObservedFunction) = t.ts_idxs
+function is_indexer_timeseries(::Type{G}) where {G <:
+                                                 TimeDependentObservedFunction{ContinuousTimeseries}}
+    return IndexerBoth()
 end
-function (o::TimeDependentObservedFunction)(::Timeseries, ::Timeseries, prob)
-    map(o.obsfn, state_values(prob),
-        parameter_values_at_state_time(prob), current_time(prob))
+function is_indexer_timeseries(::Type{G}) where {G <:
+                                                 TimeDependentObservedFunction{<:Vector}}
+    return IndexerMixedTimeseries()
 end
-function (o::TimeDependentObservedFunction)(::Timeseries, ::NotTimeseries, prob)
-    o.obsfn.(state_values(prob),
+function (o::TimeDependentObservedFunction)(ts::IsTimeseriesTrait, prob, args...)
+    return o(ts, is_indexer_timeseries(o), prob, args...)
+end
+
+function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob)
+    return o.obsfn.(state_values(prob),
         (parameter_values(prob),),
         current_time(prob))
 end
-function (o::TimeDependentObservedFunction)(ts::Timeseries, prob, i)
-    return o(ts, is_parameter_timeseries(prob), prob, i)
+function (o::TimeDependentObservedFunction)(
+        ::Timeseries, ::IndexerBoth, prob, i::Union{Int, CartesianIndex})
+    return o.obsfn(state_values(prob, i), parameter_values(prob), current_time(prob, i))
+end
+function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, ::Colon)
+    return o(ts, prob)
 end
 function (o::TimeDependentObservedFunction)(
-        ::Timeseries, ::Timeseries, prob, i::Union{Int, CartesianIndex})
-    return o.obsfn(state_values(prob, i),
-        parameter_values_at_state_time(prob, i),
-        current_time(prob, i))
-end
-function (o::TimeDependentObservedFunction)(
-        ts::Timeseries, p_ts::IsTimeseriesTrait, prob, ::Colon)
-    return o(ts, p_ts, prob)
-end
-function (o::TimeDependentObservedFunction)(
-        ts::Timeseries, p_ts::IsTimeseriesTrait, prob, i::AbstractArray{Bool})
+        ts::Timeseries, ::IndexerBoth, prob, i::AbstractArray{Bool})
     map(only(to_indices(current_time(prob), (i,)))) do idx
-        o(ts, p_ts, prob, idx)
+        o(ts, prob, idx)
     end
 end
+function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, i)
+    o.((ts,), (prob,), i)
+end
+function (o::TimeDependentObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
+    return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
+end
+
 function (o::TimeDependentObservedFunction)(
-        ts::Timeseries, p_ts::IsTimeseriesTrait, prob, i)
-    o.((ts,), (p_ts,), (prob,), i)
+        ::Timeseries, ::IndexerMixedTimeseries, prob, args...)
+    throw(MixedParameterTimeseriesIndexError(prob, indexer_timeseries_index(o)))
 end
 function (o::TimeDependentObservedFunction)(
-        ::Timeseries, ::NotTimeseries, prob, i::Union{Int, CartesianIndex})
-    o.obsfn(state_values(prob, i), parameter_values(prob), current_time(prob, i))
-end
-function (o::TimeDependentObservedFunction)(::NotTimeseries, prob)
+        ::NotTimeseries, ::IndexerMixedTimeseries, prob, args...)
     return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
 end
 
@@ -168,42 +121,77 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
         idx = variable_index(sys, sym)
         return getu(sys, idx)
     elseif is_parameter(sys, sym)
-        return GetpAtStateTime(getp(sys, sym))
+        return getp(sys, sym)
     elseif is_independent_variable(sys, sym)
         return GetIndepvar()
     elseif is_observed(sys, sym)
-        fn = observed(sys, sym)
-        if is_time_dependent(sys)
-            return TimeDependentObservedFunction(fn)
+        if !is_time_dependent(sys)
+            return TimeIndependentObservedFunction(observed(sys, sym))
+        end
+
+        ts_idxs = get_all_timeseries_indexes(sys, sym)
+        if ContinuousTimeseries() in ts_idxs
+            if length(ts_idxs) == 1
+                ts_idxs = only(ts_idxs)
+            else
+                ts_idxs = collect(ts_idxs)
+            end
+            fn = observed(sys, sym)
+            return TimeDependentObservedFunction(ts_idxs, fn)
         else
-            return TimeIndependentObservedFunction(fn)
+            return getp(sys, sym)
         end
     end
     error("Invalid symbol $sym for `getu`")
 end
 
-struct MultipleGetters{G} <: AbstractStateGetIndexer
+struct MultipleGetters{I, G} <: AbstractStateGetIndexer
+    ts_idxs::I
     getters::G
 end
 
-function (mg::MultipleGetters)(ts::Timeseries, prob)
+indexer_timeseries_index(mg::MultipleGetters) = mg.ts_idxs
+function is_indexer_timeseries(::Type{G}) where {G <: MultipleGetters{ContinuousTimeseries}}
+    return IndexerBoth()
+end
+function is_indexer_timeseries(::Type{G}) where {G <: MultipleGetters{<:Vector}}
+    return IndexerMixedTimeseries()
+end
+function is_indexer_timeseries(::Type{G}) where {G <: MultipleGetters{Nothing}}
+    return IndexerNotTimeseries()
+end
+
+function (mg::MultipleGetters)(ts::IsTimeseriesTrait, prob, args...)
+    return mg(ts, is_indexer_timeseries(mg), prob, args...)
+end
+
+function (mg::MultipleGetters)(ts::Timeseries, ::IndexerBoth, prob)
     return mg.((ts,), (prob,), eachindex(current_time(prob)))
 end
-function (mg::MultipleGetters)(::Timeseries, prob, i::Union{Int, CartesianIndex})
+function (mg::MultipleGetters)(
+        ::Timeseries, ::IndexerBoth, prob, i::Union{Int, CartesianIndex})
     return map(CallWith(prob, i), mg.getters)
 end
-function (mg::MultipleGetters)(ts::Timeseries, prob, ::Colon)
+function (mg::MultipleGetters)(ts::Timeseries, ::IndexerBoth, prob, ::Colon)
     return mg(ts, prob)
 end
-function (mg::MultipleGetters)(ts::Timeseries, prob, i::AbstractArray{Bool})
+function (mg::MultipleGetters)(ts::Timeseries, ::IndexerBoth, prob, i::AbstractArray{Bool})
     return map(only(to_indices(current_time(prob), (i,)))) do idx
         mg(ts, prob, idx)
     end
 end
-function (mg::MultipleGetters)(ts::Timeseries, prob, i)
+function (mg::MultipleGetters)(ts::Timeseries, ::IndexerBoth, prob, i)
     mg.((ts,), (prob,), i)
 end
-function (mg::MultipleGetters)(::NotTimeseries, prob)
+function (mg::MultipleGetters)(
+        ::NotTimeseries, ::Union{IndexerBoth, IndexerNotTimeseries}, prob)
+    return map(g -> g(prob), mg.getters)
+end
+
+function (mg::MultipleGetters)(::Timeseries, ::IndexerMixedTimeseries, prob, args...)
+    throw(MixedParameterTimeseriesIndexError(prob, indexer_timeseries_index(mg)))
+end
+function (mg::MultipleGetters)(::NotTimeseries, ::IndexerMixedTimeseries, prob, args...)
     return map(g -> g(prob), mg.getters)
 end
 
@@ -233,20 +221,42 @@ for (t1, t2) in [
     (ArraySymbolic, Any),
     (NotSymbolic, Union{<:Tuple, <:AbstractArray})
 ]
-    @eval function _getu(sys, ::NotSymbolic, ::$t1, sym::$t2)
+    @eval function _getu(sys, ::NotSymbolic, elt::$t1, sym::$t2)
+        if isempty(sym)
+            return MultipleGetters(ContinuousTimeseries(), sym)
+        end
+        sym_arr = sym isa Tuple ? collect(sym) : sym
+        num_observed = count(x -> is_observed(sys, x), sym)
+        if !is_time_dependent(sys)
+            if num_observed == 0 || num_observed == 1 && sym isa Tuple
+                return MultipleGetters(nothing, getu.((sys,), sym))
+            else
+                obs = observed(sys, sym_arr)
+                getter = TimeIndependentObservedFunction(obs)
+                if sym isa Tuple
+                    getter = AsTupleWrapper{length(sym)}(getter)
+                end
+                return getter
+            end
+        end
+        ts_idxs = get_all_timeseries_indexes(sys, sym_arr)
+        if !(ContinuousTimeseries() in ts_idxs)
+            return getp(sys, sym)
+        end
+        if length(ts_idxs) == 1
+            ts_idxs = only(ts_idxs)
+        else
+            ts_idxs = collect(ts_idxs)
+        end
+
         num_observed = count(x -> is_observed(sys, x), sym)
         if num_observed == 0 || num_observed == 1 && sym isa Tuple
-            if !isempty(sym) && all(Base.Fix1(is_parameter, sys), sym) &&
-               all(!Base.Fix1(is_timeseries_parameter, sys), sym)
-                GetpAtStateTime(getp(sys, sym))
-            else
-                getters = getu.((sys,), sym)
-                return MultipleGetters(getters)
-            end
+            getters = getu.((sys,), sym)
+            return MultipleGetters(ts_idxs, getters)
         else
-            obs = observed(sys, sym isa Tuple ? collect(sym) : sym)
+            obs = observed(sys, sym_arr)
             getter = if is_time_dependent(sys)
-                TimeDependentObservedFunction(obs)
+                TimeDependentObservedFunction(ts_idxs, obs)
             else
                 TimeIndependentObservedFunction(obs)
             end
@@ -263,7 +273,7 @@ function _getu(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
         idx = variable_index(sys, sym)
         return getu(sys, idx)
     elseif is_parameter(sys, sym)
-        return GetpAtStateTime(getp(sys, sym))
+        return getp(sys, sym)
     end
     return getu(sys, collect(sym))
 end
