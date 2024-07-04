@@ -123,3 +123,8 @@ sc2 = copy(sc)
 @test sc.variables == sc2.variables
 @test sc.parameters == sc2.parameters
 @test sc.independent_variables == sc2.independent_variables
+
+sc = SymbolCache()
+for sym in [1, :a, :(a + b), "foo", [:a, :b], [:(a + b), :c]]
+    @test only(get_all_timeseries_indexes(sc, sym)) == ContinuousTimeseries()
+end

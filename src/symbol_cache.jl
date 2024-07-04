@@ -130,6 +130,14 @@ function timeseries_parameter_index(sc::SymbolCache, sym)
         return get(sc.timeseries_parameters, sym, nothing)
     end
 end
+
+for symT in [Any, Expr, AbstractArray]
+    @eval function get_all_timeseries_indexes(
+            ::SymbolCache{Nothing, Nothing, Nothing}, ::$symT)
+        Set([ContinuousTimeseries()])
+    end
+end
+
 function get_all_timeseries_indexes(sc::SymbolCache, sym)
     if is_variable(sc, sym) || is_independent_variable(sc, sym)
         return Set([ContinuousTimeseries()])
