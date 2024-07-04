@@ -48,14 +48,14 @@ obsfn5 = observed(sc, (:(x + a), :(y + b)))
 @test_throws TypeError observed(sc, [:(x + a), 2])
 @test_throws TypeError observed(sc, (:(x + a), 2))
 
-pobsfn1 = parameter_observed(sc, :(a + b + t)).observed_fn
+pobsfn1 = parameter_observed(sc, :(a + b + t))
 @test pobsfn1(2ones(2), 3.0) == 7.0
-pobsfn2 = parameter_observed(sc, [:(a + b + t), :(a + t)]).observed_fn
+pobsfn2 = parameter_observed(sc, [:(a + b + t), :(a + t)])
 @test pobsfn2(2ones(2), 3.0) == [7.0, 5.0]
 buffer = zeros(2)
 pobsfn2(buffer, 2ones(2), 3.0)
 @test buffer == [7.0, 5.0]
-pobsfn3 = parameter_observed(sc, (:(a + b + t), :(a + t))).observed_fn
+pobsfn3 = parameter_observed(sc, (:(a + b + t), :(a + t)))
 @test pobsfn3(2ones(2), 3.0) == (7.0, 5.0)
 buffer = zeros(2)
 pobsfn3(buffer, 2ones(2), 3.0)
@@ -67,14 +67,11 @@ pobsfn3(buffer, 2ones(2), 3.0)
 sc = SymbolCache([:x, :y], [:a, :b, :c], :t;
     timeseries_parameters = Dict(
         :b => ParameterTimeseriesIndex(1, 1), :c => ParameterTimeseriesIndex(2, 1)))
-@test parameter_observed(sc, :(a + c)).timeseries_idx == 2
-@test parameter_observed(sc, [:a, :c]).timeseries_idx == 2
-@test parameter_observed(sc, (:a, :c)).timeseries_idx == 2
-@test parameter_observed(sc, :(2a)).timeseries_idx === nothing
-@test parameter_observed(sc, [:(2a), :(3a)]).timeseries_idx === nothing
-@test parameter_observed(sc, (:(2a), :(3a))).timeseries_idx === nothing
-@test parameter_observed(sc, [:b, :c]).timeseries_idx === nothing
-@test parameter_observed(sc, (:b, :c)).timeseries_idx === nothing
+@test only(get_all_timeseries_indexes(sc, :(a + c))) == 2
+@test only(get_all_timeseries_indexes(sc, [:a, :c])) == 2
+@test isempty(get_all_timeseries_indexes(sc, :(2a)))
+@test isempty(get_all_timeseries_indexes(sc, [:(2a), :(3a)]))
+@test sort(collect(get_all_timeseries_indexes(sc, [:b, :c]))) == [1, 2]
 
 @test_throws ArgumentError SymbolCache([:x, :y], [:a, :b], :t;
     timeseries_parameters = Dict(:c => ParameterTimeseriesIndex(1, 1)))

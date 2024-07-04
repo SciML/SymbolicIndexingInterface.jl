@@ -72,10 +72,20 @@ function SymbolCache(vars = nothing, params = nothing, indepvars = nothing;
 end
 
 function is_variable(sc::SymbolCache, sym)
-    sc.variables !== nothing && haskey(sc.variables, sym)
+    sc.variables === nothing && return false
+    if symbolic_type(sym) == NotSymbolic()
+        return sym in values(sc.variables)
+    else
+        return haskey(sc.variables, sym)
+    end
 end
 function variable_index(sc::SymbolCache, sym)
-    sc.variables === nothing ? nothing : get(sc.variables, sym, nothing)
+    sc.variables === nothing && return nothing
+    if symbolic_type(sym) == NotSymbolic()
+        return sym
+    else
+        return get(sc.variables, sym, nothing)
+    end
 end
 function variable_symbols(sc::SymbolCache, i = nothing)
     sc.variables === nothing && return []
@@ -86,27 +96,64 @@ function variable_symbols(sc::SymbolCache, i = nothing)
     return buffer
 end
 function is_parameter(sc::SymbolCache, sym)
-    sc.parameters !== nothing && haskey(sc.parameters, sym)
+    sc.parameters === nothing && return false
+    if symbolic_type(sym) == NotSymbolic()
+        return sym in values(sc.parameters)
+    else
+        return haskey(sc.parameters, sym)
+    end
 end
 function parameter_index(sc::SymbolCache, sym)
-    sc.parameters === nothing ? nothing : get(sc.parameters, sym, nothing)
+    sc.parameters === nothing && return nothing
+    if symbolic_type(sym) == NotSymbolic()
+        return sym
+    else
+        return get(sc.parameters, sym, nothing)
+    end
 end
 function parameter_symbols(sc::SymbolCache)
     sc.parameters === nothing ? [] : collect(keys(sc.parameters))
 end
 function is_timeseries_parameter(sc::SymbolCache, sym)
-    sc.timeseries_parameters !== nothing && haskey(sc.timeseries_parameters, sym)
+    sc.timeseries_parameters === nothing && return false
+    if symbolic_type(sym) == NotSymbolic()
+        return sym in values(sc.timeseries_parameters)
+    else
+        return haskey(sc.timeseries_parameters, sym)
+    end
 end
 function timeseries_parameter_index(sc::SymbolCache, sym)
-    sc.timeseries_parameters === nothing ? nothing :
-    get(sc.timeseries_parameters, sym, nothing)
+    sc.timeseries_parameters === nothing && return nothing
+    if symbolic_type(sym) == NotSymbolic()
+        return sym
+    else
+        return get(sc.timeseries_parameters, sym, nothing)
+    end
+end
+function get_all_timeseries_indexes(sc::SymbolCache, sym)
+    if is_variable(sc, sym) || is_independent_variable(sc, sym)
+        return Set([ContinuousTimeseries()])
+    elseif is_timeseries_parameter(sc, sym)
+        return Set([timeseries_parameter_index(sc, sym).timeseries_idx])
+    else
+        return Set()
+    end
+end
+function get_all_timeseries_indexes(sc::SymbolCache, sym::Expr)
+    exs = ExpressionSearcher()
+    exs(sc, sym)
+    return mapreduce(
+        Base.Fix1(get_all_timeseries_indexes, sc), union, exs.declared; init = Set())
+end
+function get_all_timeseries_indexes(sc::SymbolCache, sym::AbstractArray)
+    return mapreduce(Base.Fix1(get_all_timeseries_indexes, sc), union, sym; init = Set())
 end
 function is_independent_variable(sc::SymbolCache, sym)
     sc.independent_variables === nothing && return false
     if symbolic_type(sc.independent_variables) == NotSymbolic()
         return any(isequal(sym), sc.independent_variables)
     elseif symbolic_type(sc.independent_variables) == ScalarSymbolic()
-        return sym == sc.independent_variables
+        return isequal(sym, sc.independent_variables)
     else
         return any(isequal(sym), collect(sc.independent_variables))
     end
@@ -227,24 +274,13 @@ function parameter_observed(sc::SymbolCache, expr::Expr)
     if is_time_dependent(sc)
         exs = ExpressionSearcher()
         exs(sc, expr)
-        ts_idxs = Set()
-        for p in exs.parameters
-            is_timeseries_parameter(sc, p) || continue
-            push!(ts_idxs, timeseries_parameter_index(sc, p).timeseries_idx)
-        end
-        f = let fn = observed(sc, expr)
+        return let fn = observed(sc, expr)
             f1(p, t) = fn(nothing, p, t)
         end
-        if length(ts_idxs) == 1
-            return ParameterObservedFunction(only(ts_idxs), f)
-        else
-            return ParameterObservedFunction(nothing, f)
-        end
     else
-        f = let fn = observed(sc, expr)
+        return let fn = observed(sc, expr)
             f2(p) = fn(nothing, p)
         end
-        return ParameterObservedFunction(nothing, f)
     end
 end
 
@@ -257,27 +293,16 @@ function parameter_observed(sc::SymbolCache, exprs::Union{AbstractArray, Tuple})
     if is_time_dependent(sc)
         exs = ExpressionSearcher()
         exs(sc, to_expr(exprs))
-        ts_idxs = Set()
-        for p in exs.parameters
-            is_timeseries_parameter(sc, p) || continue
-            push!(ts_idxs, timeseries_parameter_index(sc, p).timeseries_idx)
-        end
 
-        f = let oop = observed(sc, to_expr(exprs)), iip = inplace_observed(sc, exprs)
+        return let oop = observed(sc, to_expr(exprs)), iip = inplace_observed(sc, exprs)
             f1(p, t) = oop(nothing, p, t)
             f1(buffer, p, t) = iip(buffer, nothing, p, t)
         end
-        if length(ts_idxs) == 1
-            return ParameterObservedFunction(only(ts_idxs), f)
-        else
-            return ParameterObservedFunction(nothing, f)
-        end
     else
-        f = let oop = observed(sc, to_expr(exprs)), iip = inplace_observed(sc, exprs)
+        return let oop = observed(sc, to_expr(exprs)), iip = inplace_observed(sc, exprs)
             f2(p) = oop(nothing, p)
             f2(buffer, p) = iip(buffer, nothing, p)
         end
-        return ParameterObservedFunction(nothing, f)
     end
 end
 
