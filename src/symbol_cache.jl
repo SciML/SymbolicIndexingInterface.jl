@@ -71,8 +71,6 @@ function SymbolCache(vars = nothing, params = nothing, indepvars = nothing;
         defaults)
 end
 
-symbolic_container(sc::SymbolCache) = sc
-
 function is_variable(sc::SymbolCache, sym)
     sc.variables === nothing && return false
     if symbolic_type(sym) == NotSymbolic()
