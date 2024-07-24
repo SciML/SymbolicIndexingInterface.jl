@@ -5,7 +5,6 @@
 ### Mandatory methods
 
 ```@docs
-symbolic_container
 is_variable
 variable_index
 variable_symbols
@@ -25,6 +24,10 @@ allvariables
 ```
 
 ### Optional Methods
+
+```@docs
+symbolic_container
+```
 
 #### Observed equation handling
 
