@@ -647,7 +647,7 @@ end
 """
     setp(indp, sym)
 
-Return a function that takes an index provider and a value, and sets the parameter `sym`
+Return a function that takes a value provider and a value, and sets the parameter `sym`
 to that value. Note that `sym` can be an index, a symbolic variable, or an array/tuple of
 the aforementioned.
 
@@ -708,4 +708,70 @@ function _setp(sys, ::ArraySymbolic, ::SymbolicTypeTrait, p)
         return setp(sys, idx; run_hook = false)
     end
     return setp(sys, collect(p); run_hook = false)
+end
+
+"""
+    setp_oop(indp, sym)
+
+Return a function which takes a value provider `valp` and a value `val`, and returns
+`parameter_values(valp)` with the parameters at `sym` set to `val`. This allows changing
+the types of values stored, and leverages [`remake_buffer`](@ref). Note that `sym` can be
+an index, a symbolic variable, or an array/tuple of the aforementioned.
+
+Requires that the value provider implement `parameter_values` and `remake_buffer`.
+"""
+function setp_oop(indp, sym)
+    symtype = symbolic_type(sym)
+    elsymtype = symbolic_type(eltype(sym))
+    return _setp_oop(indp, symtype, elsymtype, sym)
+end
+
+struct OOPSetter{I, D}
+    indp::I
+    idxs::D
+end
+
+function (os::OOPSetter)(valp, val)
+    return remake_buffer(os.indp, parameter_values(valp), (os.idxs,), (val,))
+end
+
+function (os::OOPSetter)(valp, val::Union{Tuple, AbstractArray})
+    if os.idxs isa Union{Tuple, AbstractArray}
+        return remake_buffer(os.indp, parameter_values(valp), os.idxs, val)
+    else
+        return remake_buffer(os.indp, parameter_values(valp), (os.idxs,), (val,))
+    end
+end
+
+function _root_indp(indp)
+    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
+       (sc = symbolic_container(indp)) != indp
+        return _root_indp(sc)
+    else
+        return indp
+    end
+end
+
+function _setp_oop(indp, ::NotSymbolic, ::NotSymbolic, sym)
+    return OOPSetter(_root_indp(indp), sym)
+end
+
+function _setp_oop(indp, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
+    return OOPSetter(_root_indp(indp), parameter_index(indp, sym))
+end
+
+for (t1, t2) in [
+    (ScalarSymbolic, Any),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray})
+]
+    @eval function _setp_oop(indp, ::NotSymbolic, ::$t1, sym::$t2)
+        return OOPSetter(_root_indp(indp), parameter_index.((indp,), sym))
+    end
+end
+
+function _setp_oop(indp, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
+    if is_parameter(indp, sym)
+        return OOPSetter(_root_indp(indp), parameter_index(indp, sym))
+    end
+    error("$sym is not a valid parameter")
 end
