@@ -683,10 +683,6 @@ function _setp(sys, ::ArraySymbolic, ::SymbolicTypeTrait, p)
     if is_parameter(sys, p)
         idx = parameter_index(sys, p)
         return setp(sys, idx; run_hook = false)
-    elseif is_observed(sys, p) && (pobsfn = parameter_observed(sys, p)) !== nothing
-        ts_idxs = _postprocess_tsidxs(get_all_timeseries_indexes(sys, p))
-        update_fn = Fix1Multiple(parameter_values_at_time, sys)
-        return GetParameterObserved{false}(ts_idxs, update_fn, pobsfn.observed_fn)
     end
     return setp(sys, collect(p); run_hook = false)
 end
