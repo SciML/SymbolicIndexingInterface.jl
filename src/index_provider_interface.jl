@@ -64,7 +64,8 @@ parameter_index(indp, sym) = parameter_index(symbolic_container(indp), sym)
 Check whether the given `sym` is a timeseries parameter in `indp`.
 """
 function is_timeseries_parameter(indp, sym)
-    if hasmethod(symbolic_container, Tuple{typeof(indp)}) && (sc = symbolic_container(indp)) != indp
+    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
+       (sc = symbolic_container(indp)) != indp
         is_timeseries_parameter(sc, sym)
     else
         return false
@@ -96,7 +97,8 @@ parameter in `indp`. Defaults to returning `nothing`. Respects the
 [`symbolic_container`](@ref) fallback for `indp` if present.
 """
 function timeseries_parameter_index(indp, sym)
-    if hasmethod(symbolic_container, Tuple{typeof(indp)}) && (sc = symbolic_container(indp)) != indp
+    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
+       (sc = symbolic_container(indp)) != indp
         timeseries_parameter_index(symbolic_container(indp), sym)
     else
         return nothing
@@ -116,7 +118,8 @@ By default, this function returns `nothing`, indicating that the index provider 
 support generating parameter observed functions.
 """
 function parameter_observed(indp, sym)
-    if hasmethod(symbolic_container, Tuple{typeof(indp)}) && (sc = symbolic_container(indp)) != indp
+    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
+       (sc = symbolic_container(indp)) != indp
         return parameter_observed(symbolic_container(indp), sym)
     else
         return nothing
@@ -148,7 +151,8 @@ variable.
 By default, this function returns `Set([ContinuousTimeseries()])`.
 """
 function get_all_timeseries_indexes(indp, sym)
-    if hasmethod(symbolic_container, Tuple{typeof(indp)}) && (sc = symbolic_container(indp)) != indp
+    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
+       (sc = symbolic_container(indp)) != indp
         return get_all_timeseries_indexes(symbolic_container(indp), sym)
     else
         return Set([ContinuousTimeseries()])
@@ -245,7 +249,8 @@ Return a dictionary mapping symbols in the index provider to their default value
 This includes parameter symbols. The dictionary must be mutable.
 """
 function default_values(indp)
-    if hasmethod(symbolic_container, Tuple{typeof(indp)}) && (sc = symbolic_container(indp)) != indp
+    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
+       (sc = symbolic_container(indp)) != indp
         default_values(symbolic_container(indp))
     else
         Dict()
