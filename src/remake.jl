@@ -72,3 +72,5 @@ end
 
 @deprecate remake_buffer(sys, oldbuffer, vals::Dict) remake_buffer(
     sys, oldbuffer, keys(vals), values(vals))
+@deprecate remake_buffer(sys, oldbuffer::Tuple, vals::Dict) remake_buffer(
+    sys, oldbuffer, collect(keys(vals)), collect(values(vals)))
