@@ -7,5 +7,5 @@ using SymbolicIndexingInterface
 sys = complete(sys)
 
 u0 = [1.0, 2.0, 3.0]
-newu0 = remake_buffer(sys, u0, Dict(x => [5.0, 6.0], y => 7.0))
+newu0 = remake_buffer(sys, u0, [x, y], ([5.0, 6.0], 7.0))
 @test newu0 == [5.0, 6.0, 7.0]
