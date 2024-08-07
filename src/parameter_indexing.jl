@@ -208,11 +208,24 @@ for argType in [Union{Int, CartesianIndex}, Colon, AbstractArray{Bool}, Any]
 end
 
 function (gpo::GetParameterObserved{<:Vector})(::NotTimeseries, prob)
-    gpo.obsfn(parameter_values(prob), current_time(prob))
+    # if the method doesn't exist or is an identity function, then `prob` itself
+    # is the parameter object, so use that and pass `nothing` for the time expecting
+    # it to not be used
+    if hasmethod(parameter_values, Tuple{typeof(prob)}) &&
+       (ps = parameter_values(prob)) != prob
+        gpo.obsfn(ps, current_time(prob))
+    else
+        gpo.obsfn(prob, nothing)
+    end
 end
 function (gpo::GetParameterObserved{<:Vector, true})(
         buffer::AbstractArray, ::NotTimeseries, prob)
-    gpo.obsfn(buffer, parameter_values(prob), current_time(prob))
+    if hasmethod(parameter_values, Tuple{typeof(prob)}) &&
+       (ps = parameter_values(prob)) != prob
+        gpo.obsfn(buffer, ps, current_time(prob))
+    else
+        gpo.obsfn(buffer, prob, nothing)
+    end
 end
 function (gpo::GetParameterObserved{<:Vector})(::Timeseries, prob)
     throw(MixedParameterTimeseriesIndexError(prob, indexer_timeseries_index(gpo)))
@@ -224,10 +237,20 @@ function (gpo::GetParameterObserved{<:Vector, false})(::AbstractArray, ::Timeser
     throw(MixedParameterTimeseriesIndexError(prob, indexer_timeseries_index(gpo)))
 end
 function (gpo::GetParameterObserved)(::NotTimeseries, prob)
-    gpo.obsfn(parameter_values(prob), current_time(prob))
+    if hasmethod(parameter_values, Tuple{typeof(prob)}) &&
+       (ps = parameter_values(prob)) != prob
+        gpo.obsfn(ps, current_time(prob))
+    else
+        gpo.obsfn(prob, nothing)
+    end
 end
 function (gpo::GetParameterObserved)(buffer::AbstractArray, ::NotTimeseries, prob)
-    gpo.obsfn(buffer, parameter_values(prob), current_time(prob))
+    if hasmethod(parameter_values, Tuple{typeof(prob)}) &&
+       (ps = parameter_values(prob)) != prob
+        gpo.obsfn(buffer, ps, current_time(prob))
+    else
+        gpo.obsfn(buffer, prob, nothing)
+    end
     return buffer
 end
 function (gpo::GetParameterObserved)(::Timeseries, prob)

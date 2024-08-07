@@ -130,6 +130,40 @@ for sys in [
             end
         end
 
+        for (sym, val, check_inference) in [
+            (:(a + b), p[1] + p[2], true),
+            ([:(a + b), :(a * b)], [p[1] + p[2], p[1] * p[2]], true),
+            ((:(a + b), :(a * b)), (p[1] + p[2], p[1] * p[2]), true),
+            ([:(a + c), :(a + b)], [p[1] + p[3], p[1] + p[2]], true)
+        ]
+            get = getp(sys, sym)
+            if check_inference
+                @inferred get(parameter_values(fi))
+            end
+            @test get(parameter_values(fi)) == val
+            if sym isa Union{Array, Tuple}
+                buffer = zeros(length(sym))
+                if check_inference
+                    @inferred get(buffer, parameter_values(fi))
+                else
+                    get(buffer, parameter_values(fi))
+                end
+                @test buffer == collect(val)
+            end
+        end
+
+        for sym in [
+            :(a + t),
+            [:(a + t), :(a * b)],
+            (:(a + t), :(a * b))
+        ]
+            get = getp(sys, sym)
+            @test_throws MethodError get(parameter_values(fi))
+            if sym isa Union{Array, Tuple}
+                @test_throws MethodError get(zeros(length(sym)), parameter_values(fi))
+            end
+        end
+
         getter = getp(sys, [])
         @test getter(fi) == []
         getter = getp(sys, ())
