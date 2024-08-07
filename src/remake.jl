@@ -15,7 +15,13 @@ This method is already implemented for `oldbuffer::AbstractArray` and `oldbuffer
 and supports static arrays as well.
 
 The deprecated version of this method which takes a `Dict` mapping symbols to values
-instead of `idxs` and `vals` will dispatch to the new method.
+instead of `idxs` and `vals` will dispatch to the new method. In addition if
+no `remake_buffer` method exists with the new signature, it will call
+`remake_buffer(sys, oldbuffer, Dict(idxs .=> vals))`.
+
+Note that the new method signature allows `idxs` to be indexes, instead of requiring
+that they be symbolic variables. Thus, any type which implements the new method must
+also support indexes in `idxs`.
 """
 function remake_buffer(sys, oldbuffer::AbstractArray, idxs, vals)
     # similar when used with an `MArray` and nonconcrete eltype returns a
@@ -46,6 +52,10 @@ function remake_buffer(sys, oldbuffer::AbstractArray, idxs, vals)
         newbuffer = similar_type(oldbuffer, eltype(mutbuffer))(mutbuffer)
     end
     return newbuffer
+end
+
+function remake_buffer(sys, oldbuffer, idxs, vals)
+    remake_buffer(sys, oldbuffer, Dict(idxs .=> vals))
 end
 
 mutable struct TupleRemakeWrapper
