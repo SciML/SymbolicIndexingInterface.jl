@@ -75,6 +75,7 @@ set_parameter!
 finalize_parameters_hook!
 getp
 setp
+setp_oop
 ParameterIndexingProxy
 ```
 
