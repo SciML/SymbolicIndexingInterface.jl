@@ -19,7 +19,9 @@ for (buf, newbuf, idxs, vals) in [
     # buffer type promotion
     ([1, 2, 3], [2.0, 2.0, 3.0], [:a], [2.0]),
     # value type promotion
-    ([1, 2, 3], [2, 3.0, 4.0], [:a, :b, :c], Real[2, 3.0, 4.0])
+    ([1, 2, 3], [2, 3.0, 4.0], [:a, :b, :c], Real[2, 3.0, 4.0]),
+    # skip non-parameters
+    ([1, 2, 3], [2.0, 3.0, 3.0], [:a, :b, :(a + b)], [2.0, 3.0, 5.0])
 ]
     for arrType in [Vector, SVector{3}, MVector{3}, SizedVector{3}]
         buf = arrType(buf)
@@ -49,7 +51,9 @@ for (buf, newbuf, idxs, vals) in [
     # buffer type promotion
     ((1, 2, 3), (2.0, 3.0, 4.0), [:x, :y, :z], [2.0, 3.0, 4.0]),
     # value type promotion
-    ((1, 2, 3), (2, 3.0, 4.0), [:x, :y, :z], Real[2, 3.0, 4.0])
+    ((1, 2, 3), (2, 3.0, 4.0), [:x, :y, :z], Real[2, 3.0, 4.0]),
+    # skip non-variables
+    ([1, 2, 3], [2.0, 3.0, 3.0], [:x, :y, :(x + y)], [2.0, 3.0, 5.0])
 ]
     _newbuf = remake_buffer(sys, buf, idxs, vals)
     @test newbuf == _newbuf # test values

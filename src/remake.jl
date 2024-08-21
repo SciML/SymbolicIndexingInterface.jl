@@ -40,6 +40,7 @@ function remake_buffer(sys, oldbuffer::AbstractArray, idxs, vals)
         newbuffer = similar(oldbuffer, elT)
         copyto!(newbuffer, oldbuffer)
         for (k, v) in zip(idxs, vals)
+            is_variable(sys, k) || is_parameter(sys, k) || continue
             if v isa AbstractArray
                 v = elT.(v)
             else
