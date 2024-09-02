@@ -55,4 +55,7 @@ if GROUP == "All" || GROUP == "Downstream"
     @safetestset "BatchedInterface with array symbolics test" begin
         @time include("downstream/batchedinterface_arrayvars.jl")
     end
+    @safetestset "remake_buffer with array symbolics test" begin
+        @time include("downstream/remake_arrayvars.jl")
+    end
 end
