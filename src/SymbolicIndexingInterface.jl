@@ -32,7 +32,7 @@ include("value_provider_interface.jl")
 export ParameterTimeseriesCollection
 include("parameter_timeseries_collection.jl")
 
-export getp, setp
+export getp, setp, setp_oop
 include("parameter_indexing.jl")
 
 export getu, setu

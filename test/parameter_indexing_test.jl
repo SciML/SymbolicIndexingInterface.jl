@@ -168,6 +168,18 @@ for sys in [
         @test getter(fi) == []
         getter = getp(sys, ())
         @test getter(fi) == ()
+
+        for (sym, val) in [
+            (:a, 1.0f1),
+            (1, 1.0f1),
+            ([:a, :b], [1.0f1, 2.0f1]),
+            ((:b, :c), (2.0f1, 3.0f1))
+        ]
+            setter = setp_oop(fi, sym)
+            newp = setter(fi, val)
+            getter = getp(sys, sym)
+            @test getter(newp) == val
+        end
     end
 end
 
