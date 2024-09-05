@@ -77,11 +77,13 @@ end
 
 function remake_buffer(sys, oldbuffer::Tuple, idxs, vals)
     wrap = TupleRemakeWrapper(oldbuffer)
-    setu(sys, idxs)(wrap, vals)
+    for (idx, val) in zip(idxs, vals)
+        setu(sys, idx)(wrap, val)
+    end
     return wrap.t
 end
 
 @deprecate remake_buffer(sys, oldbuffer, vals::Dict) remake_buffer(
     sys, oldbuffer, keys(vals), values(vals))
 @deprecate remake_buffer(sys, oldbuffer::Tuple, vals::Dict) remake_buffer(
-    sys, oldbuffer, collect(keys(vals)), collect(values(vals)))
+    sys, oldbuffer, keys(vals), values(vals))

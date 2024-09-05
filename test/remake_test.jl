@@ -23,6 +23,13 @@ for (buf, newbuf, idxs, vals) in [
     # skip non-parameters
     ([1, 2, 3], [2.0, 3.0, 3.0], [:a, :b, :(a + b)], [2.0, 3.0, 5.0])
 ]
+    @test_deprecated remake_buffer(sys, buf, Dict(idxs .=> vals))
+    for varmap in [Dict(idxs .=> vals), Dict{Any, Any}(idxs .=> vals)]
+        _newbuf = remake_buffer(sys, buf, keys(varmap), values(varmap))
+        @test _newbuf != buf
+        @test newbuf == _newbuf
+        @test typeof(newbuf) == typeof(_newbuf)
+    end
     for arrType in [Vector, SVector{3}, MVector{3}, SizedVector{3}]
         buf = arrType(buf)
         newbuf = arrType(newbuf)
@@ -31,7 +38,6 @@ for (buf, newbuf, idxs, vals) in [
         @test _newbuf != buf # should not alias
         @test newbuf == _newbuf # test values
         @test typeof(newbuf) == typeof(_newbuf) # ensure appropriate type
-        @test_deprecated remake_buffer(sys, buf, Dict(idxs .=> vals))
     end
 end
 
@@ -55,8 +61,13 @@ for (buf, newbuf, idxs, vals) in [
     # skip non-variables
     ([1, 2, 3], [2.0, 3.0, 3.0], [:x, :y, :(x + y)], [2.0, 3.0, 5.0])
 ]
+    @test_deprecated remake_buffer(sys, buf, Dict(idxs .=> vals))
+    for varmap in [Dict(idxs .=> vals), Dict{Any, Any}(idxs .=> vals)]
+        _newbuf = remake_buffer(sys, buf, keys(varmap), values(varmap))
+        @test newbuf == _newbuf
+        @test typeof(newbuf) == typeof(_newbuf)
+    end
     _newbuf = remake_buffer(sys, buf, idxs, vals)
     @test newbuf == _newbuf # test values
     @test typeof(newbuf) == typeof(_newbuf) # ensure appropriate type
-    @test_deprecated remake_buffer(sys, buf, Dict(idxs .=> vals))
 end
