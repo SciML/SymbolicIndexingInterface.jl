@@ -142,6 +142,16 @@ current_time(arr::AbstractVector) = arr
 current_time(valp, i) = current_time(valp)[i]
 current_time(valp, ::Colon) = current_time(valp)
 
+"""
+    get_history_function(valp)
+
+Return the history function for a value provider. This is required for all value providers
+associated with an index provider `indp` for which `!is_markovian(indp)`.
+
+See also: [`is_markovian`](@ref).
+"""
+function get_history_function end
+
 ###########
 # Utilities
 ###########
