@@ -16,7 +16,7 @@ export is_variable, variable_index, variable_symbols, is_parameter, parameter_in
        parameter_symbols, is_independent_variable, independent_variable_symbols,
        is_observed, observed, parameter_observed,
        ContinuousTimeseries, get_all_timeseries_indexes,
-       is_time_dependent, constant_structure, symbolic_container,
+       is_time_dependent, is_markovian, constant_structure, symbolic_container,
        all_variable_symbols, all_symbols, solvedvariables, allvariables, default_values,
        symbolic_evaluate
 include("index_provider_interface.jl")
@@ -26,7 +26,7 @@ include("symbol_cache.jl")
 
 export parameter_values, set_parameter!, finalize_parameters_hook!,
        get_parameter_timeseries_collection, with_updated_parameter_timeseries_values,
-       state_values, set_state!, current_time
+       state_values, set_state!, current_time, get_history_function
 include("value_provider_interface.jl")
 
 export ParameterTimeseriesCollection
