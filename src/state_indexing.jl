@@ -56,10 +56,16 @@ struct GetIndepvar <: AbstractStateGetIndexer end
 (::GetIndepvar)(::IsTimeseriesTrait, prob) = current_time(prob)
 (::GetIndepvar)(::Timeseries, prob, i) = current_time(prob, i)
 
-struct TimeDependentObservedFunction{I, F} <: AbstractStateGetIndexer
+struct TimeDependentObservedFunction{I, F, H} <: AbstractStateGetIndexer
     ts_idxs::I
     obsfn::F
 end
+
+function TimeDependentObservedFunction{H}(ts_idxs, obsfn) where {H}
+    return TimeDependentObservedFunction{typeof(ts_idxs), typeof(obsfn), H}(ts_idxs, obsfn)
+end
+
+const NonMarkovianObservedFunction = TimeDependentObservedFunction{I, F, false} where {I, F}
 
 indexer_timeseries_index(t::TimeDependentObservedFunction) = t.ts_idxs
 function is_indexer_timeseries(::Type{G}) where {G <:
@@ -74,14 +80,25 @@ function (o::TimeDependentObservedFunction)(ts::IsTimeseriesTrait, prob, args...
     return o(ts, is_indexer_timeseries(o), prob, args...)
 end
 
-function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob)
+function (o::TimeDependentObservedFunction)(::Timeseries, ::IndexerBoth, prob)
     return o.obsfn.(state_values(prob),
+        (parameter_values(prob),),
+        current_time(prob))
+end
+function (o::NonMarkovianObservedFunction)(::Timeseries, ::IndexerBoth, prob)
+    return o.obsfn.(state_values(prob),
+        (get_history_function(prob),),
         (parameter_values(prob),),
         current_time(prob))
 end
 function (o::TimeDependentObservedFunction)(
         ::Timeseries, ::IndexerBoth, prob, i::Union{Int, CartesianIndex})
     return o.obsfn(state_values(prob, i), parameter_values(prob), current_time(prob, i))
+end
+function (o::NonMarkovianObservedFunction)(
+        ::Timeseries, ::IndexerBoth, prob, i::Union{Int, CartesianIndex})
+    return o.obsfn(state_values(prob, i), get_history_function(prob),
+        parameter_values(prob), current_time(prob, i))
 end
 function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, ::Colon)
     return o(ts, prob)
@@ -98,6 +115,10 @@ end
 function (o::TimeDependentObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
     return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
 end
+function (o::NonMarkovianObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
+    return o.obsfn(state_values(prob), get_history_function(prob),
+        parameter_values(prob), current_time(prob))
+end
 
 function (o::TimeDependentObservedFunction)(
         ::Timeseries, ::IndexerMixedTimeseries, prob, args...)
@@ -106,6 +127,11 @@ end
 function (o::TimeDependentObservedFunction)(
         ::NotTimeseries, ::IndexerMixedTimeseries, prob, args...)
     return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
+end
+function (o::NonMarkovianObservedFunction)(
+        ::NotTimeseries, ::IndexerMixedTimeseries, prob, args...)
+    return o.obsfn(state_values(prob), get_history_function(prob),
+        parameter_values(prob), current_time(prob))
 end
 
 struct TimeIndependentObservedFunction{F} <: AbstractStateGetIndexer
@@ -137,7 +163,7 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
                 ts_idxs = collect(ts_idxs)
             end
             fn = observed(sys, sym)
-            return TimeDependentObservedFunction(ts_idxs, fn)
+            return TimeDependentObservedFunction{is_markovian(sys)}(ts_idxs, fn)
         else
             return getp(sys, sym)
         end
@@ -256,7 +282,7 @@ for (t1, t2) in [
         else
             obs = observed(sys, sym_arr)
             getter = if is_time_dependent(sys)
-                TimeDependentObservedFunction(ts_idxs, obs)
+                TimeDependentObservedFunction{is_markovian(sys)}(ts_idxs, obs)
             else
                 TimeIndependentObservedFunction(obs)
             end

@@ -36,6 +36,12 @@ observed
 parameter_observed
 ```
 
+#### Historical index providers
+
+```@docs
+is_markovian
+```
+
 #### Parameter timeseries
 
 If the index provider contains parameters that change during the course of the simulation
@@ -65,6 +71,12 @@ set_state!
 current_time
 getu
 setu
+```
+
+#### Historical value providers
+
+```@docs
+get_history_function
 ```
 
 ### Parameter indexing

@@ -201,7 +201,13 @@ the order of states or a time index, which identifies the order of states. This 
 does not need to be defined if [`is_observed`](@ref) always returns `false`. Thus,
 it is mandatory to always check `is_observed` before using this function.
 
-See also: [`is_time_dependent`](@ref), [`constant_structure`](@ref)
+If `!is_markovian(indp)`, the returned function must have the signature
+`(u, h, p, t) -> [values...]` where `h` is the history function, which can be called
+to obtain past values of the state. The exact signature and semantics of `h` depend
+on how it is used inside the returned function. `h` is obtained from a value
+provider using [`get_history_function`](@ref).
+
+See also: [`is_time_dependent`](@ref), [`is_markovian`](@ref), [`constant_structure`](@ref).
 """
 observed(indp, sym) = observed(symbolic_container(indp), sym)
 observed(indp, sym, states) = observed(symbolic_container(indp), sym, states)
@@ -212,6 +218,27 @@ observed(indp, sym, states) = observed(symbolic_container(indp), sym, states)
 Check if `indp` has time as (one of) its independent variables.
 """
 is_time_dependent(indp) = is_time_dependent(symbolic_container(indp))
+
+"""
+    is_markovian(indp)
+
+Check if an index provider represents a Markovian system. Markovian systems do not require
+knowledge of past states to simulate. This function is only applicable to
+index providers for which `is_time_dependent(indp)` returns `true`.
+
+Non-Markovian index providers return [`observed`](@ref) functions with a different signature.
+All value providers associated with a non-markovian index provider must implement
+[`get_history_function`](@ref).
+
+Returns `true` by default.
+"""
+function is_markovian(indp)
+    if hasmethod(symbolic_container, Tuple{typeof(indp)})
+        is_markovian(symbolic_container(indp))
+    else
+        true
+    end
+end
 
 """
     constant_structure(indp)

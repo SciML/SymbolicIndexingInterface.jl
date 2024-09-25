@@ -291,3 +291,34 @@ for (sym, val, check_inference) in [
     end
     @test getter(fs) == val
 end
+
+struct NonMarkovianWrapper{S <: SymbolCache}
+    sys::S
+end
+
+SymbolicIndexingInterface.symbolic_container(hw::NonMarkovianWrapper) = hw.sys
+SymbolicIndexingInterface.is_markovian(::NonMarkovianWrapper) = false
+function SymbolicIndexingInterface.observed(hw::NonMarkovianWrapper, sym)
+    let inner = observed(hw.sys, sym)
+        fn(u, h, p, t) = inner(u .+ h(t - 0.1), p, t)
+    end
+end
+function SymbolicIndexingInterface.get_history_function(fs::FakeSolution)
+    t -> t .* ones(length(fs.u[1]))
+end
+function SymbolicIndexingInterface.get_history_function(fi::FakeIntegrator)
+    t -> t .* ones(length(fi.u))
+end
+
+sys = NonMarkovianWrapper(SymbolCache([:x, :y, :z], [:a, :b, :c], :t))
+u0 = [1.0, 2.0, 3.0]
+u = [u0 .* i for i in 1:11]
+p = [10.0, 20.0, 30.0]
+ts = 0.0:0.1:1.0
+
+fi = FakeIntegrator(sys, u0, p, ts[1])
+fs = FakeSolution(sys, u, p, ts)
+getter = getu(sys, :(x + y))
+@test getter(fi) ≈ 2.8
+@test getter(fs) ≈ [3.0i + 2(ts[i] - 0.1) for i in 1:11]
+@test getter(fs, 1) ≈ 2.8
