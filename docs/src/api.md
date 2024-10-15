@@ -112,6 +112,7 @@ with_updated_parameter_timeseries_values
 ```@docs
 BatchedInterface
 associated_systems
+setsym_oop
 ```
 
 ## Container objects

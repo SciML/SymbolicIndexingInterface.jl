@@ -38,7 +38,7 @@ include("parameter_indexing.jl")
 export getu, setu
 include("state_indexing.jl")
 
-export BatchedInterface, associated_systems
+export BatchedInterface, setsym_oop, associated_systems
 include("batched_interface.jl")
 
 export ProblemState
