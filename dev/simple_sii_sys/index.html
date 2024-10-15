@@ -23,65 +23,65 @@ Interpolation: specialized 2nd order &quot;free&quot; stiffness-aware interpolat
 t: 61-element Vector{Float64}:
       0.0
       3.196206628740808e-5
-      0.00014400709336278452
-      0.00025605212043816096
-      0.00048593871402339607
-      0.0007179482102678373
-      0.0010819240251828343
-      0.0014801655107859655
-      0.0020679567717440095
-      0.002843584518457066
+      0.00014400709669791316
+      0.00025605212710841824
+      0.00048593872520561496
+      0.0007179482298405134
+      0.0010819240431281
+      0.0014801655402784494
+      0.0020679568004175024
+      0.00284358457831835
       ⋮
-  25371.93159838571
-  30784.11718374498
-  37217.42390396605
-  44850.61094811346
-  53893.688830057334
-  64593.73530179436
-  77241.71691097679
-  92180.81843146283
+  25371.93408910281
+  30784.11979067837
+  37217.42614674126
+  44850.613509951756
+  53893.69122860313
+  64593.73760719257
+  77241.7191375134
+  92180.818891648
  100000.0
 u: 61-element Vector{Vector{Float64}}:
  [1.0, 0.0, 0.0]
  [0.9999987215181657, 1.2780900152625978e-6, 3.9181897521319503e-10]
- [0.9999942397329006, 5.7185104612947566e-6, 4.1756638047390056e-8]
- [0.9999897579688383, 9.992106612572491e-6, 2.49924549040571e-7]
- [0.9999805626683271, 1.7833623941038088e-5, 1.6037077316934773e-6]
- [0.9999712826607852, 2.403488562731424e-5, 4.682453587410618e-6]
- [0.9999567250114038, 3.0390689334989113e-5, 1.288429926109498e-5]
- [0.9999407986095145, 3.388427339038224e-5, 2.5317117094946788e-5]
- [0.9999172960310598, 3.583508669306405e-5, 4.6868882246842164e-5]
- [0.9998862913763157, 3.6412401619257426e-5, 7.729622206475401e-5]
+ [0.9999942397327672, 5.718510591908378e-6, 4.175664083814197e-8]
+ [0.9999897579685716, 9.992106860321925e-6, 2.499245680985423e-7]
+ [0.99998056266788, 1.7833624284594367e-5, 1.6037078354141817e-6]
+ [0.9999712826600025, 2.403488607694387e-5, 4.682453920643883e-6]
+ [0.9999567250106862, 3.0390689558961382e-5, 1.2884299754832173e-5]
+ [0.9999407986083353, 3.388427356164352e-5, 2.5317118103062637e-5]
+ [0.9999172960299137, 3.583508673706966e-5, 4.686888334920018e-5]
+ [0.9998862913739235, 3.641240163574993e-5, 7.72962244407569e-5]
  ⋮
- [0.05563508171413299, 2.3546322394505452e-7, 0.9443646828226427]
- [0.047925352159210066, 2.0121496539471124e-7, 0.952074446625824]
- [0.04123342367542562, 1.7192789116847073e-7, 0.9587664043966823]
- [0.03543700020207697, 1.4688362762022172e-7, 0.9645628529142937]
- [0.030425373099653413, 1.254680986416057e-7, 0.9695745014322465]
- [0.026099133126498943, 1.0715608821694996e-7, 0.9739007597174125]
- [0.022369692367946305, 9.149845157822574e-8, 0.9776302161336018]
- [0.019158563494465566, 7.811096455346334e-8, 0.9808413583945702]
- [0.017827893845894692, 7.258919980139019e-8, 0.9821720335649058]</code></pre><p>The solution can now be indexed symbolically:</p><pre><code class="language-julia hljs">sol[:y₁]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">61-element Vector{Float64}:
+ [0.055635077566128364, 2.3546320537033847e-7, 0.944364686970666]
+ [0.04792534899095675, 2.0121495143218157e-7, 0.952074449794091]
+ [0.041233421690301704, 1.71927882539347e-7, 0.9587664063818143]
+ [0.035436998546446524, 1.468836205091246e-7, 0.9645628545699307]
+ [0.030425371970589577, 1.2546809384124966e-7, 0.9695745025613136]
+ [0.02609913233614294, 1.0715608488607093e-7, 0.9739007605077686]
+ [0.022369691812242614, 9.149844925387051e-8, 0.977630216689305]
+ [0.01915856341588984, 7.811096422674322e-8, 0.9808413584731429]
+ [0.017827893850894685, 7.258919982217738e-8, 0.9821720335599027]</code></pre><p>The solution can now be indexed symbolically:</p><pre><code class="language-julia hljs">sol[:y₁]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">61-element Vector{Float64}:
  1.0
  0.9999987215181657
- 0.9999942397329006
- 0.9999897579688383
- 0.9999805626683271
- 0.9999712826607852
- 0.9999567250114038
- 0.9999407986095145
- 0.9999172960310598
- 0.9998862913763157
+ 0.9999942397327672
+ 0.9999897579685716
+ 0.99998056266788
+ 0.9999712826600025
+ 0.9999567250106862
+ 0.9999407986083353
+ 0.9999172960299137
+ 0.9998862913739235
  ⋮
- 0.05563508171413299
- 0.047925352159210066
- 0.04123342367542562
- 0.03543700020207697
- 0.030425373099653413
- 0.026099133126498943
- 0.022369692367946305
- 0.019158563494465566
- 0.017827893845894692</code></pre><pre><code class="language-julia hljs">sol(1e3, idxs=:y₁)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.3367546835262688</code></pre><p>However, we did not give names to the parameters or the independent variables. They can be specified using <code>SymbolCache</code> as well:</p><pre><code class="language-julia hljs">sys = SymbolCache([:y₁, :y₂, :y₃], [:k₁, :k₂, :k₃], :t)
+ 0.055635077566128364
+ 0.04792534899095675
+ 0.041233421690301704
+ 0.035436998546446524
+ 0.030425371970589577
+ 0.02609913233614294
+ 0.022369691812242614
+ 0.01915856341588984
+ 0.017827893850894685</code></pre><pre><code class="language-julia hljs">sol(1e3, idxs=:y₁)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.33675468347001764</code></pre><p>However, we did not give names to the parameters or the independent variables. They can be specified using <code>SymbolCache</code> as well:</p><pre><code class="language-julia hljs">sys = SymbolCache([:y₁, :y₂, :y₃], [:k₁, :k₂, :k₃], :t)
 odefun = ODEFunction(rober!; sys = sys)
 prob = ODEProblem(odefun, [1.0, 0.0, 0.0], (0.0, 1e5), [0.04, 3e7, 1e4])
 sol = solve(prob, Rosenbrock23())
@@ -90,21 +90,21 @@ getk1 = getp(sys, :k₁)
 getk1(prob)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.04</code></pre><pre><code class="language-julia hljs">getk1(sol)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.04</code></pre><pre><code class="language-julia hljs">sol[:t]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">61-element Vector{Float64}:
       0.0
       3.196206628740808e-5
-      0.00014400709336278452
-      0.00025605212043816096
-      0.00048593871402339607
-      0.0007179482102678373
-      0.0010819240251828343
-      0.0014801655107859655
-      0.0020679567717440095
-      0.002843584518457066
+      0.00014400709669791316
+      0.00025605212710841824
+      0.00048593872520561496
+      0.0007179482298405134
+      0.0010819240431281
+      0.0014801655402784494
+      0.0020679568004175024
+      0.00284358457831835
       ⋮
-  25371.93159838571
-  30784.11718374498
-  37217.42390396605
-  44850.61094811346
-  53893.688830057334
-  64593.73530179436
-  77241.71691097679
-  92180.81843146283
- 100000.0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../usage/">« Using the SciML Symbolic Indexing Interface</a><a class="docs-footer-nextpage" href="../complete_sii/">Implementing the Complete Symbolic Indexing Interface »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 25 September 2024 12:35">Wednesday 25 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  25371.93408910281
+  30784.11979067837
+  37217.42614674126
+  44850.613509951756
+  53893.69122860313
+  64593.73760719257
+  77241.7191375134
+  92180.818891648
+ 100000.0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../usage/">« Using the SciML Symbolic Indexing Interface</a><a class="docs-footer-nextpage" href="../complete_sii/">Implementing the Complete Symbolic Indexing Interface »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 15 October 2024 10:09">Tuesday 15 October 2024</span>. Using Julia version 1.11.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
