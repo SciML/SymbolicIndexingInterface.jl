@@ -54,3 +54,31 @@ setter!(probs[1], 1, buf)
 @test parameter_values(probs[1]) == [0.1, 0.2, 0.3]
 
 @test_throws ErrorException setter!(probs[1], 4, buf)
+
+setter!(probs..., buf)
+
+setter = setsym_oop(bi)
+
+buf .*= 100
+vals = setter(probs..., buf)
+@test length(vals) == length(probs)
+@test vals[1][1] == [100.0, 2.0, 300.0]
+@test vals[1][2] == [0.1, 20.0, 30.0]
+@test vals[2][1] == [300.0, 500.0, 6.0]
+@test vals[2][2] == [30.0, 0.5, 60.0]
+@test vals[3][1] == [500.0, 100.0, 9.0]
+@test vals[3][2] == [70.0, 80.0, 0.9]
+
+# out-of-place
+for i in 1:3
+    @test vals[i][1] != state_values(probs[i])
+    @test vals[i][2] != parameter_values(probs[i])
+end
+
+buf ./= 10
+vals = setter(probs[1], 1, buf)
+@test length(vals) == 2
+@test vals[1] == [10.0, 2.0, 30.0]
+@test vals[2] == [0.1, 2.0, 3.0]
+
+@test_throws ErrorException setter(probs[1], 4, buf)
