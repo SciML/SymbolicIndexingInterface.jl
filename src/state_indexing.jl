@@ -252,7 +252,11 @@ for (t1, t2) in [
             return MultipleGetters(ContinuousTimeseries(), sym)
         end
         sym_arr = sym isa Tuple ? collect(sym) : sym
-        num_observed = count(x -> is_observed(sys, x), sym)
+        num_observed = 0
+        for s in sym
+            num_observed += is_observed(sys, s)
+            num_observed > 1 && break # exit early, we only need to know whether 0, 1, or more
+        end
         if !is_time_dependent(sys)
             if num_observed == 0 || num_observed == 1 && sym isa Tuple
                 return MultipleGetters(nothing, getu.((sys,), sym))
@@ -275,7 +279,6 @@ for (t1, t2) in [
             ts_idxs = collect(ts_idxs)
         end
 
-        num_observed = count(x -> is_observed(sys, x), sym)
         if num_observed == 0 || num_observed == 1 && sym isa Tuple
             getters = getu.((sys,), sym)
             return MultipleGetters(ts_idxs, getters)
