@@ -71,3 +71,5 @@ for (buf, newbuf, idxs, vals) in [
     @test newbuf == _newbuf # test values
     @test typeof(newbuf) == typeof(_newbuf) # ensure appropriate type
 end
+
+@test isnothing(remake_buffer(sys, nothing, [], []))
