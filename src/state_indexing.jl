@@ -377,3 +377,97 @@ end
 
 const getu = getsym
 const setu = setsym
+
+"""
+    setsym_oop(indp, sym)
+
+Return a function which takes a value provider `valp` and a value `val`, and returns
+`state_values(valp), parameter_values(valp)` with the states/parameters in `sym` set to the
+corresponding values in `val`. This allows changing the types of values stored, and leverages
+[`remake_buffer`](@ref). Note that `sym` can be an index, a symbolic variable, or an
+array/tuple of the aforementioned. All entries `s` in `sym` must satisfy `is_variable(indp, s)`
+or `is_parameter(indp, s)`.
+
+Requires that the value provider implement `state_values`, `parameter_values` and `remake_buffer`.
+"""
+function setsym_oop(indp, sym)
+    symtype = symbolic_type(sym)
+    elsymtype = symbolic_type(eltype(sym))
+    return _setsym_oop(indp, symtype, elsymtype, sym)
+end
+
+struct FullSetter{S, P, I, J}
+    state_setter::S
+    param_setter::P
+    state_split::I
+    param_split::J
+end
+
+FullSetter(ssetter, psetter) = FullSetter(ssetter, psetter, nothing, nothing)
+
+function (fs::FullSetter)(valp, val)
+    return fs.state_setter(valp, val[fs.state_split]),
+    fs.param_setter(valp, val[fs.param_split])
+end
+
+function (fs::FullSetter{Nothing})(valp, val)
+    return state_values(valp), fs.param_setter(valp, val)
+end
+
+function (fs::(FullSetter{S, Nothing} where {S}))(valp, val)
+    return fs.state_setter(valp, val), parameter_values(valp)
+end
+
+function (fs::(FullSetter{Nothing, Nothing}))(valp, val)
+    return state_values(valp), parameter_values(valp)
+end
+
+function _setsym_oop(indp, ::NotSymbolic, ::NotSymbolic, sym)
+    return FullSetter(OOPSetter(_root_indp(indp), sym, true), nothing)
+end
+
+function _setsym_oop(indp, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
+    if (idx = variable_index(indp, sym)) !== nothing
+        return FullSetter(OOPSetter(_root_indp(indp), idx, true), nothing)
+    elseif (idx = parameter_index(indp, sym)) !== nothing
+        return FullSetter(nothing, OOPSetter(_root_indp(indp), idx, false))
+    end
+    throw(NotVariableOrParameter("setsym_oop", sym))
+end
+
+for (t1, t2) in [
+    (ScalarSymbolic, Any),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray})
+]
+    @eval function _setsym_oop(indp, ::NotSymbolic, ::$t1, sym::$t2)
+        vars = []
+        state_split = eltype(eachindex(sym))[]
+        pars = []
+        param_split = eltype(eachindex(sym))[]
+        for (i, s) in enumerate(sym)
+            if (idx = variable_index(indp, s)) !== nothing
+                push!(vars, idx)
+                push!(state_split, i)
+            elseif (idx = parameter_index(indp, s)) !== nothing
+                push!(pars, idx)
+                push!(param_split, i)
+            else
+                throw(NotVariableOrParameter("setsym_oop", s))
+            end
+        end
+        indp = _root_indp(indp)
+        return FullSetter(isempty(vars) ? nothing : OOPSetter(indp, identity.(vars), true),
+            isempty(pars) ? nothing : OOPSetter(indp, identity.(pars), false),
+            state_split, param_split)
+    end
+end
+
+function _setsym_oop(indp, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
+    if (idx = variable_index(indp, sym)) !== nothing
+        return setsym_oop(indp, idx)
+    elseif (idx = parameter_index(indp, sym)) !== nothing
+        return FullSetter(
+            nothing, OOPSetter(indp, idx isa AbstractArray ? idx : (idx,), false))
+    end
+    return setsym_oop(indp, collect(sym))
+end

@@ -231,6 +231,35 @@ function (fn::Fix1Multiple)(args...)
     fn.f(fn.arg, args...)
 end
 
+struct OOPSetter{I, D}
+    indp::I
+    idxs::D
+    is_state::Bool
+end
+
+function (os::OOPSetter)(valp, val)
+    buffer = os.is_state ? state_values(valp) : parameter_values(valp)
+    return remake_buffer(os.indp, buffer, (os.idxs,), (val,))
+end
+
+function (os::OOPSetter)(valp, val::Union{Tuple, AbstractArray})
+    buffer = os.is_state ? state_values(valp) : parameter_values(valp)
+    if os.idxs isa Union{Tuple, AbstractArray}
+        return remake_buffer(os.indp, buffer, os.idxs, val)
+    else
+        return remake_buffer(os.indp, buffer, (os.idxs,), (val,))
+    end
+end
+
+function _root_indp(indp)
+    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
+       (sc = symbolic_container(indp)) != indp
+        return _root_indp(sc)
+    else
+        return indp
+    end
+end
+
 ###########
 # Errors
 ###########
@@ -295,4 +324,17 @@ function Base.showerror(io::IO, err::MixedParameterTimeseriesIndexError)
         (which is a parameter timeseries object) with variables having mixed timeseries \
         indexes $(err.ts_idxs).
     """)
+end
+
+struct NotVariableOrParameter <: Exception
+    fn::Any
+    sym::Any
+end
+
+function Base.showerror(io::IO, err::NotVariableOrParameter)
+    print(
+        io, """
+      `$(err.fn)` requires that the symbolic variable(s) passed to it satisfy `is_variable`
+      or `is_parameter`. Got `$(err.sym)` which is neither.
+  """)
 end

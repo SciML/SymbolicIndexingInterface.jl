@@ -1,4 +1,5 @@
 using SymbolicIndexingInterface
+using SymbolicIndexingInterface: NotVariableOrParameter
 
 struct FakeIntegrator{S, U, P, T}
     sys::S
@@ -62,6 +63,9 @@ for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
         set!(fi, newval)
     end
     @test get(fi) == newval
+
+    new_states = copy(state_values(fi))
+
     set!(fi, val)
     @test get(fi) == val
 
@@ -77,6 +81,15 @@ for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
     @test get(u) == newval
     set!(u, val)
     @test get(u) == val
+
+    if sym isa Union{Vector, Tuple} && any(x -> x isa Union{AbstractArray, Tuple}, sym)
+        continue
+    end
+
+    setter = setsym_oop(sys, sym)
+    svals, pvals = setter(fi, newval)
+    @test svals ≈ new_states
+    @test pvals == parameter_values(fi)
 end
 
 for (sym, val, check_inference) in [
@@ -123,8 +136,17 @@ for (sym, oldval, newval, check_inference) in [(:a, p[1], 4.0, true)
         set!(fi, newval)
     end
     @test get(fi) == newval
+
+    newu = copy(state_values(fi))
+    newp = copy(parameter_values(fi))
+
     set!(fi, oldval)
     @test get(fi) == oldval
+
+    oop_setter = setsym_oop(sys, sym)
+    uvals, pvals = oop_setter(fi, newval)
+    @test uvals ≈ newu
+    @test pvals ≈ newp
 end
 
 for (sym, val, check_inference) in [
@@ -137,6 +159,8 @@ for (sym, val, check_inference) in [
         @inferred get(fi)
     end
     @test get(fi) == val
+
+    @test_throws NotVariableOrParameter setsym_oop(fi, sym)
 end
 
 struct FakeSolution{S, U, P, T}
