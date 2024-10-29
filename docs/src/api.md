@@ -46,7 +46,7 @@ is_markovian
 
 If the index provider contains parameters that change during the course of the simulation
 at discrete time points, it must implement the following methods to ensure correct
-functioning of [`getu`](@ref) and [`getp`](@ref) for value providers that save the parameter
+functioning of [`getsym`](@ref) and [`getp`](@ref) for value providers that save the parameter
 timeseries. Note that there can be multiple parameter timeseries, in case different parameters
 may change at different times.
 
@@ -69,9 +69,12 @@ is_timeseries
 state_values
 set_state!
 current_time
-getu
-setu
+getsym
+setsym
 ```
+
+!!! note
+    `getu` and `setu` have been renamed to [`getsym`](@ref) and [`setsym`](@ref) respectively.
 
 #### Historical value providers
 
@@ -95,7 +98,7 @@ ParameterIndexingProxy
 
 If a solution object saves a timeseries of parameter values that are updated during the
 simulation (such as by callbacks), it must implement the following methods to ensure
-correct functioning of [`getu`](@ref) and [`getp`](@ref).
+correct functioning of [`getsym`](@ref) and [`getp`](@ref).
 
 Parameter timeseries support requires that the value provider store the different
 timeseries in a [`ParameterTimeseriesCollection`](@ref).

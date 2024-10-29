@@ -123,11 +123,11 @@ sol[allvariables] # equivalent to sol[all_variable_symbols(sol)]
 
 ### Evaluating expressions
 
-`getu` also generates functions for expressions if the object passed to it supports
+`getsym` also generates functions for expressions if the object passed to it supports
 [`observed`](@ref). For example:
 
 ```@example Usage
-getu(prob, x + y + z)(prob)
+getsym(prob, x + y + z)(prob)
 ```
 
 To evaluate this function using values other than the ones contained in `prob`, we need
@@ -137,7 +137,7 @@ which has trivial implementations of the above functions. We can thus do:
 
 ```@example Usage
 temp_state = ProblemState(; u = [0.1, 0.2, 0.3, 0.4], p = parameter_values(prob))
-getu(prob, x + y + z)(temp_state)
+getsym(prob, x + y + z)(temp_state)
 ```
 
 Note that providing all of the state vector, parameter object and time may not be

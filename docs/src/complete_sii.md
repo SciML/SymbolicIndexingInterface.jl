@@ -174,9 +174,9 @@ end
 ```
 
 If a type contains the value of state variables, it can define [`state_values`](@ref) to
-enable the usage of [`getu`](@ref) and [`setu`](@ref). These methods retturn getter/
+enable the usage of [`getsym`](@ref) and [`setsym`](@ref). These methods retturn getter/
 setter functions to access or update the value of a state variable (or a collection of
-them). If the type also supports generating [`observed`](@ref) functions, `getu` also
+them). If the type also supports generating [`observed`](@ref) functions, `getsym` also
 enables returning functions to access the value of arbitrary expressions involving
 the system's symbols. This also requires that the type implement
 [`parameter_values`](@ref) and [`current_time`](@ref) (if the system is time-dependent).
@@ -202,13 +202,13 @@ Then the following example would work:
 ```julia
 sys = ExampleSystem(Dict(:x => 1, :y => 2, :z => 3), Dict(:a => 1, :b => 2), :t, Dict())
 integrator = ExampleIntegrator([1.0, 2.0, 3.0], [4.0, 5.0], 6.0, sys)
-getx = getu(sys, :x)
+getx = getsym(sys, :x)
 getx(integrator) # 1.0
 
-get_expr = getu(sys, :(x + y + t))
+get_expr = getsym(sys, :(x + y + t))
 get_expr(integrator) # 13.0
 
-setx! = setu(sys, :y)
+setx! = setsym(sys, :y)
 setx!(integrator, 0.0)
 getx(integrator) # 0.0
 ```
@@ -216,7 +216,7 @@ getx(integrator) # 0.0
 In case a type stores timeseries data (such as solutions), then it must also implement
 the [`Timeseries`](@ref) trait. The type would then return a timeseries from
 [`state_values`](@ref) and [`current_time`](@ref) and the function returned from
-[`getu`](@ref) would then return a timeseries as well. For example, consider the
+[`getsym`](@ref) would then return a timeseries as well. For example, consider the
 `ExampleSolution` below:
 
 ```julia
@@ -242,20 +242,20 @@ Then the following example would work:
 ```julia
 # using the same system that the ExampleIntegrator used
 sol = ExampleSolution([[1.0, 2.0, 3.0], [1.5, 2.5, 3.5]], [4.0, 5.0], [6.0, 7.0], sys)
-getx = getu(sys, :x)
+getx = getsym(sys, :x)
 getx(sol) # [1.0, 1.5]
 
-get_expr = getu(sys, :(x + y + t))
+get_expr = getsym(sys, :(x + y + t))
 get_expr(sol) # [9.0, 11.0]
 
-get_arr = getu(sys, [:y, :(x + a)])
+get_arr = getsym(sys, [:y, :(x + a)])
 get_arr(sol) # [[2.0, 5.0], [2.5, 5.5]]
 
-get_tuple = getu(sys, (:z, :(z * t)))
+get_tuple = getsym(sys, (:z, :(z * t)))
 get_tuple(sol) # [(3.0, 18.0), (3.5, 24.5)]
 ```
 
-Note that `setu` is not designed to work for `Timeseries` objects.
+Note that `setsym` is not designed to work for `Timeseries` objects.
 
 If a type needs to perform some additional actions when updating the state/parameters
 or if it is not possible to return a mutable reference to the state/parameter vector
@@ -315,7 +315,7 @@ setp(integrator, :b)(integrator, 3.0) # functionally the same as above
 
 If a solution object includes modified parameter values (such as through callbacks) during the
 simulation, it must implement several additional functions for correct functioning of
-[`getu`](@ref) and [`getp`](@ref). [`ParameterTimeseriesCollection`](@ref) helps in
+[`getsym`](@ref) and [`getp`](@ref). [`ParameterTimeseriesCollection`](@ref) helps in
 implementing parameter timeseries objects. The following mockup gives an example of
 correct implementation of these functions and the indexing syntax they enable.
 
@@ -457,12 +457,12 @@ sol.ps[:(b + c)] # observed quantities work too
 ```
 
 ```@example param_timeseries
-getu(sol, :b)(sol) # works
+getsym(sol, :b)(sol) # works
 ```
 
 ```@example param_timeseries
 try
-  getu(sol, [:b, :d])(sol) # errors since :b and :d belong to different timeseries
+  getsym(sol, [:b, :d])(sol) # errors since :b and :d belong to different timeseries
 catch e
   showerror(stdout, e)
 end

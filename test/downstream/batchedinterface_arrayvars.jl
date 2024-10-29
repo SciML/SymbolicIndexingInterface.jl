@@ -23,13 +23,13 @@ bi = BatchedInterface(zip(syss, syms)...)
 @test is_variable.((bi,), [x..., y, z]) == Bool[1, 1, 1, 0]
 @test associated_systems(bi) == [1, 1, 1]
 
-getter = getu(bi)
+getter = getsym(bi)
 @test (@inferred getter(probs...)) == [1.0, 2.0, 3.0]
 buf = zeros(3)
 @inferred getter(buf, probs...)
 @test buf == [1.0, 2.0, 3.0]
 
-setter! = setu(bi)
+setter! = setsym(bi)
 buf .*= 10
 setter!(probs..., buf)
 
@@ -58,7 +58,7 @@ probs = [
 
 bi = BatchedInterface(zip(syss, syms)...)
 
-buf = getu(bi)(probs...)
+buf = getsym(bi)(probs...)
 buf .*= 100
 setter = setsym_oop(bi)
 vals = setter(probs..., buf)

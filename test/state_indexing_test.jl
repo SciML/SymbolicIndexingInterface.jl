@@ -14,8 +14,8 @@ SymbolicIndexingInterface.current_time(fp::FakeIntegrator) = fp.t
 
 sys = SymbolCache([:x, :y, :z], [:a, :b, :c], [:t])
 
-@test_throws ErrorException getu(sys, :q)
-@test_throws ErrorException setu(sys, :q)
+@test_throws ErrorException getsym(sys, :q)
+@test_throws ErrorException setsym(sys, :q)
 
 u = [1.0, 2.0, 3.0]
 p = [11.0, 12.0, 13.0]
@@ -50,8 +50,8 @@ for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
                                                 (4.0, (5.0, 6.0)), true)
                                             ((:x, [:y], (:z,)), (u[1], [u[2]], (u[3],)),
                                                 (4.0, [5.0], (6.0,)), true)]
-    get = getu(sys, sym)
-    set! = setu(sys, sym)
+    get = getsym(sys, sym)
+    set! = setsym(sys, sym)
     if check_inference
         @inferred get(fi)
     end
@@ -84,7 +84,7 @@ for (sym, val, check_inference) in [
     ([:(x + y), :z], [u[1] + u[2], u[3]], false),
     ((:(x + y), :(z + y)), (u[1] + u[2], u[2] + u[3]), false)
 ]
-    get = getu(sys, sym)
+    get = getsym(sys, sym)
     if check_inference
         @inferred get(fi)
     end
@@ -92,15 +92,15 @@ for (sym, val, check_inference) in [
 end
 
 let fi = fi, sys = sys
-    getter = getu(sys, [])
+    getter = getsym(sys, [])
     @test getter(fi) == []
-    getter = getu(sys, ())
+    getter = getsym(sys, ())
     @test getter(fi) == ()
     sc = SymbolCache(nothing, [:a, :b], :t)
     fi = FakeIntegrator(sys, nothing, [1.0, 2.0], 3.0)
-    getter = getu(sc, [])
+    getter = getsym(sc, [])
     @test getter(fi) == []
-    getter = getu(sc, ())
+    getter = getsym(sc, ())
     @test getter(fi) == ()
 end
 
@@ -111,8 +111,8 @@ for (sym, oldval, newval, check_inference) in [(:a, p[1], 4.0, true)
                                                ((:c, :b), (p[3], p[2]), (6.0, 5.0), true)
                                                ([:x, :a], [u[1], p[1]], [4.0, 5.0], false)
                                                ((:y, :b), (u[2], p[2]), (5.0, 6.0), true)]
-    get = getu(fi, sym)
-    set! = setu(fi, sym)
+    get = getsym(fi, sym)
+    set! = setsym(fi, sym)
     if check_inference
         @inferred get(fi)
     end
@@ -132,7 +132,7 @@ for (sym, val, check_inference) in [
     ([:x, :a, :t], [u[1], p[1], t], false),
     ((:x, :a, :t), (u[1], p[1], t), false)
 ]
-    get = getu(fi, sym)
+    get = getsym(fi, sym)
     if check_inference
         @inferred get(fi)
     end
@@ -202,7 +202,7 @@ for (sym, ans, check_inference) in [(:x, xvals, true)
                                     (:t, t, true)
                                     ([:x, :a, :t], vcat.(xvals, p[1], t), false)
                                     ((:x, :a, :t), tuple.(xvals, p[1], t), true)]
-    get = getu(sys, sym)
+    get = getsym(sys, sym)
     if check_inference
         @inferred get(sol)
     end
@@ -221,7 +221,7 @@ for (sym, val, check_inference) in [
     ([:(x + y), :z], vcat.(xvals .+ yvals, zvals), false),
     ((:(x + y), :(z + y)), tuple.(xvals .+ yvals, yvals .+ zvals), false)
 ]
-    get = getu(sys, sym)
+    get = getsym(sys, sym)
     if check_inference
         @inferred get(sol)
     end
@@ -240,21 +240,21 @@ for (sym, val) in [(:a, p[1])
                    (:c, p[3])
                    ([:a, :b], p[1:2])
                    ((:c, :b), (p[3], p[2]))]
-    get = getu(sys, sym)
+    get = getsym(sys, sym)
     @inferred get(sol)
     @test get(sol) == val
 end
 
 let sol = sol, sys = sys
-    getter = getu(sys, [])
+    getter = getsym(sys, [])
     @test getter(sol) == [[] for _ in 1:length(sol.t)]
-    getter = getu(sys, ())
+    getter = getsym(sys, ())
     @test getter(sol) == [() for _ in 1:length(sol.t)]
     sc = SymbolCache(nothing, [:a, :b], :t)
     sol = FakeSolution(sys, [], [1.0, 2.0], [])
-    getter = getu(sc, [])
+    getter = getsym(sc, [])
     @test getter(sol) == []
-    getter = getu(sc, ())
+    getter = getsym(sc, ())
     @test getter(sol) == []
 end
 
@@ -285,7 +285,7 @@ for (sym, val, check_inference) in [
     ([:(x + a), :(y + b)], [u[1] + p[1], u[2] + p[2]], true),
     ((:(x + a), :(y + b)), (u[1] + p[1], u[2] + p[2]), true)
 ]
-    getter = getu(sys, sym)
+    getter = getsym(sys, sym)
     if check_inference
         @inferred getter(fs)
     end
@@ -318,7 +318,7 @@ ts = 0.0:0.1:1.0
 
 fi = FakeIntegrator(sys, u0, p, ts[1])
 fs = FakeSolution(sys, u, p, ts)
-getter = getu(sys, :(x + y))
+getter = getsym(sys, :(x + y))
 @test getter(fi) ≈ 2.8
 @test getter(fs) ≈ [3.0i + 2(ts[i] - 0.1) for i in 1:11]
 @test getter(fs, 1) ≈ 2.8
