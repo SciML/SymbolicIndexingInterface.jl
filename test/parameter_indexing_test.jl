@@ -488,7 +488,7 @@ for (sym, val_is_timeseries, val, check_inference) in [
     ([:a, :(2b)], true, vcat.(aval, 2 .* bval), true),
     ((:a, :(2b)), true, tuple.(aval, 2 .* bval), true)
 ]
-    getter = getu(sys, sym)
+    getter = getsym(sys, sym)
     if check_inference
         @inferred getter(fs)
     end
@@ -524,7 +524,7 @@ for (sym, val, check_inference) in [
     ([:(2b), :(3x)], [2_bval, 3_xval], true),
     ((:(2b), :(3x)), (2_bval, 3_xval), true)
 ]
-    getter = getu(sys, sym)
+    getter = getsym(sys, sym)
     @test_throws MixedParameterTimeseriesIndexError getter(fs)
     for subidx in [1, CartesianIndex(2), :, rand(Bool, 4), rand(1:4, 3), 1:2]
         @test_throws MixedParameterTimeseriesIndexError getter(fs, subidx)

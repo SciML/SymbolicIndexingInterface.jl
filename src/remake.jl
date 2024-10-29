@@ -46,7 +46,7 @@ function remake_buffer(sys, oldbuffer::AbstractArray, idxs, vals)
             else
                 v = elT(v)
             end
-            setu(sys, k)(newbuffer, v)
+            setsym(sys, k)(newbuffer, v)
         end
     else
         mutbuffer = remake_buffer(sys, collect(oldbuffer), idxs, vals)
@@ -80,7 +80,7 @@ end
 function remake_buffer(sys, oldbuffer::Tuple, idxs, vals)
     wrap = TupleRemakeWrapper(oldbuffer)
     for (idx, val) in zip(idxs, vals)
-        setu(sys, idx)(wrap, val)
+        setsym(sys, idx)(wrap, val)
     end
     return wrap.t
 end

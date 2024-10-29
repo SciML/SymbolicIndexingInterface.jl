@@ -3,7 +3,7 @@ function set_state!(sys, val, idx)
 end
 
 """
-    getu(indp, sym)
+    getsym(indp, sym)
 
 Return a function that takes a value provider and returns the value of the symbolic
 variable `sym`. If `sym` is not an observed quantity, the returned function can also
@@ -25,10 +25,10 @@ If the value provider is a parameter timeseries object, the same rules apply as
 [`getp`](@ref). The difference here is that `sym` may also contain non-parameter symbols,
 and the values are always returned corresponding to the state timeseries.
 """
-function getu(sys, sym)
+function getsym(sys, sym)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-    _getu(sys, symtype, elsymtype, sym)
+    _getsym(sys, symtype, elsymtype, sym)
 end
 
 struct GetStateIndex{I} <: AbstractStateGetIndexer
@@ -47,7 +47,7 @@ function (gsi::GetStateIndex)(::NotTimeseries, prob)
     state_values(prob, gsi.idx)
 end
 
-function _getu(sys, ::NotSymbolic, ::NotSymbolic, sym)
+function _getsym(sys, ::NotSymbolic, ::NotSymbolic, sym)
     return GetStateIndex(sym)
 end
 
@@ -142,10 +142,10 @@ function (o::TimeIndependentObservedFunction)(::IsTimeseriesTrait, prob)
     return o.obsfn(state_values(prob), parameter_values(prob))
 end
 
-function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
+function _getsym(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
-        return getu(sys, idx)
+        return getsym(sys, idx)
     elseif is_parameter(sys, sym)
         return getp(sys, sym)
     elseif is_independent_variable(sys, sym)
@@ -168,7 +168,7 @@ function _getu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
             return getp(sys, sym)
         end
     end
-    error("Invalid symbol $sym for `getu`")
+    error("Invalid symbol $sym for `getsym`")
 end
 
 struct MultipleGetters{I, G} <: AbstractStateGetIndexer
@@ -247,7 +247,7 @@ for (t1, t2) in [
     (ArraySymbolic, Any),
     (NotSymbolic, Union{<:Tuple, <:AbstractArray})
 ]
-    @eval function _getu(sys, ::NotSymbolic, elt::$t1, sym::$t2)
+    @eval function _getsym(sys, ::NotSymbolic, elt::$t1, sym::$t2)
         if isempty(sym)
             return MultipleGetters(ContinuousTimeseries(), sym)
         end
@@ -259,7 +259,7 @@ for (t1, t2) in [
         end
         if !is_time_dependent(sys)
             if num_observed == 0 || num_observed == 1 && sym isa Tuple
-                return MultipleGetters(nothing, getu.((sys,), sym))
+                return MultipleGetters(nothing, getsym.((sys,), sym))
             else
                 obs = observed(sys, sym_arr)
                 getter = TimeIndependentObservedFunction(obs)
@@ -280,7 +280,7 @@ for (t1, t2) in [
         end
 
         if num_observed == 0 || num_observed == 1 && sym isa Tuple
-            getters = getu.((sys,), sym)
+            getters = getsym.((sys,), sym)
             return MultipleGetters(ts_idxs, getters)
         else
             obs = observed(sys, sym_arr)
@@ -297,20 +297,20 @@ for (t1, t2) in [
     end
 end
 
-function _getu(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
+function _getsym(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
-        return getu(sys, idx)
+        return getsym(sys, idx)
     elseif is_parameter(sys, sym)
         return getp(sys, sym)
     end
-    return getu(sys, collect(sym))
+    return getsym(sys, collect(sym))
 end
 
-# setu doesn't need the same `let` blocks to be inferred for some reason
+# setsym doesn't need the same `let` blocks to be inferred for some reason
 
 """
-    setu(sys, sym)
+    setsym(sys, sym)
 
 Return a function that takes a value provider and a value, and sets the the state `sym` to
 that value. Note that `sym` can be an index, a symbolic variable, or an array/tuple of the
@@ -322,10 +322,10 @@ if this is not possible or additional actions need to be performed when updating
 [`set_state!`](@ref) can be defined. This function does not work on types for which
 [`is_timeseries`](@ref) is [`Timeseries`](@ref).
 """
-function setu(sys, sym)
+function setsym(sys, sym)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-    _setu(sys, symtype, elsymtype, sym)
+    _setsym(sys, symtype, elsymtype, sym)
 end
 
 struct SetStateIndex{I} <: AbstractSetIndexer
@@ -336,18 +336,18 @@ function (ssi::SetStateIndex)(prob, val)
     set_state!(prob, val, ssi.idx)
 end
 
-function _setu(sys, ::NotSymbolic, ::NotSymbolic, sym)
+function _setsym(sys, ::NotSymbolic, ::NotSymbolic, sym)
     return SetStateIndex(sym)
 end
 
-function _setu(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
+function _setsym(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
         return SetStateIndex(idx)
     elseif is_parameter(sys, sym)
         return setp(sys, sym)
     end
-    error("Invalid symbol $sym for `setu`")
+    error("Invalid symbol $sym for `setsym`")
 end
 
 for (t1, t2) in [
@@ -355,13 +355,13 @@ for (t1, t2) in [
     (ArraySymbolic, Any),
     (NotSymbolic, Union{<:Tuple, <:AbstractArray})
 ]
-    @eval function _setu(sys, ::NotSymbolic, ::$t1, sym::$t2)
-        setters = setu.((sys,), sym)
+    @eval function _setsym(sys, ::NotSymbolic, ::$t1, sym::$t2)
+        setters = setsym.((sys,), sym)
         return MultipleSetters(setters)
     end
 end
 
-function _setu(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
+function _setsym(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
         if idx isa AbstractArray
@@ -372,5 +372,102 @@ function _setu(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
     elseif is_parameter(sys, sym)
         return setp(sys, sym)
     end
-    return setu(sys, collect(sym))
+    return setsym(sys, collect(sym))
+end
+
+const getu = getsym
+const setu = setsym
+
+"""
+    setsym_oop(indp, sym)
+
+Return a function which takes a value provider `valp` and a value `val`, and returns
+`state_values(valp), parameter_values(valp)` with the states/parameters in `sym` set to the
+corresponding values in `val`. This allows changing the types of values stored, and leverages
+[`remake_buffer`](@ref). Note that `sym` can be an index, a symbolic variable, or an
+array/tuple of the aforementioned. All entries `s` in `sym` must satisfy `is_variable(indp, s)`
+or `is_parameter(indp, s)`.
+
+Requires that the value provider implement `state_values`, `parameter_values` and `remake_buffer`.
+"""
+function setsym_oop(indp, sym)
+    symtype = symbolic_type(sym)
+    elsymtype = symbolic_type(eltype(sym))
+    return _setsym_oop(indp, symtype, elsymtype, sym)
+end
+
+struct FullSetter{S, P, I, J}
+    state_setter::S
+    param_setter::P
+    state_split::I
+    param_split::J
+end
+
+FullSetter(ssetter, psetter) = FullSetter(ssetter, psetter, nothing, nothing)
+
+function (fs::FullSetter)(valp, val)
+    return fs.state_setter(valp, val[fs.state_split]),
+    fs.param_setter(valp, val[fs.param_split])
+end
+
+function (fs::FullSetter{Nothing})(valp, val)
+    return state_values(valp), fs.param_setter(valp, val)
+end
+
+function (fs::(FullSetter{S, Nothing} where {S}))(valp, val)
+    return fs.state_setter(valp, val), parameter_values(valp)
+end
+
+function (fs::(FullSetter{Nothing, Nothing}))(valp, val)
+    return state_values(valp), parameter_values(valp)
+end
+
+function _setsym_oop(indp, ::NotSymbolic, ::NotSymbolic, sym)
+    return FullSetter(OOPSetter(_root_indp(indp), sym, true), nothing)
+end
+
+function _setsym_oop(indp, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
+    if (idx = variable_index(indp, sym)) !== nothing
+        return FullSetter(OOPSetter(_root_indp(indp), idx, true), nothing)
+    elseif (idx = parameter_index(indp, sym)) !== nothing
+        return FullSetter(nothing, OOPSetter(_root_indp(indp), idx, false))
+    end
+    throw(NotVariableOrParameter("setsym_oop", sym))
+end
+
+for (t1, t2) in [
+    (ScalarSymbolic, Any),
+    (NotSymbolic, Union{<:Tuple, <:AbstractArray})
+]
+    @eval function _setsym_oop(indp, ::NotSymbolic, ::$t1, sym::$t2)
+        vars = []
+        state_split = eltype(eachindex(sym))[]
+        pars = []
+        param_split = eltype(eachindex(sym))[]
+        for (i, s) in enumerate(sym)
+            if (idx = variable_index(indp, s)) !== nothing
+                push!(vars, idx)
+                push!(state_split, i)
+            elseif (idx = parameter_index(indp, s)) !== nothing
+                push!(pars, idx)
+                push!(param_split, i)
+            else
+                throw(NotVariableOrParameter("setsym_oop", s))
+            end
+        end
+        indp = _root_indp(indp)
+        return FullSetter(isempty(vars) ? nothing : OOPSetter(indp, identity.(vars), true),
+            isempty(pars) ? nothing : OOPSetter(indp, identity.(pars), false),
+            state_split, param_split)
+    end
+end
+
+function _setsym_oop(indp, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
+    if (idx = variable_index(indp, sym)) !== nothing
+        return setsym_oop(indp, idx)
+    elseif (idx = parameter_index(indp, sym)) !== nothing
+        return FullSetter(
+            nothing, OOPSetter(indp, idx isa AbstractArray ? idx : (idx,), false))
+    end
+    return setsym_oop(indp, collect(sym))
 end

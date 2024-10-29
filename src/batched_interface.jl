@@ -2,7 +2,7 @@
     struct BatchedInterface{S <: AbstractVector, I}
     function BatchedInterface(indp_syms::Tuple...)
 
-A struct which stores information for batched calls to [`getu`](@ref) or [`setu`](@ref).
+A struct which stores information for batched calls to [`getsym`](@ref) or [`setsym`](@ref).
 Given `Tuple`s, where the first element of each tuple is an index provider and the second
 an array of symbolic variables (either states or parameters) in the index provider,
 `BatchedInterface` will compute the union of all symbols and associate each symbol with
@@ -17,7 +17,7 @@ be retained internally.
 `BatchedInterface` implements [`variable_symbols`](@ref), [`is_variable`](@ref),
 [`variable_index`](@ref) to query the order of symbols in the union.
 
-See [`getu`](@ref) and [`setu`](@ref) for further details.
+See [`getsym`](@ref) and [`setsym`](@ref) for further details.
 
 See also: [`associated_systems`](@ref).
 """
@@ -118,7 +118,7 @@ is the index of the index provider associated with the corresponding symbol in
 associated_systems(bi::BatchedInterface) = bi.associated_systems
 
 """
-    getu(bi::BatchedInterface)
+    getsym(bi::BatchedInterface)
 
 Given a [`BatchedInterface`](@ref) composed from `n` index providers (and corresponding
 symbols), return a function which takes `n` corresponding value providers and returns an
@@ -127,7 +127,7 @@ an `AbstractArray` of the appropriate `eltype` and size as its first argument, i
 case the operation will populate the array in-place with the values of the symbols in the
 union.
 
-Note that all of the value providers passed to the function returned by `getu` must satisfy
+Note that all of the value providers passed to the function returned by `getsym` must satisfy
 `is_timeseries(prob) === NotTimeseries()`.
 
 The value of the `i`th symbol in the union (obtained through `variable_symbols(bi)[i]`) is
@@ -137,7 +137,7 @@ provider at index `associated_systems(bi)[i]`).
 See also: [`variable_symbols`](@ref), [`associated_systems`](@ref), [`is_timeseries`](@ref),
 [`NotTimeseries`](@ref).
 """
-function getu(bi::BatchedInterface)
+function getsym(bi::BatchedInterface)
     numprobs = length(bi.system_to_symbol_subset)
     probnames = [Symbol(:prob, i) for i in 1:numprobs]
 
@@ -189,13 +189,13 @@ function getu(bi::BatchedInterface)
 end
 
 """
-    setu(bi::BatchedInterface)
+    setsym(bi::BatchedInterface)
 
 Given a [`BatchedInterface`](@ref) composed from `n` index providers (and corresponding
 symbols), return a function which takes `n` corresponding problems and an array of the
 values, and updates each of the problems with the values of the corresponding symbols.
 
-Note that all of the value providers passed to the function returned by `setu` must satisfy
+Note that all of the value providers passed to the function returned by `setsym` must satisfy
 `is_timeseries(prob) === NotTimeseries()`.
 
 Note that if any subset of the `n` index providers share common symbols (among those passed
@@ -204,7 +204,7 @@ updated with the values of the common symbols.
 
 See also: [`is_timeseries`](@ref), [`NotTimeseries`](@ref).
 """
-function setu(bi::BatchedInterface)
+function setsym(bi::BatchedInterface)
     numprobs = length(bi.system_to_symbol_subset)
     probnames = [Symbol(:prob, i) for i in 1:numprobs]
 

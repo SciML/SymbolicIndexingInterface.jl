@@ -726,38 +726,12 @@ function setp_oop(indp, sym)
     return _setp_oop(indp, symtype, elsymtype, sym)
 end
 
-struct OOPSetter{I, D}
-    indp::I
-    idxs::D
-end
-
-function (os::OOPSetter)(valp, val)
-    return remake_buffer(os.indp, parameter_values(valp), (os.idxs,), (val,))
-end
-
-function (os::OOPSetter)(valp, val::Union{Tuple, AbstractArray})
-    if os.idxs isa Union{Tuple, AbstractArray}
-        return remake_buffer(os.indp, parameter_values(valp), os.idxs, val)
-    else
-        return remake_buffer(os.indp, parameter_values(valp), (os.idxs,), (val,))
-    end
-end
-
-function _root_indp(indp)
-    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
-       (sc = symbolic_container(indp)) != indp
-        return _root_indp(sc)
-    else
-        return indp
-    end
-end
-
 function _setp_oop(indp, ::NotSymbolic, ::NotSymbolic, sym)
-    return OOPSetter(_root_indp(indp), sym)
+    return OOPSetter(_root_indp(indp), sym, false)
 end
 
 function _setp_oop(indp, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
-    return OOPSetter(_root_indp(indp), parameter_index(indp, sym))
+    return OOPSetter(_root_indp(indp), parameter_index(indp, sym), false)
 end
 
 for (t1, t2) in [
@@ -765,13 +739,13 @@ for (t1, t2) in [
     (NotSymbolic, Union{<:Tuple, <:AbstractArray})
 ]
     @eval function _setp_oop(indp, ::NotSymbolic, ::$t1, sym::$t2)
-        return OOPSetter(_root_indp(indp), parameter_index.((indp,), sym))
+        return OOPSetter(_root_indp(indp), parameter_index.((indp,), sym), false)
     end
 end
 
 function _setp_oop(indp, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
     if is_parameter(indp, sym)
-        return OOPSetter(_root_indp(indp), parameter_index(indp, sym))
+        return OOPSetter(_root_indp(indp), parameter_index(indp, sym), false)
     end
     error("$sym is not a valid parameter")
 end

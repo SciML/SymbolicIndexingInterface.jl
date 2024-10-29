@@ -35,7 +35,7 @@ include("parameter_timeseries_collection.jl")
 export getp, setp, setp_oop
 include("parameter_indexing.jl")
 
-export getu, setu
+export getsym, setsym, getu, setu
 include("state_indexing.jl")
 
 export BatchedInterface, setsym_oop, associated_systems
