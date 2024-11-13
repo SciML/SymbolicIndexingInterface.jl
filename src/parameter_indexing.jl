@@ -599,12 +599,14 @@ for (t1, t2) in [
         # `getp` errors on older MTK that doesn't support `parameter_observed`.
         getters = getp.((sys,), p)
         num_observed = count(is_observed_getter, getters)
+        supports_tuple = supports_tuple_observed(sys)
         p_arr = p isa Tuple ? collect(p) : p
 
         if num_observed == 0
             return MultipleParametersGetter(getters)
         else
-            pofn = parameter_observed(sys, p_arr)
+            pofn = supports_tuple ? parameter_observed(sys, p) :
+                   parameter_observed(sys, p_arr)
             if pofn === nothing
                 return MultipleParametersGetter.(getters)
             end
@@ -615,7 +617,8 @@ for (t1, t2) in [
             else
                 getter = GetParameterObservedNoTime(pofn)
             end
-            return p isa Tuple ? AsParameterTupleWrapper{length(p)}(getter) : getter
+            return p isa Tuple && !supports_tuple ?
+                   AsParameterTupleWrapper{length(p)}(getter) : getter
         end
     end
 end

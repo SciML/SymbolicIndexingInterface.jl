@@ -252,6 +252,7 @@ for (t1, t2) in [
             return MultipleGetters(ContinuousTimeseries(), sym)
         end
         sym_arr = sym isa Tuple ? collect(sym) : sym
+        supports_tuple = supports_tuple_observed(sys)
         num_observed = 0
         for s in sym
             num_observed += is_observed(sys, s)
@@ -261,7 +262,7 @@ for (t1, t2) in [
             if num_observed == 0 || num_observed == 1 && sym isa Tuple
                 return MultipleGetters(nothing, getsym.((sys,), sym))
             else
-                obs = observed(sys, sym_arr)
+                obs = supports_tuple ? observed(sys, sym) : observed(sys, sym_arr)
                 getter = TimeIndependentObservedFunction(obs)
                 if sym isa Tuple
                     getter = AsTupleWrapper{length(sym)}(getter)
@@ -283,13 +284,13 @@ for (t1, t2) in [
             getters = getsym.((sys,), sym)
             return MultipleGetters(ts_idxs, getters)
         else
-            obs = observed(sys, sym_arr)
+            obs = supports_tuple ? observed(sys, sym) : observed(sys, sym_arr)
             getter = if is_time_dependent(sys)
                 TimeDependentObservedFunction{is_markovian(sys)}(ts_idxs, obs)
             else
                 TimeIndependentObservedFunction(obs)
             end
-            if sym isa Tuple
+            if sym isa Tuple && !supports_tuple
                 getter = AsTupleWrapper{length(sym)}(getter)
             end
             return getter

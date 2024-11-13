@@ -346,3 +346,35 @@ getter = getsym(sys, :(x + y))
 @test getter(fi) ≈ 2.8
 @test getter(fs) ≈ [3.0i + 2(ts[i] - 0.1) for i in 1:11]
 @test getter(fs, 1) ≈ 2.8
+
+struct TupleObservedWrapper{S}
+    sys::S
+end
+SymbolicIndexingInterface.symbolic_container(t::TupleObservedWrapper) = t.sys
+SymbolicIndexingInterface.supports_tuple_observed(::TupleObservedWrapper) = true
+
+@testset "Tuple observed" begin
+    sc = SymbolCache([:x, :y, :z], [:a, :b, :c])
+    sys = TupleObservedWrapper(sc)
+    ps = ProblemState(; u = [1.0, 2.0, 3.0], p = [0.1, 0.2, 0.3])
+    getter = getsym(sys, (:(x + y), :(y + z)))
+    @test all(getter(ps) .≈ (3.0, 5.0))
+    @test getter(ps) isa Tuple
+    @test_nowarn @inferred getter(ps)
+    getter = getsym(sys, (:(a + b), :(b + c)))
+    @test all(getter(ps) .≈ (0.3, 0.5))
+    @test getter(ps) isa Tuple
+    @test_nowarn @inferred getter(ps)
+
+    sc = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
+    sys = TupleObservedWrapper(sc)
+    ps = ProblemState(; u = [1.0, 2.0, 3.0], p = [0.1, 0.2, 0.3], t = 0.1)
+    getter = getsym(sys, (:(x + y), :(y + t)))
+    @test all(getter(ps) .≈ (3.0, 2.1))
+    @test getter(ps) isa Tuple
+    @test_nowarn @inferred getter(ps)
+    getter = getsym(sys, (:(a + b), :(b + c)))
+    @test all(getter(ps) .≈ (0.3, 0.5))
+    @test getter(ps) isa Tuple
+    @test_nowarn @inferred getter(ps)
+end

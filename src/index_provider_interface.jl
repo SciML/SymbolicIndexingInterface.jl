@@ -213,6 +213,24 @@ observed(indp, sym) = observed(symbolic_container(indp), sym)
 observed(indp, sym, states) = observed(symbolic_container(indp), sym, states)
 
 """
+    supports_tuple_observed(indp)
+
+Check if the given index provider supports generating observed functions for tuples of
+symbolic variables. Falls back using `symbolic_container`, and returns `false` by
+default.
+
+See also: [`observed`](@ref), [`parameter_observed`](@ref), [`symbolic_container`](@ref).
+"""
+function supports_tuple_observed(indp)
+    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
+       (sc = symbolic_container(indp)) !== indp
+        supports_tuple_observed(sc)
+    else
+        false
+    end
+end
+
+"""
     is_time_dependent(indp)
 
 Check if `indp` has time as (one of) its independent variables.
