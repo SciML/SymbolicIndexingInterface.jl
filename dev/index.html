@@ -5,11 +5,11 @@
   gtag('config', 'UA-90474609-3', {'page_path': location.pathname + location.search + location.hash});
 </script><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script><link href="assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img src="assets/logo.png" alt="SymbolicIndexingInterface.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>SymbolicIndexingInterface.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>Home</a><ul class="internal"><li><a class="tocitem" href="#Installation"><span>Installation</span></a></li><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#Contributing"><span>Contributing</span></a></li><li><a class="tocitem" href="#Reproducibility"><span>Reproducibility</span></a></li></ul></li><li><a class="tocitem" href="terminology/">Terminology</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="usage/">Using the SciML Symbolic Indexing Interface</a></li><li><a class="tocitem" href="simple_sii_sys/">Simple Demonstration of a Symbolic System Structure</a></li><li><a class="tocitem" href="complete_sii/">Implementing the Complete Symbolic Indexing Interface</a></li></ul></li><li><a class="tocitem" href="solution_wrappers/">Defining Solution Wrapper Fallbacks</a></li><li><a class="tocitem" href="api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Home</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Home</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/SymbolicIndexingInterface.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/SymbolicIndexingInterface.jl/blob/master/docs/src/index.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="SymbolicIndexingInterface.jl:-Standardized-Symbolic-Indexing-of-Julia"><a class="docs-heading-anchor" href="#SymbolicIndexingInterface.jl:-Standardized-Symbolic-Indexing-of-Julia">SymbolicIndexingInterface.jl: Standardized Symbolic Indexing of Julia</a><a id="SymbolicIndexingInterface.jl:-Standardized-Symbolic-Indexing-of-Julia-1"></a><a class="docs-heading-anchor-permalink" href="#SymbolicIndexingInterface.jl:-Standardized-Symbolic-Indexing-of-Julia" title="Permalink"></a></h1><p>SymbolicIndexingInterface.jl is a set of interface functions for handling containers of symbolic variables.</p><h2 id="Installation"><a class="docs-heading-anchor" href="#Installation">Installation</a><a id="Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Installation" title="Permalink"></a></h2><p>To install SymbolicIndexingInterface.jl, use the Julia package manager:</p><pre><code class="language-julia hljs">using Pkg
 Pkg.add(&quot;SymbolicIndexingInterface&quot;)</code></pre><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>The symbolic indexing interface has 2 levels:</p><ol><li>The user level. At the user level, a modeler or engineer simply uses terms from a domain-specific language (DSL) inside of SciML functionality and will receive the requested values. For example, if a DSL defines a symbol <code>x</code>, then <code>sol[x]</code> returns the solution value(s) for <code>x</code>.</li><li>The DSL system structure level. This is the structure which defines the symbolic indexing for a given problem/solution. DSLs can tag a constructed problem/solution with this object in order to endow the SciML tools with the ability to index symbolically according to the definitions the DSL writer wants.</li></ol><h2 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h2><ul><li>Please refer to the <a href="https://github.com/SciML/ColPrac/blob/master/README.md">SciML ColPrac: Contributor&#39;s Guide on Collaborative Practices for Community Packages</a> for guidance on PRs, issues, and other matters relating to contributing to SciML.</li><li>There are a few community forums:<ul><li>the #diffeq-bridged channel in the <a href="https://julialang.org/slack/">Julia Slack</a></li><li><a href="https://gitter.im/JuliaDiffEq/Lobby">JuliaDiffEq</a> on Gitter</li><li>on the <a href="https://discourse.julialang.org">Julia Discourse forums</a></li><li>see also <a href="https://sciml.ai/community/">SciML Community page</a></li></ul></li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Project.toml`
-  [e30172f5] Documenter v1.7.0
-  [961ee093] ModelingToolkit v9.49.0
-  [1dea7af3] OrdinaryDiffEq v6.89.0
-  [91a5bcdd] Plots v1.40.8
-  [2efcf032] SymbolicIndexingInterface v0.3.34 `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.11.1
+  [e30172f5] Documenter v1.8.0
+  [961ee093] ModelingToolkit v9.50.0
+  [1dea7af3] OrdinaryDiffEq v6.90.1
+  [91a5bcdd] Plots v1.40.9
+  [2efcf032] SymbolicIndexingInterface v0.3.35 `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.11.1
 Commit 8f5b7ca12ad (2024-10-16 10:53 UTC)
 Build Info:
   Official https://julialang.org/ release
@@ -23,24 +23,26 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [a4c015fc] ANSIColoredPrinters v0.0.1
   [1520ce14] AbstractTrees v0.4.5
   [7d9f7c33] Accessors v0.1.38
-  [79e6a3ab] Adapt v4.1.0
+  [79e6a3ab] Adapt v4.1.1
   [66dad0bd] AliasTables v1.1.3
   [ec485272] ArnoldiMethod v0.4.0
-  [4fba245c] ArrayInterface v7.16.0
+  [4fba245c] ArrayInterface v7.17.0
   [4c555306] ArrayLayouts v1.10.4
   [e2ed5e7c] Bijections v0.1.9
   [d1d4a3ce] BitFlags v0.1.9
   [62783981] BitTwiddlingConvenienceFunctions v0.1.6
   [8e7c35d0] BlockArrays v1.1.1
+  [70df07ce] BracketingNonlinearSolve v1.1.0
   [2a0fbf3d] CPUSummary v0.2.6
   [00ebfdb7] CSTParser v3.4.3
+  [7057c7e9] Cassette v0.3.14
   [d360d2e6] ChainRulesCore v1.25.0
   [fb6a15b2] CloseOpenIntervals v0.1.13
   [944b1d66] CodecZlib v0.7.6
-  [35d6a980] ColorSchemes v3.27.0
-⌅ [3da002f7] ColorTypes v0.11.5
-  [c3611d14] ColorVectorSpace v0.10.0
-⌅ [5ae59095] Colors v0.12.11
+  [35d6a980] ColorSchemes v3.27.1
+  [3da002f7] ColorTypes v0.12.0
+  [c3611d14] ColorVectorSpace v0.11.0
+  [5ae59095] Colors v0.13.0
   [861a8166] Combinatorics v1.0.2
   [a80b9123] CommonMark v0.8.15
   [38540f10] CommonSolve v0.2.4
@@ -59,21 +61,21 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [864edb3b] DataStructures v0.18.20
   [e2d170a0] DataValueInterfaces v1.0.0
   [8bb1440f] DelimitedFiles v1.9.1
-  [2b5f629d] DiffEqBase v6.158.3
-  [459566f4] DiffEqCallbacks v4.0.0
+  [2b5f629d] DiffEqBase v6.159.0
+  [459566f4] DiffEqCallbacks v4.1.0
   [77a26b50] DiffEqNoiseProcess v5.23.0
   [163ba53b] DiffResults v1.1.0
   [b552c78f] DiffRules v1.15.1
-  [a0c0ee7d] DifferentiationInterface v0.6.17
+  [a0c0ee7d] DifferentiationInterface v0.6.22
   [8d63f2c5] DispatchDoctor v0.4.17
-  [31c24e10] Distributions v0.25.112
+  [31c24e10] Distributions v0.25.113
   [ffbed154] DocStringExtensions v0.9.3
-  [e30172f5] Documenter v1.7.0
+  [e30172f5] Documenter v1.8.0
   [5b8099bc] DomainSets v0.7.14
   [7c1d4256] DynamicPolynomials v0.6.0
-  [06fc5a27] DynamicQuantities v1.1.0
+  [06fc5a27] DynamicQuantities v1.3.0
   [4e289a0a] EnumX v1.0.4
-  [f151be2c] EnzymeCore v0.8.4
+  [f151be2c] EnzymeCore v0.8.6
   [460bff9d] ExceptionUnwrapping v0.1.10
   [d4d017d3] ExponentialUtilities v1.26.1
   [e2ba6199] ExprTools v0.1.10
@@ -88,10 +90,11 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [6a86dc24] FiniteDiff v2.26.0
   [53c48c17] FixedPointNumbers v0.8.5
   [1fa38f19] Format v1.3.7
-  [f6369f11] ForwardDiff v0.10.36
+  [f6369f11] ForwardDiff v0.10.38
+  [f62d2435] FunctionProperties v0.1.2
   [069b7b12] FunctionWrappers v1.1.3
   [77dc65aa] FunctionWrappersWrappers v0.1.3
-  [d9f16b24] Functors v0.4.12
+⌅ [d9f16b24] Functors v0.4.12
 ⌅ [46192b85] GPUArraysCore v0.1.6
   [28b8d3ca] GR v0.73.8
   [14197337] GenericLinearAlgebra v0.3.14
@@ -100,9 +103,9 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [c27321d9] Glob v1.3.1
   [86223c79] Graphs v1.12.0
   [42e2da0e] Grisu v1.0.2
-  [cd3eb016] HTTP v1.10.9
+  [cd3eb016] HTTP v1.10.10
   [3e5b6fbb] HostCPUFeatures v0.1.17
-  [34004b35] HypergeometricFunctions v0.3.24
+  [34004b35] HypergeometricFunctions v0.3.25
   [b5f81e59] IOCapture v0.2.5
   [615f187c] IfElse v0.1.1
   [d25df0c9] Inflate v0.1.5
@@ -121,11 +124,11 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [b964fa9f] LaTeXStrings v1.4.0
   [23fbe1c1] Latexify v0.16.5
   [10f19ff3] LayoutPointers v0.1.17
-  [0e77f7df] LazilyInitializedFields v1.2.2
+  [0e77f7df] LazilyInitializedFields v1.3.0
   [5078a376] LazyArrays v2.2.1
   [87fe0de2] LineSearch v0.1.4
   [d3d80556] LineSearches v7.3.0
-  [7ed4a6bd] LinearSolve v2.36.1
+  [7ed4a6bd] LinearSolve v2.36.2
   [2ab3a3ac] LogExpFunctions v0.3.28
   [e6f89c97] LoggingExtras v1.1.0
   [bdcacae8] LoopVectorization v0.12.171
@@ -137,27 +140,31 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [739be429] MbedTLS v1.1.9
   [442fdcdd] Measures v0.3.2
   [e1d29d7a] Missings v1.2.0
-  [961ee093] ModelingToolkit v9.49.0
+  [961ee093] ModelingToolkit v9.50.0
   [46d2c3a1] MuladdMacro v0.2.4
   [102ac46a] MultivariatePolynomials v0.5.7
   [d8a4904e] MutableArithmetics v1.5.2
   [d41bc354] NLSolversBase v7.8.3
   [77ba4419] NaNMath v1.0.2
-  [8913a72c] NonlinearSolve v3.15.1
+  [8913a72c] NonlinearSolve v4.1.0
+  [be0214bd] NonlinearSolveBase v1.3.2
+  [5959db7a] NonlinearSolveFirstOrder v1.0.0
+  [9a2c21bd] NonlinearSolveQuasiNewton v1.0.0
+  [26075421] NonlinearSolveSpectralMethods v1.0.0
   [6fe1bfb0] OffsetArrays v1.14.1
   [4d8831e6] OpenSSL v1.4.3
-  [429524aa] Optim v1.9.4
+  [429524aa] Optim v1.10.0
   [bac558e1] OrderedCollections v1.6.3
-  [1dea7af3] OrdinaryDiffEq v6.89.0
+  [1dea7af3] OrdinaryDiffEq v6.90.1
   [89bda076] OrdinaryDiffEqAdamsBashforthMoulton v1.1.0
   [6ad6398a] OrdinaryDiffEqBDF v1.1.2
-  [bbf590c4] OrdinaryDiffEqCore v1.9.0
+  [bbf590c4] OrdinaryDiffEqCore v1.10.1
   [50262376] OrdinaryDiffEqDefault v1.1.0
-  [4302a76b] OrdinaryDiffEqDifferentiation v1.1.0
+  [4302a76b] OrdinaryDiffEqDifferentiation v1.2.0
   [9286f039] OrdinaryDiffEqExplicitRK v1.1.0
   [e0540318] OrdinaryDiffEqExponentialRK v1.1.0
   [becaefa8] OrdinaryDiffEqExtrapolation v1.2.1
-  [5960d6e9] OrdinaryDiffEqFIRK v1.2.0
+  [5960d6e9] OrdinaryDiffEqFIRK v1.3.0
   [101fe9f7] OrdinaryDiffEqFeagin v1.1.0
   [d3585ca7] OrdinaryDiffEqFunctionMap v1.1.1
   [d28bc4f8] OrdinaryDiffEqHighOrderRK v1.1.0
@@ -165,13 +172,13 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [521117fe] OrdinaryDiffEqLinear v1.1.0
   [1344f307] OrdinaryDiffEqLowOrderRK v1.2.0
   [b0944070] OrdinaryDiffEqLowStorageRK v1.2.1
-  [127b3ac7] OrdinaryDiffEqNonlinearSolve v1.2.1
+  [127b3ac7] OrdinaryDiffEqNonlinearSolve v1.2.4
   [c9986a66] OrdinaryDiffEqNordsieck v1.1.0
   [5dd0a6cf] OrdinaryDiffEqPDIRK v1.1.0
   [5b33eab2] OrdinaryDiffEqPRK v1.1.0
   [04162be5] OrdinaryDiffEqQPRK v1.1.0
   [af6ede74] OrdinaryDiffEqRKN v1.1.0
-  [43230ef6] OrdinaryDiffEqRosenbrock v1.2.0
+  [43230ef6] OrdinaryDiffEqRosenbrock v1.3.1
   [2d112036] OrdinaryDiffEqSDIRK v1.1.0
   [669c94d9] OrdinaryDiffEqSSPRK v1.2.0
   [e3e12d00] OrdinaryDiffEqStabilizedIRK v1.1.0
@@ -185,8 +192,8 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [69de0a69] Parsers v2.8.1
   [b98c9c47] Pipe v1.3.0
   [ccf2f8ad] PlotThemes v3.3.0
-  [995b91a9] PlotUtils v1.4.2
-  [91a5bcdd] Plots v1.40.8
+  [995b91a9] PlotUtils v1.4.3
+  [91a5bcdd] Plots v1.40.9
   [e409e4f3] PoissonRandom v0.4.4
   [f517fe37] Polyester v0.7.16
   [1d0040c9] PolyesterWeave v0.2.2
@@ -202,7 +209,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [e6cf234a] RandomNumbers v1.6.0
   [3cdcf5f2] RecipesBase v1.3.4
   [01d81517] RecipesPipeline v0.6.12
-  [731186ca] RecursiveArrayTools v3.27.1
+  [731186ca] RecursiveArrayTools v3.27.3
   [f2c3362d] RecursiveFactorization v0.2.23
   [189a3867] Reexport v1.2.2
   [2792f1a3] RegistryInstances v0.1.0
@@ -214,21 +221,20 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [7e49a35a] RuntimeGeneratedFunctions v0.5.13
   [94e857df] SIMDTypes v0.1.0
   [476501e8] SLEEFPirates v0.6.43
-  [0bca4576] SciMLBase v2.57.2
-  [19f34311] SciMLJacobianOperators v0.1.0
-  [c0aeaf25] SciMLOperators v0.3.11
+  [0bca4576] SciMLBase v2.60.0
+  [19f34311] SciMLJacobianOperators v0.1.1
+  [c0aeaf25] SciMLOperators v0.3.12
   [53ae85a6] SciMLStructures v1.5.0
   [6c6a2e73] Scratch v1.2.1
   [efcf1570] Setfield v1.1.1
   [992d4aef] Showoff v1.0.3
   [777ac1f9] SimpleBufferStream v1.2.0
-  [727e6d20] SimpleNonlinearSolve v1.12.3
+  [727e6d20] SimpleNonlinearSolve v2.0.0
   [699a6c99] SimpleTraits v0.9.4
   [ce78b400] SimpleUnPack v1.1.0
   [a2af1166] SortingAlgorithms v1.2.1
-  [9f842d2f] SparseConnectivityTracer v0.6.8
   [47a9eef4] SparseDiffTools v2.23.0
-  [0a514795] SparseMatrixColorings v0.4.8
+  [0a514795] SparseMatrixColorings v0.4.10
   [e56a9233] Sparspak v0.3.9
   [276daf66] SpecialFunctions v2.4.0
   [860ef19b] StableRNGs v1.0.2
@@ -241,10 +247,10 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [2913bbd2] StatsBase v0.34.3
   [4c63d2b9] StatsFuns v1.3.2
   [7792a7ef] StrideArraysCore v0.5.7
-  [2efcf032] SymbolicIndexingInterface v0.3.34 `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`
+  [2efcf032] SymbolicIndexingInterface v0.3.35 `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`
   [19f23fe9] SymbolicLimits v0.2.2
   [d1185830] SymbolicUtils v3.7.2
-  [0c5d862f] Symbolics v6.16.0
+  [0c5d862f] Symbolics v6.18.3
   [3783bdb8] TableTraits v1.0.1
   [bd369af6] Tables v1.12.0
   [62fd8b95] TensorCore v0.1.1
@@ -264,7 +270,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [45397f5d] UnitfulLatexify v1.6.4
   [a7c27f48] Unityper v0.1.6
   [41fe7b60] Unzip v0.2.0
-  [3d5dd08c] VectorizationBase v0.21.70
+  [3d5dd08c] VectorizationBase v0.21.71
   [19fa3120] VertexSafeGraphs v0.2.0
   [6e34b625] Bzip2_jll v1.0.8+2
   [83423d85] Cairo_jll v1.18.2+1
@@ -403,4 +409,4 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [8e850b90] libblastrampoline_jll v5.11.0+0
   [8e850ede] nghttp2_jll v1.59.0+0
   [3f19e933] p7zip_jll v17.4.0+2
-Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.34/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.34/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="terminology/">Terminology »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 29 October 2024 15:27">Tuesday 29 October 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.35/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.35/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="terminology/">Terminology »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Wednesday 13 November 2024 08:27">Wednesday 13 November 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

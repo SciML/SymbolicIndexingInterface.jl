@@ -44,7 +44,7 @@ t: 61-element Vector{Float64}:
 u: 61-element Vector{Vector{Float64}}:
  [1.0, 0.0, 0.0]
  [0.9999987215181657, 1.2780900152625978e-6, 3.9181897521319503e-10]
- [0.9999942397327672, 5.718510591908378e-6, 4.175664083814197e-8]
+ [0.9999942397327672, 5.718510591908378e-6, 4.175664083814196e-8]
  [0.9999897579685716, 9.992106860321925e-6, 2.499245680985423e-7]
  [0.99998056266788, 1.7833624284594367e-5, 1.6037078354141817e-6]
  [0.9999712826600025, 2.403488607694387e-5, 4.682453920643883e-6]
@@ -53,15 +53,15 @@ u: 61-element Vector{Vector{Float64}}:
  [0.9999172960308617, 3.583508668595173e-5, 4.686888245237194e-5]
  [0.9998862913719596, 3.641240165367128e-5, 7.729622638673522e-5]
  ⋮
- [0.05563507731000906, 2.3546320422346677e-7, 0.944364687226787]
- [0.0479253487640473, 2.0121495043224853e-7, 0.9520744500210017]
- [0.041233421490033874, 1.719278816689115e-7, 0.9587664065820832]
- [0.03543699837030775, 1.4688361975260257e-7, 0.9645628547460718]
- [0.03042537181616433, 1.2546809318472845e-7, 0.9695745027157413]
- [0.026099132201150427, 1.071560843171811e-7, 0.9739007606427652]
- [0.02236969169455044, 9.149844876161235e-8, 0.9776302168070002]
- [0.019158563313533522, 7.81109638013885e-8, 0.9808413585755019]
- [0.01782789385075206, 7.258919982166461e-8, 0.9821720335600475]</code></pre><p>The solution can now be indexed symbolically:</p><pre><code class="language-julia hljs">sol[:y₁]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">61-element Vector{Float64}:
+ [0.055635077310009065, 2.3546320422346722e-7, 0.9443646872267859]
+ [0.04792534876404729, 2.0121495043224888e-7, 0.9520744500210006]
+ [0.04123342149003502, 1.719278816689167e-7, 0.9587664065820822]
+ [0.03543699837030737, 1.4688361975260098e-7, 0.9645628547460711]
+ [0.030425371816163962, 1.2546809318472707e-7, 0.9695745027157404]
+ [0.026099132201150052, 1.071560843171797e-7, 0.9739007606427642]
+ [0.02236969169455006, 9.149844876161093e-8, 0.9776302168069991]
+ [0.01915856331353314, 7.811096380138707e-8, 0.9808413585755007]
+ [0.01782789385075168, 7.258919982166317e-8, 0.9821720335600462]</code></pre><p>The solution can now be indexed symbolically:</p><pre><code class="language-julia hljs">sol[:y₁]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">61-element Vector{Float64}:
  1.0
  0.9999987215181657
  0.9999942397327672
@@ -73,15 +73,15 @@ u: 61-element Vector{Vector{Float64}}:
  0.9999172960308617
  0.9998862913719596
  ⋮
- 0.05563507731000906
- 0.0479253487640473
- 0.041233421490033874
- 0.03543699837030775
- 0.03042537181616433
- 0.026099132201150427
- 0.02236969169455044
- 0.019158563313533522
- 0.01782789385075206</code></pre><pre><code class="language-julia hljs">sol(1e3, idxs=:y₁)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.3367546834697417</code></pre><p>However, we did not give names to the parameters or the independent variables. They can be specified using <code>SymbolCache</code> as well:</p><pre><code class="language-julia hljs">sys = SymbolCache([:y₁, :y₂, :y₃], [:k₁, :k₂, :k₃], :t)
+ 0.055635077310009065
+ 0.04792534876404729
+ 0.04123342149003502
+ 0.03543699837030737
+ 0.030425371816163962
+ 0.026099132201150052
+ 0.02236969169455006
+ 0.01915856331353314
+ 0.01782789385075168</code></pre><pre><code class="language-julia hljs">sol(1e3, idxs=:y₁)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.3367546834697409</code></pre><p>However, we did not give names to the parameters or the independent variables. They can be specified using <code>SymbolCache</code> as well:</p><pre><code class="language-julia hljs">sys = SymbolCache([:y₁, :y₂, :y₃], [:k₁, :k₂, :k₃], :t)
 odefun = ODEFunction(rober!; sys = sys)
 prob = ODEProblem(odefun, [1.0, 0.0, 0.0], (0.0, 1e5), [0.04, 3e7, 1e4])
 sol = solve(prob, Rosenbrock23())
@@ -107,4 +107,4 @@ getk1(prob)</code></pre><pre class="documenter-example-output"><code class="nohi
   64593.73799781129
   77241.71960460565
   92180.81944906656
- 100000.0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../usage/">« Using the SciML Symbolic Indexing Interface</a><a class="docs-footer-nextpage" href="../complete_sii/">Implementing the Complete Symbolic Indexing Interface »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 29 October 2024 15:27">Tuesday 29 October 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 100000.0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../usage/">« Using the SciML Symbolic Indexing Interface</a><a class="docs-footer-nextpage" href="../complete_sii/">Implementing the Complete Symbolic Indexing Interface »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Wednesday 13 November 2024 08:27">Wednesday 13 November 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
