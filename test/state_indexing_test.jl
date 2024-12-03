@@ -347,6 +347,9 @@ getter = getsym(sys, :(x + y))
 @test getter(fs) ≈ [3.0i + 2(ts[i] - 0.1) for i in 1:11]
 @test getter(fs, 1) ≈ 2.8
 
+pstate = ProblemState(; u = u0, p = p, t = ts[1], h = t -> t .* ones(length(u0)))
+@test getter(pstate) ≈ 2.8
+
 struct TupleObservedWrapper{S}
     sys::S
 end
