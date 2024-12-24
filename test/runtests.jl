@@ -58,4 +58,7 @@ if GROUP == "All" || GROUP == "Downstream"
     @safetestset "remake_buffer with array symbolics test" begin
         @time include("downstream/remake_arrayvars.jl")
     end
+    @safetestset "array indexing" begin
+        @time include("downstream/array_indexing.jl")
+    end
 end
