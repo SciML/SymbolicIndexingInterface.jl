@@ -468,7 +468,7 @@ function _setsym_oop(indp, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
         return setsym_oop(indp, idx)
     elseif (idx = parameter_index(indp, sym)) !== nothing
         return FullSetter(
-            nothing, OOPSetter(indp, idx isa AbstractArray ? idx : (idx,), false))
+            nothing, OOPSetter(indp, idx, false))
     end
     return setsym_oop(indp, collect(sym))
 end

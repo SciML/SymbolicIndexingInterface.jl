@@ -628,7 +628,8 @@ function _getp(sys, ::ArraySymbolic, ::SymbolicTypeTrait, p)
         idx = parameter_index(sys, p)
         if is_timeseries_parameter(sys, p)
             ts_idx = timeseries_parameter_index(sys, p)
-            return GetParameterTimeseriesIndex(idx, ts_idx)
+            return GetParameterTimeseriesIndex(
+                GetParameterIndex(idx), GetParameterIndex(ts_idx))
         else
             return GetParameterIndex(idx)
         end
@@ -750,5 +751,5 @@ function _setp_oop(indp, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
     if is_parameter(indp, sym)
         return OOPSetter(_root_indp(indp), parameter_index(indp, sym), false)
     end
-    error("$sym is not a valid parameter")
+    return setp_oop(indp, collect(sym))
 end
