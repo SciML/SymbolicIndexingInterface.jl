@@ -11,6 +11,51 @@ function activate_downstream_env()
     Pkg.instantiate()
 end
 
+mutable struct CheckboundsCountedArray{T, N, A <: AbstractArray{T, N}} <:
+               AbstractArray{T, N}
+    array::A
+    count::Int
+end
+
+CheckboundsCountedArray(arr) = CheckboundsCountedArray(arr, 0)
+Base.@propagate_inbounds Base.getindex(arr::CheckboundsCountedArray, args...) = getindex(
+    arr.array, args...)
+Base.@propagate_inbounds Base.setindex!(arr::CheckboundsCountedArray, args...) = setindex!(
+    arr.array, args...)
+Base.size(arr::CheckboundsCountedArray) = size(arr.array)
+Base.length(arr::CheckboundsCountedArray) = length(arr.array)
+function Base.checkbounds(arr::CheckboundsCountedArray, args...)
+    arr.count += 1
+    checkbounds(arr.array, args...)
+end
+function Base.checkbounds(::Type{Bool}, arr::CheckboundsCountedArray, args...)
+    arr.count += 1
+    checkbounds(arr.array, args...)
+end
+
+function Base.copy(arr::CheckboundsCountedArray)
+    return CheckboundsCountedArray(copy(arr.array), arr.count)
+end
+
+function test_no_boundschecks(arr::CheckboundsCountedArray)
+    @test arr.count == 0
+end
+function test_no_boundschecks(p::ProblemState)
+    test_no_boundschecks(p.u)
+    test_no_boundschecks(p.p)
+end
+function test_no_boundschecks(ptc::ParameterTimeseriesCollection)
+    test_no_boundschecks(ptc.collection)
+    arr = ptc.collection isa CheckboundsCountedArray ? ptc.collection.array : ptc.collection
+    for buf in ptc.collection
+        test_no_boundschecks(buf)
+    end
+    test_no_boundschecks(ptc.paramcache)
+end
+test_no_boundschecks(_) = nothing
+
+maybe_CheckboundsCountedArray(arr, inbounds) = inbounds ? CheckboundsCountedArray(arr) : arr
+
 if GROUP == "All" || GROUP == "Core"
     @safetestset "Quality Assurance" begin
         @time include("qa.jl")

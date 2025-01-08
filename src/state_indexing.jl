@@ -24,11 +24,19 @@ relying on the above functions.
 If the value provider is a parameter timeseries object, the same rules apply as
 [`getp`](@ref). The difference here is that `sym` may also contain non-parameter symbols,
 and the values are always returned corresponding to the state timeseries.
+
+# Keyword Arguments
+
+- `inbounds`: whether to wrap the returned function in an `@inbounds`.
 """
-function getsym(sys, sym)
+function getsym(sys, sym; inbounds = false)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-    _getsym(sys, symtype, elsymtype, sym)
+    getter = _getsym(sys, symtype, elsymtype, sym)
+    if inbounds
+        getter = InboundsWrapper(getter)
+    end
+    return getter
 end
 
 struct GetStateIndex{I} <: AbstractStateGetIndexer
@@ -322,11 +330,19 @@ collection be a mutable reference to the state vector in the value provider. Alt
 if this is not possible or additional actions need to be performed when updating state,
 [`set_state!`](@ref) can be defined. This function does not work on types for which
 [`is_timeseries`](@ref) is [`Timeseries`](@ref).
+
+# Keyword Arguments
+
+- `inbounds`: Whether to wrap the returned function in an `@inbounds`.
 """
-function setsym(sys, sym)
+function setsym(sys, sym; inbounds = false)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-    _setsym(sys, symtype, elsymtype, sym)
+    setter = _setsym(sys, symtype, elsymtype, sym)
+    if inbounds
+        setter = InboundsWrapper(setter)
+    end
+    return setter
 end
 
 struct SetStateIndex{I} <: AbstractSetIndexer
@@ -390,11 +406,19 @@ array/tuple of the aforementioned. All entries `s` in `sym` must satisfy `is_var
 or `is_parameter(indp, s)`.
 
 Requires that the value provider implement `state_values`, `parameter_values` and `remake_buffer`.
+
+# Keyword Arguments
+
+- `inbounds`: Whether to wrap the returned function in `@inbounds`.
 """
-function setsym_oop(indp, sym)
+function setsym_oop(indp, sym; inbounds = false)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-    return _setsym_oop(indp, symtype, elsymtype, sym)
+    setter = _setsym_oop(indp, symtype, elsymtype, sym)
+    if inbounds
+        setter = InboundsWrapper(setter)
+    end
+    return setter
 end
 
 struct FullSetter{S, P, I, J}
