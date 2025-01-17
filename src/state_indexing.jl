@@ -84,59 +84,59 @@ function is_indexer_timeseries(::Type{G}) where {G <:
                                                  TimeDependentObservedFunction{<:Vector}}
     return IndexerMixedTimeseries()
 end
-function (o::TimeDependentObservedFunction)(ts::IsTimeseriesTrait, prob, args...)
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(ts::IsTimeseriesTrait, prob, args...)
     return o(ts, is_indexer_timeseries(o), prob, args...)
 end
 
-function (o::TimeDependentObservedFunction)(::Timeseries, ::IndexerBoth, prob)
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(::Timeseries, ::IndexerBoth, prob)
     return o.obsfn.(state_values(prob),
         (parameter_values(prob),),
         current_time(prob))
 end
-function (o::NonMarkovianObservedFunction)(::Timeseries, ::IndexerBoth, prob)
+Base.@propagate_inbounds function (o::NonMarkovianObservedFunction)(::Timeseries, ::IndexerBoth, prob)
     return o.obsfn.(state_values(prob),
         (get_history_function(prob),),
         (parameter_values(prob),),
         current_time(prob))
 end
-function (o::TimeDependentObservedFunction)(
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(
         ::Timeseries, ::IndexerBoth, prob, i::Union{Int, CartesianIndex})
     return o.obsfn(state_values(prob, i), parameter_values(prob), current_time(prob, i))
 end
-function (o::NonMarkovianObservedFunction)(
+Base.@propagate_inbounds function (o::NonMarkovianObservedFunction)(
         ::Timeseries, ::IndexerBoth, prob, i::Union{Int, CartesianIndex})
     return o.obsfn(state_values(prob, i), get_history_function(prob),
         parameter_values(prob), current_time(prob, i))
 end
-function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, ::Colon)
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, ::Colon)
     return o(ts, prob)
 end
-function (o::TimeDependentObservedFunction)(
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(
         ts::Timeseries, ::IndexerBoth, prob, i::AbstractArray{Bool})
     map(only(to_indices(current_time(prob), (i,)))) do idx
         o(ts, prob, idx)
     end
 end
-function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, i)
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, i)
     o.((ts,), (prob,), i)
 end
-function (o::TimeDependentObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
     return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
 end
-function (o::NonMarkovianObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
+Base.@propagate_inbounds function (o::NonMarkovianObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
     return o.obsfn(state_values(prob), get_history_function(prob),
         parameter_values(prob), current_time(prob))
 end
 
-function (o::TimeDependentObservedFunction)(
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(
         ::Timeseries, ::IndexerMixedTimeseries, prob, args...)
     throw(MixedParameterTimeseriesIndexError(prob, indexer_timeseries_index(o)))
 end
-function (o::TimeDependentObservedFunction)(
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(
         ::NotTimeseries, ::IndexerMixedTimeseries, prob, args...)
     return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
 end
-function (o::NonMarkovianObservedFunction)(
+Base.@propagate_inbounds function (o::NonMarkovianObservedFunction)(
         ::NotTimeseries, ::IndexerMixedTimeseries, prob, args...)
     return o.obsfn(state_values(prob), get_history_function(prob),
         parameter_values(prob), current_time(prob))
