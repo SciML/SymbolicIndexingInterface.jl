@@ -24,11 +24,19 @@ relying on the above functions.
 If the value provider is a parameter timeseries object, the same rules apply as
 [`getp`](@ref). The difference here is that `sym` may also contain non-parameter symbols,
 and the values are always returned corresponding to the state timeseries.
+
+# Keyword Arguments
+
+- `inbounds`: whether to wrap the returned function in an `@inbounds`.
 """
-function getsym(sys, sym)
+function getsym(sys, sym; inbounds = false)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-    _getsym(sys, symtype, elsymtype, sym)
+    getter = _getsym(sys, symtype, elsymtype, sym)
+    if inbounds
+        getter = InboundsWrapper(getter)
+    end
+    return getter
 end
 
 struct GetStateIndex{I} <: AbstractStateGetIndexer
@@ -76,59 +84,59 @@ function is_indexer_timeseries(::Type{G}) where {G <:
                                                  TimeDependentObservedFunction{<:Vector}}
     return IndexerMixedTimeseries()
 end
-function (o::TimeDependentObservedFunction)(ts::IsTimeseriesTrait, prob, args...)
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(ts::IsTimeseriesTrait, prob, args...)
     return o(ts, is_indexer_timeseries(o), prob, args...)
 end
 
-function (o::TimeDependentObservedFunction)(::Timeseries, ::IndexerBoth, prob)
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(::Timeseries, ::IndexerBoth, prob)
     return o.obsfn.(state_values(prob),
         (parameter_values(prob),),
         current_time(prob))
 end
-function (o::NonMarkovianObservedFunction)(::Timeseries, ::IndexerBoth, prob)
+Base.@propagate_inbounds function (o::NonMarkovianObservedFunction)(::Timeseries, ::IndexerBoth, prob)
     return o.obsfn.(state_values(prob),
         (get_history_function(prob),),
         (parameter_values(prob),),
         current_time(prob))
 end
-function (o::TimeDependentObservedFunction)(
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(
         ::Timeseries, ::IndexerBoth, prob, i::Union{Int, CartesianIndex})
     return o.obsfn(state_values(prob, i), parameter_values(prob), current_time(prob, i))
 end
-function (o::NonMarkovianObservedFunction)(
+Base.@propagate_inbounds function (o::NonMarkovianObservedFunction)(
         ::Timeseries, ::IndexerBoth, prob, i::Union{Int, CartesianIndex})
     return o.obsfn(state_values(prob, i), get_history_function(prob),
         parameter_values(prob), current_time(prob, i))
 end
-function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, ::Colon)
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, ::Colon)
     return o(ts, prob)
 end
-function (o::TimeDependentObservedFunction)(
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(
         ts::Timeseries, ::IndexerBoth, prob, i::AbstractArray{Bool})
     map(only(to_indices(current_time(prob), (i,)))) do idx
         o(ts, prob, idx)
     end
 end
-function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, i)
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, i)
     o.((ts,), (prob,), i)
 end
-function (o::TimeDependentObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
     return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
 end
-function (o::NonMarkovianObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
+Base.@propagate_inbounds function (o::NonMarkovianObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
     return o.obsfn(state_values(prob), get_history_function(prob),
         parameter_values(prob), current_time(prob))
 end
 
-function (o::TimeDependentObservedFunction)(
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(
         ::Timeseries, ::IndexerMixedTimeseries, prob, args...)
     throw(MixedParameterTimeseriesIndexError(prob, indexer_timeseries_index(o)))
 end
-function (o::TimeDependentObservedFunction)(
+Base.@propagate_inbounds function (o::TimeDependentObservedFunction)(
         ::NotTimeseries, ::IndexerMixedTimeseries, prob, args...)
     return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))
 end
-function (o::NonMarkovianObservedFunction)(
+Base.@propagate_inbounds function (o::NonMarkovianObservedFunction)(
         ::NotTimeseries, ::IndexerMixedTimeseries, prob, args...)
     return o.obsfn(state_values(prob), get_history_function(prob),
         parameter_values(prob), current_time(prob))
@@ -322,11 +330,19 @@ collection be a mutable reference to the state vector in the value provider. Alt
 if this is not possible or additional actions need to be performed when updating state,
 [`set_state!`](@ref) can be defined. This function does not work on types for which
 [`is_timeseries`](@ref) is [`Timeseries`](@ref).
+
+# Keyword Arguments
+
+- `inbounds`: Whether to wrap the returned function in an `@inbounds`.
 """
-function setsym(sys, sym)
+function setsym(sys, sym; inbounds = false)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-    _setsym(sys, symtype, elsymtype, sym)
+    setter = _setsym(sys, symtype, elsymtype, sym)
+    if inbounds
+        setter = InboundsWrapper(setter)
+    end
+    return setter
 end
 
 struct SetStateIndex{I} <: AbstractSetIndexer
@@ -390,11 +406,19 @@ array/tuple of the aforementioned. All entries `s` in `sym` must satisfy `is_var
 or `is_parameter(indp, s)`.
 
 Requires that the value provider implement `state_values`, `parameter_values` and `remake_buffer`.
+
+# Keyword Arguments
+
+- `inbounds`: Whether to wrap the returned function in `@inbounds`.
 """
-function setsym_oop(indp, sym)
+function setsym_oop(indp, sym; inbounds = false)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-    return _setsym_oop(indp, symtype, elsymtype, sym)
+    setter = _setsym_oop(indp, symtype, elsymtype, sym)
+    if inbounds
+        setter = InboundsWrapper(setter)
+    end
+    return setter
 end
 
 struct FullSetter{S, P, I, J}

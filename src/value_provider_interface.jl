@@ -260,6 +260,28 @@ function _root_indp(indp)
     end
 end
 
+"""
+    struct InboundsWrapper
+
+Utility struct to wrap a callable in `@inbounds`.
+"""
+struct InboundsWrapper{F}
+    fn::F
+end
+
+is_indexer_timeseries(::Type{InboundsWrapper{F}}) where {F} = is_indexer_timeseries(F)
+indexer_timeseries_index(iw::InboundsWrapper) = indexer_timeseries_index(iw.fn)
+as_timeseries_indexer(iw::InboundsWrapper) = InboundsWrapper(as_timeseries_indexer(iw.fn))
+function as_not_timeseries_indexer(iw::InboundsWrapper)
+    InboundsWrapper(as_not_timeseries_indexer(iw.fn))
+end
+
+function (ig::InboundsWrapper)(args...)
+    return @inbounds begin
+        ig.fn(args...)
+    end
+end
+
 ###########
 # Errors
 ###########

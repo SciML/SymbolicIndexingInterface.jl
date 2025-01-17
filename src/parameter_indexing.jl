@@ -34,11 +34,19 @@ apply:
   parameter values, and can be accessed at specific indices in the timeseries.
 - A mix of timeseries and non-timeseries parameters: The function can _only_ be used on
   non-timeseries objects and will return the value of each parameter at in the object.
+
+# Keyword Arguments
+
+- `inbounds`: Whether to wrap the returned function in `@inbounds`.
 """
-function getp(sys, p)
+function getp(sys, p; inbounds = false)
     symtype = symbolic_type(p)
     elsymtype = symbolic_type(eltype(p))
-    _getp(sys, symtype, elsymtype, p)
+    getter = _getp(sys, symtype, elsymtype, p)
+    if inbounds
+        getter = InboundsWrapper(getter)
+    end
+    return getter
 end
 
 struct GetParameterIndex{I} <: AbstractParameterGetIndexer
@@ -659,15 +667,22 @@ Requires that the value provider implement [`parameter_values`](@ref) and the re
 collection be a mutable reference to the parameter object. In case `parameter_values`
 cannot return such a mutable reference, or additional actions need to be performed when
 updating parameters, [`set_parameter!`](@ref) must be implemented.
+
+# Keyword Arguments
+
+- `inbounds`: Whether to wrap the function in `@inbounds`.
 """
-function setp(sys, p; run_hook = true)
+function setp(sys, p; run_hook = true, inbounds = false)
     symtype = symbolic_type(p)
     elsymtype = symbolic_type(eltype(p))
-    return if run_hook
-        return ParameterHookWrapper(_setp(sys, symtype, elsymtype, p), p)
-    else
-        _setp(sys, symtype, elsymtype, p)
+    setter = _setp(sys, symtype, elsymtype, p)
+    if run_hook
+        setter = ParameterHookWrapper(setter, p)
     end
+    if inbounds
+        setter = InboundsWrapper(setter)
+    end
+    return setter
 end
 
 struct SetParameterIndex{I} <: AbstractSetIndexer
@@ -723,11 +738,19 @@ the types of values stored, and leverages [`remake_buffer`](@ref). Note that `sy
 an index, a symbolic variable, or an array/tuple of the aforementioned.
 
 Requires that the value provider implement `parameter_values` and `remake_buffer`.
+
+# Keyword Arguments
+
+- `inbounds`: Whether to wrap the returned function in `@inbounds`.
 """
-function setp_oop(indp, sym)
+function setp_oop(indp, sym; inbounds = false)
     symtype = symbolic_type(sym)
     elsymtype = symbolic_type(eltype(sym))
-    return _setp_oop(indp, symtype, elsymtype, sym)
+    setter = _setp_oop(indp, symtype, elsymtype, sym)
+    if inbounds
+        setter = InboundsWrapper(setter)
+    end
+    return setter
 end
 
 function _setp_oop(indp, ::NotSymbolic, ::NotSymbolic, sym)
