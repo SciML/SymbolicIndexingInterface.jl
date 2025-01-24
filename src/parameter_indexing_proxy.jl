@@ -17,3 +17,20 @@ end
 function Base.setindex!(p::ParameterIndexingProxy, val, idx)
     return setp(p.wrapped, idx)(p.wrapped, val)
 end
+
+function Base.show(io::IO, pip::ParameterIndexingProxy; kwargs...)
+    params = Any[]
+    vals = Any[]
+    for p in parameter_symbols(pip.wrapped)
+        push!(params, p)
+        val = getp(pip.wrapped, p)(pip.wrapped)
+        push!(vals, val)
+    end
+
+    print(
+          Table([params vals]; 
+                box=:SIMPLE, 
+                header=["Parameter", "Value"], 
+                kwargs...)
+         )
+end
