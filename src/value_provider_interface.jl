@@ -346,3 +346,20 @@ function Base.showerror(io::IO, err::NotVariableOrParameter)
       or `is_parameter`. Got `$(err.sym)` which is neither.
   """)
 end
+
+function MustBeBothStateAndParameterProviderError(missing_state::Bool)
+    ArgumentError("""
+        A setter returned from `setsym_oop` must be called with a value provider that \
+        contains both states and parameters. The given value provided does not \
+        implement `$(missing_state ? "state_values" : "parameter_values")`.
+        """)
+end
+
+function check_both_state_and_parameter_provider(valp)
+    if !hasmethod(state_values, Tuple{typeof(valp)}) || state_values(valp) === valp
+        throw(MustBeBothStateAndParameterProviderError(true))
+    end
+    if !hasmethod(parameter_values, Tuple{typeof(valp)}) || parameter_values(valp) === valp
+        throw(MustBeBothStateAndParameterProviderError(false))
+    end
+end
