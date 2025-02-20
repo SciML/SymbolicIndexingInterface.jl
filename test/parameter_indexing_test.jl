@@ -179,6 +179,8 @@ for sys in [
             newp = setter(fi, val)
             getter = getp(sys, sym)
             @test getter(newp) == val
+            newp = setter(parameter_values(fi), val)
+            @test getter(newp) == val
         end
     end
 end

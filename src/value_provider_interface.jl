@@ -238,12 +238,20 @@ struct OOPSetter{I, D}
 end
 
 function (os::OOPSetter)(valp, val)
-    buffer = os.is_state ? state_values(valp) : parameter_values(valp)
+    buffer = if os.is_state
+        hasmethod(state_values, Tuple{typeof(valp)}) ? state_values(valp) : valp
+    else
+        hasmethod(parameter_values, Tuple{typeof(valp)}) ? parameter_values(valp) : valp
+    end
     return remake_buffer(os.indp, buffer, (os.idxs,), (val,))
 end
 
 function (os::OOPSetter)(valp, val::Union{Tuple, AbstractArray})
-    buffer = os.is_state ? state_values(valp) : parameter_values(valp)
+    buffer = if os.is_state
+        hasmethod(state_values, Tuple{typeof(valp)}) ? state_values(valp) : valp
+    else
+        hasmethod(parameter_values, Tuple{typeof(valp)}) ? parameter_values(valp) : valp
+    end
     if os.idxs isa Union{Tuple, AbstractArray}
         return remake_buffer(os.indp, buffer, os.idxs, val)
     else
