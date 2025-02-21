@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Simple Demonstration of a Symbolic System Structure · SymbolicIndexingInterface.jl</title><meta name="title" content="Simple Demonstration of a Symbolic System Structure · SymbolicIndexingInterface.jl"/><meta property="og:title" content="Simple Demonstration of a Symbolic System Structure · SymbolicIndexingInterface.jl"/><meta property="twitter:title" content="Simple Demonstration of a Symbolic System Structure · SymbolicIndexingInterface.jl"/><meta name="description" content="Documentation for SymbolicIndexingInterface.jl."/><meta property="og:description" content="Documentation for SymbolicIndexingInterface.jl."/><meta property="twitter:description" content="Documentation for SymbolicIndexingInterface.jl."/><meta property="og:url" content="https://docs.sciml.ai/SymbolicIndexingInterface/stable/simple_sii_sys/"/><meta property="twitter:url" content="https://docs.sciml.ai/SymbolicIndexingInterface/stable/simple_sii_sys/"/><link rel="canonical" href="https://docs.sciml.ai/SymbolicIndexingInterface/stable/simple_sii_sys/"/><script async src="https://www.googletagmanager.com/gtag/js?id=UA-90474609-3"></script><script>  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-90474609-3', {'page_path': location.pathname + location.search + location.hash});
+</script><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="SymbolicIndexingInterface.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">SymbolicIndexingInterface.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../terminology/">Terminology</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../usage/">Using the SciML Symbolic Indexing Interface</a></li><li class="is-active"><a class="tocitem" href>Simple Demonstration of a Symbolic System Structure</a><ul class="internal"><li><a class="tocitem" href="#Defining-the-ODE"><span>Defining the ODE</span></a></li></ul></li><li><a class="tocitem" href="../complete_sii/">Implementing the Complete Symbolic Indexing Interface</a></li></ul></li><li><a class="tocitem" href="../solution_wrappers/">Defining Solution Wrapper Fallbacks</a></li><li><a class="tocitem" href="../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Simple Demonstration of a Symbolic System Structure</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Simple Demonstration of a Symbolic System Structure</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/SymbolicIndexingInterface.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/SymbolicIndexingInterface.jl/blob/master/docs/src/simple_sii_sys.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Simple-Demonstration-of-a-Symbolic-System-Structure"><a class="docs-heading-anchor" href="#Simple-Demonstration-of-a-Symbolic-System-Structure">Simple Demonstration of a Symbolic System Structure</a><a id="Simple-Demonstration-of-a-Symbolic-System-Structure-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-Demonstration-of-a-Symbolic-System-Structure" title="Permalink"></a></h1><p>In this tutorial we will show how to implement a system structure type for defining the symbolic indexing of a domain-specific language. This tutorial will show how the <code>SymbolCache</code> type is defined to take in arrays of symbols for its independent, dependent, and parameter variable names and uses that to define the symbolic indexing interface.</p><h2 id="Defining-the-ODE"><a class="docs-heading-anchor" href="#Defining-the-ODE">Defining the ODE</a><a id="Defining-the-ODE-1"></a><a class="docs-heading-anchor-permalink" href="#Defining-the-ODE" title="Permalink"></a></h2><p>For this example, we will use the Robertson equations:</p><p class="math-container">\[\begin{aligned}
+\frac{dy_1}{dt} &amp;= -0.04y₁ + 10^4 y_2 y_3 \\
+\frac{dy_2}{dt} &amp;= 0.04 y_1 - 10^4 y_2 y_3 - 3*10^7 y_{2}^2 \\
+\frac{dy_3}{dt} &amp;= 3*10^7 y_{2}^2 \\
+\end{aligned}\]</p><p>The in-place function for this ODE system can be defined as:</p><pre><code class="language-julia hljs">function rober!(du, u, p, t)
+    y₁, y₂, y₃ = u
+    k₁, k₂, k₃ = p
+    du[1] = -k₁ * y₁ + k₃ * y₂ * y₃
+    du[2] = k₁ * y₁ - k₂ * y₂^2 - k₃ * y₂ * y₃
+    du[3] = k₂ * y₂^2
+    nothing
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">rober! (generic function with 1 method)</code></pre><p>To add symbolic names for the states in this example, a <a href="../api/#SymbolicIndexingInterface.SymbolCache"><code>SymbolCache</code></a> can be created and passed as the <code>sys</code> keyword argument to the <code>ODEFunction</code> constructor, as shown below:</p><pre><code class="language-julia hljs">using OrdinaryDiffEq, SymbolicIndexingInterface
+
+sys = SymbolCache([:y₁, :y₂, :y₃])
+odefun = ODEFunction(rober!; sys = sys)</code></pre><p>This is then used to create and solve the <code>ODEProblem</code></p><pre><code class="language-julia hljs">prob = ODEProblem(odefun, [1.0, 0.0, 0.0], (0.0, 1e5), [0.04, 3e7, 1e4])
+sol = solve(prob, Rosenbrock23())</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">retcode: Success
+Interpolation: specialized 2nd order &quot;free&quot; stiffness-aware interpolation
+t: 61-element Vector{Float64}:
+      0.0
+      3.196206628740808e-5
+      0.00014400709669791316
+      0.00025605212710841824
+      0.00048593872520561496
+      0.0007179482298405134
+      0.0010819240431281
+      0.0014801655696439716
+      0.0020679567767069723
+      0.0028435846274559506
+      ⋮
+  25371.934242574636
+  30784.11997687391
+  37217.42637183451
+  44850.61378119757
+  53893.69155452613
+  64593.73799781129
+  77241.71960460565
+  92180.81944906656
+ 100000.0
+u: 61-element Vector{Vector{Float64}}:
+ [1.0, 0.0, 0.0]
+ [0.9999987215181657, 1.2780900152625978e-6, 3.9181897521319503e-10]
+ [0.9999942397327672, 5.718510591908378e-6, 4.175664083814196e-8]
+ [0.9999897579685716, 9.992106860321925e-6, 2.499245680985423e-7]
+ [0.99998056266788, 1.7833624284594367e-5, 1.6037078354141817e-6]
+ [0.9999712826600025, 2.403488607694387e-5, 4.682453920643883e-6]
+ [0.9999567250106862, 3.0390689558961382e-5, 1.2884299754832173e-5]
+ [0.999940798607161, 3.388427373871301e-5, 2.531711910029394e-5]
+ [0.9999172960308617, 3.583508668595173e-5, 4.686888245237194e-5]
+ [0.9998862913719596, 3.641240165367128e-5, 7.729622638673522e-5]
+ ⋮
+ [0.05563507731000894, 2.3546320422346656e-7, 0.9443646872267863]
+ [0.047925348764047165, 2.0121495043224827e-7, 0.952074450021001]
+ [0.041233421490033735, 1.7192788166891112e-7, 0.9587664065820826]
+ [0.035436998370307615, 1.4688361975260182e-7, 0.9645628547460712]
+ [0.030425371816164216, 1.2546809318472803e-7, 0.9695745027157406]
+ [0.026099132201150312, 1.0715608431718074e-7, 0.9739007606427644]
+ [0.02236969169455032, 9.149844876161202e-8, 0.9776302168069995]
+ [0.019158563313533397, 7.81109638013881e-8, 0.9808413585755011]
+ [0.017827893850751935, 7.258919982166416e-8, 0.9821720335600467]</code></pre><p>The solution can now be indexed symbolically:</p><pre><code class="language-julia hljs">sol[:y₁]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">61-element Vector{Float64}:
+ 1.0
+ 0.9999987215181657
+ 0.9999942397327672
+ 0.9999897579685716
+ 0.99998056266788
+ 0.9999712826600025
+ 0.9999567250106862
+ 0.999940798607161
+ 0.9999172960308617
+ 0.9998862913719596
+ ⋮
+ 0.05563507731000894
+ 0.047925348764047165
+ 0.041233421490033735
+ 0.035436998370307615
+ 0.030425371816164216
+ 0.026099132201150312
+ 0.02236969169455032
+ 0.019158563313533397
+ 0.017827893850751935</code></pre><pre><code class="language-julia hljs">sol(1e3, idxs=:y₁)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.3367546834697414</code></pre><p>However, we did not give names to the parameters or the independent variables. They can be specified using <code>SymbolCache</code> as well:</p><pre><code class="language-julia hljs">sys = SymbolCache([:y₁, :y₂, :y₃], [:k₁, :k₂, :k₃], :t)
+odefun = ODEFunction(rober!; sys = sys)
+prob = ODEProblem(odefun, [1.0, 0.0, 0.0], (0.0, 1e5), [0.04, 3e7, 1e4])
+sol = solve(prob, Rosenbrock23())
+getk1 = getp(sys, :k₁)
+
+getk1(prob)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.04</code></pre><pre><code class="language-julia hljs">getk1(sol)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.04</code></pre><pre><code class="language-julia hljs">sol[:t]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">61-element Vector{Float64}:
+      0.0
+      3.196206628740808e-5
+      0.00014400709669791316
+      0.00025605212710841824
+      0.00048593872520561496
+      0.0007179482298405134
+      0.0010819240431281
+      0.0014801655696439716
+      0.0020679567767069723
+      0.0028435846274559506
+      ⋮
+  25371.934242574636
+  30784.11997687391
+  37217.42637183451
+  44850.61378119757
+  53893.69155452613
+  64593.73799781129
+  77241.71960460565
+  92180.81944906656
+ 100000.0</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../usage/">« Using the SciML Symbolic Indexing Interface</a><a class="docs-footer-nextpage" href="../complete_sii/">Implementing the Complete Symbolic Indexing Interface »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.1 on <span class="colophon-date" title="Friday 21 February 2025 06:30">Friday 21 February 2025</span>. Using Julia version 1.11.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
