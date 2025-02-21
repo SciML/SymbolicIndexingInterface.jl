@@ -27,7 +27,7 @@ end
 
 Method for customizing the table output. Keyword args:
 - num_rows
-- show_all: whether to show all parameters
+- show_all: whether to show all parameters. Overrides `num_rows`.
 - scalarize: whether to scalarize array symbolics in the table output.
 - kwargs... are passed to the pretty_table call.
 """

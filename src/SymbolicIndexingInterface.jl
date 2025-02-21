@@ -45,7 +45,7 @@ include("batched_interface.jl")
 export ProblemState
 include("problem_state.jl")
 
-export ParameterIndexingProxy
+export ParameterIndexingProxy, showparams
 include("parameter_indexing_proxy.jl")
 
 export remake_buffer
