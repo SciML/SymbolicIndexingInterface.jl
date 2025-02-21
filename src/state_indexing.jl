@@ -407,19 +407,27 @@ end
 FullSetter(ssetter, psetter) = FullSetter(ssetter, psetter, nothing, nothing)
 
 function (fs::FullSetter)(valp, val)
+    check_both_state_and_parameter_provider(valp)
+
     return fs.state_setter(valp, val[fs.state_split]),
     fs.param_setter(valp, val[fs.param_split])
 end
 
 function (fs::FullSetter{Nothing})(valp, val)
+    check_both_state_and_parameter_provider(valp)
+
     return state_values(valp), fs.param_setter(valp, val)
 end
 
 function (fs::(FullSetter{S, Nothing} where {S}))(valp, val)
+    check_both_state_and_parameter_provider(valp)
+
     return fs.state_setter(valp, val), parameter_values(valp)
 end
 
 function (fs::(FullSetter{Nothing, Nothing}))(valp, val)
+    check_both_state_and_parameter_provider(valp)
+
     return state_values(valp), parameter_values(valp)
 end
 

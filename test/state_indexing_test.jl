@@ -90,6 +90,8 @@ for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
     svals, pvals = setter(fi, newval)
     @test svals ≈ new_states
     @test pvals == parameter_values(fi)
+    @test_throws ArgumentError setter(state_values(fi), newval)
+    @test_throws ArgumentError setter(parameter_values(fi), newval)
 end
 
 for (sym, val, check_inference) in [
@@ -147,6 +149,8 @@ for (sym, oldval, newval, check_inference) in [(:a, p[1], 4.0, true)
     uvals, pvals = oop_setter(fi, newval)
     @test uvals ≈ newu
     @test pvals ≈ newp
+    @test_throws ArgumentError oop_setter(state_values(fi), newval)
+    @test_throws ArgumentError oop_setter(parameter_values(fi), newval)
 end
 
 for (sym, val, check_inference) in [

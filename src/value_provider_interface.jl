@@ -238,12 +238,20 @@ struct OOPSetter{I, D}
 end
 
 function (os::OOPSetter)(valp, val)
-    buffer = os.is_state ? state_values(valp) : parameter_values(valp)
+    buffer = if os.is_state
+        hasmethod(state_values, Tuple{typeof(valp)}) ? state_values(valp) : valp
+    else
+        hasmethod(parameter_values, Tuple{typeof(valp)}) ? parameter_values(valp) : valp
+    end
     return remake_buffer(os.indp, buffer, (os.idxs,), (val,))
 end
 
 function (os::OOPSetter)(valp, val::Union{Tuple, AbstractArray})
-    buffer = os.is_state ? state_values(valp) : parameter_values(valp)
+    buffer = if os.is_state
+        hasmethod(state_values, Tuple{typeof(valp)}) ? state_values(valp) : valp
+    else
+        hasmethod(parameter_values, Tuple{typeof(valp)}) ? parameter_values(valp) : valp
+    end
     if os.idxs isa Union{Tuple, AbstractArray}
         return remake_buffer(os.indp, buffer, os.idxs, val)
     else
@@ -337,4 +345,21 @@ function Base.showerror(io::IO, err::NotVariableOrParameter)
       `$(err.fn)` requires that the symbolic variable(s) passed to it satisfy `is_variable`
       or `is_parameter`. Got `$(err.sym)` which is neither.
   """)
+end
+
+function MustBeBothStateAndParameterProviderError(missing_state::Bool)
+    ArgumentError("""
+        A setter returned from `setsym_oop` must be called with a value provider that \
+        contains both states and parameters. The given value provided does not \
+        implement `$(missing_state ? "state_values" : "parameter_values")`.
+        """)
+end
+
+function check_both_state_and_parameter_provider(valp)
+    if !hasmethod(state_values, Tuple{typeof(valp)}) || state_values(valp) === valp
+        throw(MustBeBothStateAndParameterProviderError(true))
+    end
+    if !hasmethod(parameter_values, Tuple{typeof(valp)}) || parameter_values(valp) === valp
+        throw(MustBeBothStateAndParameterProviderError(false))
+    end
 end
