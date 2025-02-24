@@ -19,7 +19,7 @@ function Base.setindex!(p::ParameterIndexingProxy, val, idx)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", pip::ParameterIndexingProxy)
-    showparams(io, pip; num_rows = 20, show_all = false, scalarize = true)
+    show_params(io, pip; num_rows = 20, show_all = false, scalarize = true)
 end
 
 """
@@ -31,7 +31,7 @@ Method for customizing the table output. Keyword args:
 - scalarize: whether to scalarize array symbolics in the table output.
 - kwargs... are passed to the pretty_table call.
 """
-function showparams(io::IO, pip::ParameterIndexingProxy; num_rows = 20,
+function show_params(io::IO, pip::ParameterIndexingProxy; num_rows = 20,
         show_all = false, scalarize = true, kwargs...)
     params = Any[]
     vals = Any[]
