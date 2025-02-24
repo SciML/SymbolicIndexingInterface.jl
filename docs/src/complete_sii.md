@@ -311,6 +311,11 @@ integrator.ps[:b] = 3.0
 setp(integrator, :b)(integrator, 3.0) # functionally the same as above
 ```
 
+The parameters will display as a table:
+```@example show_params
+integrator.ps
+```
+
 ## Parameter Timeseries
 
 If a solution object includes modified parameter values (such as through callbacks) during the

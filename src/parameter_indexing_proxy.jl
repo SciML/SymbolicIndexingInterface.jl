@@ -23,7 +23,7 @@ function Base.show(io::IO, ::MIME"text/plain", pip::ParameterIndexingProxy)
 end
 
 """
-    showparams(io::IO, pip::ParameterIndexingProxy; num_rows = 20, show_all = false, scalarize = true, kwargs...)
+    show_params(io::IO, pip::ParameterIndexingProxy; num_rows = 20, show_all = false, scalarize = true, kwargs...)
 
 Method for customizing the table output. Keyword args:
 - num_rows
@@ -31,7 +31,8 @@ Method for customizing the table output. Keyword args:
 - scalarize: whether to scalarize array symbolics in the table output.
 - kwargs... are passed to the pretty_table call.
 """
-function showparams(io::IO, pip::ParameterIndexingProxy; num_rows = 20, show_all = false, scalarize = true, kwargs...) 
+function showparams(io::IO, pip::ParameterIndexingProxy; num_rows = 20,
+        show_all = false, scalarize = true, kwargs...)
     params = Any[]
     vals = Any[]
     for p in parameter_symbols(pip.wrapped)
@@ -49,21 +50,21 @@ function showparams(io::IO, pip::ParameterIndexingProxy; num_rows = 20, show_all
     end
 
     num_shown = if show_all
+        length(params)
+    else
+        if num_rows > length(params)
             length(params)
         else
-            if num_rows > length(params) 
-                length(params) 
-            else
-                num_rows
-            end
+            num_rows
         end
+    end
 
     pretty_table(io, [params[1:num_shown] vals[1:num_shown]];
-                  header=["Parameter", "Value"], 
-                  kwargs...)
+        header = ["Parameter", "Value"],
+        kwargs...)
 
     if num_shown < length(params)
-        println(io, 
-                "$num_shown of $(length(params)) params shown. To show all the parameters, call `showparams(io, ps, show_all = true)`. Adjust the number of rows with the num_rows kwarg. Consult `showparams` docstring for more options.")
+        println(io,
+            "$num_shown of $(length(params)) params shown. To show all the parameters, call `show_params(io, ps, show_all = true)`. Adjust the number of rows with the num_rows kwarg. Consult `show_params` docstring for more options.")
     end
 end

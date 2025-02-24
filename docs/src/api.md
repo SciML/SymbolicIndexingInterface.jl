@@ -92,6 +92,7 @@ getp
 setp
 setp_oop
 ParameterIndexingProxy
+show_params
 ```
 
 #### Parameter timeseries
