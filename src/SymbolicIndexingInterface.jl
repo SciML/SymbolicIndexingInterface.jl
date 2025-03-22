@@ -4,6 +4,7 @@ using RuntimeGeneratedFunctions
 import StaticArraysCore: MArray, similar_type
 import ArrayInterface
 using Accessors: @reset
+using PrettyTables # for pretty printing
 
 RuntimeGeneratedFunctions.init(@__MODULE__)
 
@@ -44,7 +45,7 @@ include("batched_interface.jl")
 export ProblemState
 include("problem_state.jl")
 
-export ParameterIndexingProxy
+export ParameterIndexingProxy, show_params
 include("parameter_indexing_proxy.jl")
 
 export remake_buffer

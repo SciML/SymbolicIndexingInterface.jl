@@ -4,7 +4,8 @@
 This tutorial will show how to define the entire Symbolic Indexing Interface on an
 `ExampleSystem`:
 
-```julia
+```@example implementing_sii
+using SymbolicIndexingInterface
 struct ExampleSystem
   state_index::Dict{Symbol,Int}
   parameter_index::Dict{Symbol,Int}
@@ -24,7 +25,7 @@ supports specific functionality. Consider the following struct, which needs to i
 
 These are the simple functions which describe how to turn symbols into indices.
 
-```julia
+```@example implementing_sii
 function SymbolicIndexingInterface.is_variable(sys::ExampleSystem, sym)
   haskey(sys.state_index, sym)
 end
@@ -65,7 +66,7 @@ end
 
 SymbolicIndexingInterface.constant_structure(::ExampleSystem) = true
 
-function SymbolicIndexingInterface.all_solvable_symbols(sys::ExampleSystem)
+function SymbolicIndexingInterface.all_variable_symbols(sys::ExampleSystem)
   return vcat(
     collect(keys(sys.state_index)),
     collect(keys(sys.observed)),
@@ -74,7 +75,7 @@ end
 
 function SymbolicIndexingInterface.all_symbols(sys::ExampleSystem)
   return vcat(
-    all_solvable_symbols(sys),
+    all_variable_symbols(sys),
     collect(keys(sys.parameter_index)),
     sys.independent_variable === nothing ? Symbol[] : sys.independent_variable
   )
@@ -90,7 +91,7 @@ end
 These are for handling symbolic expressions and generating equations which are not directly
 in the solution vector.
 
-```julia
+```@example implementing_sii
 using RuntimeGeneratedFunctions
 RuntimeGeneratedFunctions.init(@__MODULE__)
 
@@ -167,7 +168,7 @@ not typically useful for solution objects, it may be useful for integrators. Typ
 the default implementations for `getp` and `setp` will suffice, and manually defining
 them is not necessary.
 
-```julia
+```@example implementing_sii
 function SymbolicIndexingInterface.parameter_values(sys::ExampleSystem)
   sys.p
 end
@@ -183,7 +184,7 @@ the system's symbols. This also requires that the type implement
 
 Consider the following `ExampleIntegrator`
 
-```julia
+```@example implementing_sii
 mutable struct ExampleIntegrator
   u::Vector{Float64}
   p::Vector{Float64}
@@ -199,8 +200,8 @@ SymbolicIndexingInterface.current_time(sys::ExampleIntegrator) = sys.t
 ```
 
 Then the following example would work:
-```julia
-sys = ExampleSystem(Dict(:x => 1, :y => 2, :z => 3), Dict(:a => 1, :b => 2), :t, Dict())
+```@example implementing_sii
+sys = ExampleSystem(Dict(:x => 1, :y => 2, :z => 3), Dict(:a => 1, :b => 2), :t, Dict(), Dict())
 integrator = ExampleIntegrator([1.0, 2.0, 3.0], [4.0, 5.0], 6.0, sys)
 getx = getsym(sys, :x)
 getx(integrator) # 1.0
@@ -289,7 +290,7 @@ interface and allows using [`getp`](@ref) and [`setp`](@ref) to get and set para
 values. This allows for a cleaner interface for parameter indexing. Consider the
 following example for `ExampleIntegrator`:
 
-```julia
+```@example implementing_sii
 function Base.getproperty(obj::ExampleIntegrator, sym::Symbol)
   if sym === :ps
     return ParameterIndexingProxy(obj)
@@ -301,14 +302,19 @@ end
 
 This enables the following API:
 
-```julia
-integrator = ExampleIntegrator([1.0, 2.0, 3.0], [4.0, 5.0], 6.0, Dict(:x => 1, :y => 2, :z => 3), Dict(:a => 1, :b => 2), :t)
+```@example implementing_sii
+integrator = ExampleIntegrator([1.0, 2.0, 3.0], [4.0, 5.0], 6.0, sys)
 
 integrator.ps[:a] # 4.0
 getp(integrator, :a)(integrator) # functionally the same as above
 
 integrator.ps[:b] = 3.0
 setp(integrator, :b)(integrator, 3.0) # functionally the same as above
+```
+
+The parameters will display as a table:
+```@example implementing_sii
+integrator.ps
 ```
 
 ## Parameter Timeseries
