@@ -464,6 +464,10 @@ for (t1, t2) in [
                 throw(NotVariableOrParameter("setsym_oop", s))
             end
         end
+        if sym isa Tuple
+            vars = Tuple(vars)
+            pars = Tuple(pars)
+        end
         indp = _root_indp(indp)
         return FullSetter(isempty(vars) ? nothing : OOPSetter(indp, identity.(vars), true),
             isempty(pars) ? nothing : OOPSetter(indp, identity.(pars), false),
