@@ -231,27 +231,34 @@ function (fn::Fix1Multiple)(args...)
     fn.f(fn.arg, args...)
 end
 
-struct OOPSetter{I, D}
+struct OOPSetter{S, I, D}
     indp::I
     idxs::D
-    is_state::Bool
 end
 
-function (os::OOPSetter)(valp, val)
-    buffer = if os.is_state
-        hasmethod(state_values, Tuple{typeof(valp)}) ? state_values(valp) : valp
-    else
-        hasmethod(parameter_values, Tuple{typeof(valp)}) ? parameter_values(valp) : valp
-    end
+OOPSetter(indp, idxs, isstate) = OOPSetter{isstate, typeof(indp), typeof(idxs)}(indp, idxs)
+
+function (os::OOPSetter{true})(valp, val)
+    buffer = hasmethod(state_values, Tuple{typeof(valp)}) ? state_values(valp) : valp
     return remake_buffer(os.indp, buffer, (os.idxs,), (val,))
 end
 
-function (os::OOPSetter)(valp, val::Union{Tuple, AbstractArray})
-    buffer = if os.is_state
-        hasmethod(state_values, Tuple{typeof(valp)}) ? state_values(valp) : valp
+function (os::OOPSetter{false})(valp, val)
+    buffer = hasmethod(parameter_values, Tuple{typeof(valp)}) ? parameter_values(valp) : valp
+    return remake_buffer(os.indp, buffer, (os.idxs,), (val,))
+end
+
+function (os::OOPSetter{true})(valp, val::Union{Tuple, AbstractArray})
+    buffer = hasmethod(state_values, Tuple{typeof(valp)}) ? state_values(valp) : valp
+    if os.idxs isa Union{Tuple, AbstractArray}
+        return remake_buffer(os.indp, buffer, os.idxs, val)
     else
-        hasmethod(parameter_values, Tuple{typeof(valp)}) ? parameter_values(valp) : valp
+        return remake_buffer(os.indp, buffer, (os.idxs,), (val,))
     end
+end
+
+function (os::OOPSetter{false})(valp, val::Union{Tuple, AbstractArray})
+    buffer = hasmethod(parameter_values, Tuple{typeof(valp)}) ? parameter_values(valp) : valp
     if os.idxs isa Union{Tuple, AbstractArray}
         return remake_buffer(os.indp, buffer, os.idxs, val)
     else
