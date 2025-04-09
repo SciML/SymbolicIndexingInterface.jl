@@ -331,7 +331,7 @@ function setsym_oop(bi::BatchedInterface)
             push!(curexpr.args, :($paramssym = $parameter_values($prob)))
         else
             param_idxssym = Symbol(:param_idxs_, sys_i)
-            param_idxs = indp_idxs[.!isstate]
+            param_idxs = (indp_idxs[.!isstate]...,)
             param_valssym = Symbol(:param_vals, sys_i)
             vals_idxs = union_idxs[.!isstate]
             push!(curexpr.args, :($param_idxssym = $param_idxs))
