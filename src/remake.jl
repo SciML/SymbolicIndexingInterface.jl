@@ -55,6 +55,12 @@ function remake_buffer(sys, oldbuffer::AbstractArray, idxs, vals)
     return newbuffer
 end
 
+# We don't support `Dict`s as value providers. If we get a `Dict`,
+# assume it is non-symbolic.
+function remake_buffer(sys, oldbuffer::Dict, idxs, vals)
+    return Dict(idxs .=> vals)
+end
+
 remake_buffer(sys, ::Nothing, idxs, vals) = nothing
 
 function remake_buffer(sys, oldbuffer, idxs, vals)
