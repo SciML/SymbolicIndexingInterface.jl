@@ -73,3 +73,12 @@ for (buf, newbuf, idxs, vals) in [
 end
 
 @test isnothing(remake_buffer(sys, nothing, [], []))
+
+@testset "`remake_buffer` with `Dict`" begin
+    sys = nothing
+    buf = Dict("a" => 1, "b" => 2)
+    buf2 = remake_buffer(sys, buf, collect(keys(buf)), collect(values(buf)))
+    @test isequal(buf, buf2)
+    buf2 = remake_buffer(sys, buf, buf)
+    @test isequal(buf, buf2)
+end
