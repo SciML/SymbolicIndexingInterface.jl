@@ -531,27 +531,39 @@ function (mpg::OnlyTimeseriesMPG)(
     throw(ParameterTimeseriesValueIndexMismatchError{NotTimeseries}(prob, mpg))
 end
 
-struct AsParameterTupleWrapper{N, G <: AbstractParameterGetIndexer} <:
+struct AsParameterTupleWrapper{N, A, G <: AbstractParameterGetIndexer} <:
        AbstractParameterGetIndexer
     getter::G
 end
 
-AsParameterTupleWrapper{N}(getter::G) where {N, G} = AsParameterTupleWrapper{N, G}(getter)
+function AsParameterTupleWrapper{N}(getter::G) where {N, G}
+    AsParameterTupleWrapper{N, Nothing, G}(getter)
+end
+function AsParameterTupleWrapper{N, A}(getter::G) where {N, A, G}
+    AsParameterTupleWrapper{N, A, G}(getter)
+end
 
-function is_indexer_timeseries(::Type{AsParameterTupleWrapper{N, G}}) where {N, G}
+function is_indexer_timeseries(::Type{AsParameterTupleWrapper{N, A, G}}) where {N, A, G}
     is_indexer_timeseries(G)
 end
 function indexer_timeseries_index(atw::AsParameterTupleWrapper)
     indexer_timeseries_index(atw.getter)
 end
-function as_timeseries_indexer(::IndexerBoth, atw::AsParameterTupleWrapper{N}) where {N}
-    AsParameterTupleWrapper{N}(as_timeseries_indexer(atw.getter))
+function as_timeseries_indexer(
+        ::IndexerBoth, atw::AsParameterTupleWrapper{N, A}) where {N, A}
+    AsParameterTupleWrapper{N, A}(as_timeseries_indexer(atw.getter))
 end
-function as_not_timeseries_indexer(::IndexerBoth, atw::AsParameterTupleWrapper{N}) where {N}
-    AsParameterTupleWrapper{N}(as_not_timeseries_indexer(atw.getter))
+function as_not_timeseries_indexer(
+        ::IndexerBoth, atw::AsParameterTupleWrapper{N, A}) where {N, A}
+    AsParameterTupleWrapper{N, A}(as_not_timeseries_indexer(atw.getter))
 end
 
-wrap_tuple(::AsParameterTupleWrapper{N}, val) where {N} = ntuple(i -> val[i], Val(N))
+function wrap_tuple(::AsParameterTupleWrapper{N, Nothing}, val) where {N}
+    ntuple(i -> val[i], Val(N))
+end
+function wrap_tuple(::AsParameterTupleWrapper{N, A}, val) where {N, A}
+    NamedTuple{A}(ntuple(i -> val[i], Val(N)))
+end
 
 function (atw::AsParameterTupleWrapper)(ts::IsTimeseriesTrait, prob, args...)
     atw(ts, is_indexer_timeseries(atw), prob, args...)
@@ -591,19 +603,24 @@ is_observed_getter(mpg::MultipleParametersGetter) = any(is_observed_getter, mpg.
 for (t1, t2) in [
     (ArraySymbolic, Any),
     (ScalarSymbolic, Any),
-    (NotSymbolic, Union{<:Tuple, <:AbstractArray})
+    (NotSymbolic, Union{<:Tuple, <:NamedTuple, <:AbstractArray})
 ]
     @eval function _getp(sys, ::NotSymbolic, ::$t1, p::$t2)
         # We need to do it this way because if an `ODESystem` has `p[1], p[2], p[3]` as
         # parameters (all scalarized) then `is_observed(sys, p[2:3]) == true`. Then,
         # `getp` errors on older MTK that doesn't support `parameter_observed`.
-        getters = getp.((sys,), p)
+        _p = p isa NamedTuple ? Tuple(p) : p
+        getters = getp.((sys,), _p)
         num_observed = count(is_observed_getter, getters)
         supports_tuple = supports_tuple_observed(sys)
-        p_arr = p isa Tuple ? collect(p) : p
+        p_arr = p isa Union{Tuple, NamedTuple} ? collect(p) : p
 
         if num_observed == 0
-            return MultipleParametersGetter(getters)
+            getter = MultipleParametersGetter(getters)
+            if p isa NamedTuple
+                getter = AsParameterTupleWrapper{length(p), keys(p)}(getter)
+            end
+            return getter
         else
             pofn = supports_tuple ? parameter_observed(sys, p) :
                    parameter_observed(sys, p_arr)
@@ -617,8 +634,12 @@ for (t1, t2) in [
             else
                 getter = GetParameterObservedNoTime(pofn)
             end
-            return p isa Tuple && !supports_tuple ?
-                   AsParameterTupleWrapper{length(p)}(getter) : getter
+            if p isa Tuple && !supports_tuple
+                getter = AsParameterTupleWrapper{length(p)}(getter)
+            elseif p isa NamedTuple
+                getter = AsParameterTupleWrapper{length(p), keys(p)}(getter)
+            end
+            return getter
         end
     end
 end
@@ -698,9 +719,13 @@ end
 for (t1, t2) in [
     (ArraySymbolic, Any),
     (ScalarSymbolic, Any),
-    (NotSymbolic, Union{<:Tuple, <:AbstractArray})
+    (NotSymbolic, Union{<:Tuple, <:NamedTuple, <:AbstractArray})
 ]
     @eval function _setp(sys, ::NotSymbolic, ::$t1, p::$t2)
+        if p isa NamedTuple
+            setters = NamedTuple{keys(p)}(setp.((sys,), values(p); run_hook = false))
+            return NamedTupleSetter(setters)
+        end
         setters = setp.((sys,), p; run_hook = false)
         return MultipleSetters(setters)
     end

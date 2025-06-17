@@ -50,7 +50,12 @@ for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
                                             ((1, (:y, :z)), (u[1], (u[2], u[3])),
                                                 (4.0, (5.0, 6.0)), true)
                                             ((:x, [:y], (:z,)), (u[1], [u[2]], (u[3],)),
-                                                (4.0, [5.0], (6.0,)), true)]
+                                                (4.0, [5.0], (6.0,)), true)
+                                            ((a = :x, b = [:x, :y], c = (d = :z, e = :x)),
+                                                (a = u[1], b = u[1:2],
+                                                    c = (d = u[3], e = u[1])),
+                                                (a = 4.0, b = [4.0, 5.0],
+                                                    c = (d = 6.0, e = 4.0)), true)]
     get = getsym(sys, sym)
     set! = setsym(sys, sym)
     if check_inference
@@ -86,12 +91,14 @@ for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
         continue
     end
 
-    setter = setsym_oop(sys, sym)
-    svals, pvals = setter(fi, newval)
-    @test svals ≈ new_states
-    @test pvals == parameter_values(fi)
-    @test_throws ArgumentError setter(state_values(fi), newval)
-    @test_throws ArgumentError setter(parameter_values(fi), newval)
+    if !(sym isa NamedTuple)
+        setter = setsym_oop(sys, sym)
+        svals, pvals = setter(fi, newval)
+        @test svals ≈ new_states
+        @test pvals == parameter_values(fi)
+        @test_throws ArgumentError setter(state_values(fi), newval)
+        @test_throws ArgumentError setter(parameter_values(fi), newval)
+    end
 end
 
 for (sym, val, check_inference) in [

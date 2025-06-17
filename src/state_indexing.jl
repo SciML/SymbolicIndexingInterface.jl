@@ -221,13 +221,17 @@ function (mg::MultipleGetters)(::NotTimeseries, ::IndexerMixedTimeseries, prob, 
     return map(g -> g(prob), mg.getters)
 end
 
-struct AsTupleWrapper{N, G} <: AbstractStateGetIndexer
+struct AsTupleWrapper{N, A, G} <: AbstractStateGetIndexer
     getter::G
 end
 
-AsTupleWrapper{N}(getter::G) where {N, G} = AsTupleWrapper{N, G}(getter)
+AsTupleWrapper{N}(getter::G) where {N, G} = AsTupleWrapper{N, Nothing, G}(getter)
+AsTupleWrapper{N, A}(getter::G) where {N, A, G} = AsTupleWrapper{N, A, G}(getter)
 
-wrap_tuple(::AsTupleWrapper{N}, val) where {N} = ntuple(i -> val[i], Val(N))
+wrap_tuple(::AsTupleWrapper{N, Nothing}, val) where {N} = ntuple(i -> val[i], Val(N))
+function wrap_tuple(::AsTupleWrapper{N, A}, val) where {N, A}
+    NamedTuple{A}(ntuple(i -> val[i], Val(N)))
+end
 
 function (atw::AsTupleWrapper)(::Timeseries, prob)
     return wrap_tuple.((atw,), atw.getter(prob))
@@ -245,13 +249,13 @@ end
 for (t1, t2) in [
     (ScalarSymbolic, Any),
     (ArraySymbolic, Any),
-    (NotSymbolic, Union{<:Tuple, <:AbstractArray})
+    (NotSymbolic, Union{<:Tuple, <:NamedTuple, <:AbstractArray})
 ]
     @eval function _getsym(sys, ::NotSymbolic, elt::$t1, sym::$t2)
         if isempty(sym)
             return MultipleGetters(ContinuousTimeseries(), sym)
         end
-        sym_arr = sym isa Tuple ? collect(sym) : sym
+        sym_arr = sym isa Union{Tuple, NamedTuple} ? collect(sym) : sym
         supports_tuple = supports_tuple_observed(sys)
         num_observed = 0
         for s in sym
@@ -266,6 +270,8 @@ for (t1, t2) in [
                 getter = TimeIndependentObservedFunction(obs)
                 if sym isa Tuple
                     getter = AsTupleWrapper{length(sym)}(getter)
+                elseif sym isa NamedTuple
+                    getter = AsTupleWrapper{length(sym), keys(sym)}(getter)
                 end
                 return getter
             end
@@ -280,9 +286,14 @@ for (t1, t2) in [
             ts_idxs = collect(ts_idxs)
         end
 
-        if num_observed == 0 || num_observed == 1 && sym isa Tuple
-            getters = getsym.((sys,), sym)
-            return MultipleGetters(ts_idxs, getters)
+        if num_observed == 0 || num_observed == 1 && sym isa Union{Tuple, NamedTuple}
+            _sym = sym isa NamedTuple ? Tuple(sym) : sym
+            getters = getsym.((sys,), _sym)
+            getter = MultipleGetters(ts_idxs, getters)
+            if sym isa NamedTuple
+                getter = AsTupleWrapper{length(sym), keys(sym)}(getter)
+            end
+            return getter
         else
             obs = supports_tuple ? observed(sys, sym) : observed(sys, sym_arr)
             getter = if is_time_dependent(sys)
@@ -292,6 +303,8 @@ for (t1, t2) in [
             end
             if sym isa Tuple && !supports_tuple
                 getter = AsTupleWrapper{length(sym)}(getter)
+            elseif sym isa NamedTuple
+                getter = AsTupleWrapper{length(sym), keys(sym)}(getter)
             end
             return getter
         end
@@ -351,12 +364,39 @@ function _setsym(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     error("Invalid symbol $sym for `setsym`")
 end
 
+struct NamedTupleSetter{S <: NamedTuple} <: AbstractSetIndexer
+    setter::S
+end
+
+function (nts::NamedTupleSetter)(prob, val)
+    _generated_setter(nts, prob, val)
+end
+
+@generated function _generated_setter(
+        nts::NamedTupleSetter{<:NamedTuple{N1}}, prob, val::NamedTuple{N2}) where {N1, N2}
+    expr = Expr(:block)
+    for (i, name) in enumerate(N2)
+        idx = findfirst(isequal(name), N1)
+        if idx === nothing
+            throw(ArgumentError("""
+            Invalid name $(name) in value. Must be one of $(N1).
+            """))
+        end
+        push!(expr.args, :(nts.setter[$idx](prob, val[$i])))
+    end
+    return expr
+end
+
 for (t1, t2) in [
     (ScalarSymbolic, Any),
     (ArraySymbolic, Any),
-    (NotSymbolic, Union{<:Tuple, <:AbstractArray})
+    (NotSymbolic, Union{<:Tuple, <:NamedTuple, <:AbstractArray})
 ]
     @eval function _setsym(sys, ::NotSymbolic, ::$t1, sym::$t2)
+        if sym isa NamedTuple
+            setters = NamedTuple{keys(sym)}(setsym.((sys,), values(sym)))
+            return NamedTupleSetter(setters)
+        end
         setters = setsym.((sys,), sym)
         return MultipleSetters(setters)
     end
