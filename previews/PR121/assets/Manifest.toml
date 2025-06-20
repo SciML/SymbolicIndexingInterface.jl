@@ -525,9 +525,9 @@ version = "0.9.5"
 
 [[deps.Documenter]]
 deps = ["ANSIColoredPrinters", "AbstractTrees", "Base64", "CodecZlib", "Dates", "DocStringExtensions", "Downloads", "Git", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "MarkdownAST", "Pkg", "PrecompileTools", "REPL", "RegistryInstances", "SHA", "TOML", "Test", "Unicode"]
-git-tree-sha1 = "0ef76e54dfe9d736350a79334dc66236598c8d38"
+git-tree-sha1 = "e25bc156a7e72f0a9f738815a4426dd01a7e914b"
 uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-version = "1.12.0"
+version = "1.13.0"
 
 [[deps.DomainSets]]
 deps = ["CompositeTypes", "IntervalSets", "LinearAlgebra", "Random", "StaticArrays"]
@@ -850,9 +850,9 @@ version = "1.0.2"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "ExceptionUnwrapping", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "PrecompileTools", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "f93655dc73d7a0b4a368e3c0bce296ae035ad76e"
+git-tree-sha1 = "ed5e9c58612c4e081aecdb6e1a479e18462e041e"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.10.16"
+version = "1.10.17"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll"]
@@ -1294,9 +1294,9 @@ version = "1.11.0"
 
 [[deps.ModelingToolkit]]
 deps = ["ADTypes", "AbstractTrees", "ArrayInterface", "BlockArrays", "ChainRulesCore", "Combinatorics", "CommonSolve", "Compat", "ConstructionBase", "DataStructures", "DiffEqBase", "DiffEqCallbacks", "DiffEqNoiseProcess", "DiffRules", "DifferentiationInterface", "Distributed", "Distributions", "DocStringExtensions", "DomainSets", "DynamicQuantities", "EnumX", "ExprTools", "FindFirstFunctions", "ForwardDiff", "FunctionWrappers", "FunctionWrappersWrappers", "Graphs", "ImplicitDiscreteSolve", "InteractiveUtils", "JuliaFormatter", "JumpProcesses", "Latexify", "Libdl", "LinearAlgebra", "MLStyle", "Moshi", "NaNMath", "NonlinearSolve", "OffsetArrays", "OrderedCollections", "OrdinaryDiffEqCore", "PrecompileTools", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SCCNonlinearSolve", "SciMLBase", "SciMLPublic", "SciMLStructures", "Serialization", "Setfield", "SimpleNonlinearSolve", "SparseArrays", "SpecialFunctions", "StaticArrays", "SymbolicIndexingInterface", "SymbolicUtils", "Symbolics", "URIs", "UnPack", "Unitful"]
-git-tree-sha1 = "a78463c149b2d1020b886bd9d9765b9418cded97"
+git-tree-sha1 = "5a0fff843b66006da07c964ffe2dbe89b91a8dff"
 uuid = "961ee093-0014-501f-94e3-6117800e7a78"
-version = "10.3.0"
+version = "10.4.0"
 
     [deps.ModelingToolkit.extensions]
     MTKBifurcationKitExt = "BifurcationKit"
@@ -2013,9 +2013,9 @@ version = "0.1.0"
 
 [[deps.SciMLBase]]
 deps = ["ADTypes", "Accessors", "Adapt", "ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "EnumX", "FunctionWrappersWrappers", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "Markdown", "Moshi", "PrecompileTools", "Preferences", "Printf", "RecipesBase", "RecursiveArrayTools", "Reexport", "RuntimeGeneratedFunctions", "SciMLOperators", "SciMLStructures", "StaticArraysCore", "Statistics", "SymbolicIndexingInterface"]
-git-tree-sha1 = "04bbcdc8d1f7d6f667f75fbcc68728231e21fabe"
+git-tree-sha1 = "a3fa02bf0ac97856e2f9129f5fb33a4b9ba0bae1"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "2.101.0"
+version = "2.102.0"
 
     [deps.SciMLBase.extensions]
     SciMLBaseChainRulesCoreExt = "ChainRulesCore"
@@ -2068,9 +2068,9 @@ version = "1.7.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
-git-tree-sha1 = "3bac05bc7e74a75fd9cba4295cde4045d9fe2386"
+git-tree-sha1 = "9b81b8393e50b7d4e6d0a9f14e192294d3b7c109"
 uuid = "6c6a2e73-6563-6170-7368-637461726353"
-version = "1.2.1"
+version = "1.3.0"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
@@ -2144,15 +2144,17 @@ version = "1.11.0"
 
 [[deps.SparseMatrixColorings]]
 deps = ["ADTypes", "DocStringExtensions", "LinearAlgebra", "PrecompileTools", "Random", "SparseArrays"]
-git-tree-sha1 = "ab958b4fec46d1f1d057bb8e2a99bfdb90744646"
+git-tree-sha1 = "9de43e0b9b976f1019bf7a879a686c4514520078"
 uuid = "0a514795-09f3-496d-8182-132a7b665d35"
-version = "0.4.20"
+version = "0.4.21"
 
     [deps.SparseMatrixColorings.extensions]
+    SparseMatrixColoringsCUDAExt = "CUDA"
     SparseMatrixColoringsCliqueTreesExt = "CliqueTrees"
     SparseMatrixColoringsColorsExt = "Colors"
 
     [deps.SparseMatrixColorings.weakdeps]
+    CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
     CliqueTrees = "60701a23-6482-424a-84db-faee86b9b1f8"
     Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 
@@ -2394,9 +2396,9 @@ uuid = "781d530d-4396-4725-bb49-402e4bee1e77"
 version = "1.4.0"
 
 [[deps.URIs]]
-git-tree-sha1 = "cbbebadbcc76c5ca1cc4b4f3b0614b3e603b5000"
+git-tree-sha1 = "24c1c558881564e2217dcf7840a8b2e10caeb0f9"
 uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
-version = "1.5.2"
+version = "1.6.0"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
