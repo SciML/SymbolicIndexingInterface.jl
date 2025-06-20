@@ -55,7 +55,10 @@ for sys in [
             ([1, [:b, :c]], [p[1], p[2:3]], [new_p[1], new_p[2:3]], false),
             ([1, (:b, :c)], [p[1], (p[2], p[3])], [new_p[1], (new_p[2], new_p[3])], false),
             ((1, [:b, :c]), (p[1], p[2:3]), (new_p[1], new_p[2:3]), true),
-            ((1, (:b, :c)), (p[1], (p[2], p[3])), (new_p[1], (new_p[2], new_p[3])), true)]
+            ((1, (:b, :c)), (p[1], (p[2], p[3])), (new_p[1], (new_p[2], new_p[3])), true),
+            ((a = :a, b = [:a, :b], c = (d = :c, e = :a)),
+                (a = p[1], b = p[1:2], c = (d = p[3], e = p[1])),
+                (a = new_p[1], b = new_p[1:2], c = (d = new_p[3], e = new_p[1])), true)]
             get = getp(sys, sym)
             set! = setp(sys, sym)
             if check_inference
