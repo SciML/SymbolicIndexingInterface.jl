@@ -622,7 +622,7 @@ for (t1, t2) in [
             end
             return getter
         else
-            pofn = supports_tuple ? parameter_observed(sys, p) :
+            pofn = supports_tuple ? parameter_observed(sys, _p) :
                    parameter_observed(sys, p_arr)
             if pofn === nothing
                 return MultipleParametersGetter.(getters)
