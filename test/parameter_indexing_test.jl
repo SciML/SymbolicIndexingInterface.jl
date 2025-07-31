@@ -116,7 +116,7 @@ for sys in [
             (:(a + b + t), p[1] + p[2] + fi.t, true),
             ([:(a + b + t), :c], [p[1] + p[2] + fi.t, p[3]], true),
             ((:(a + b + t), :c), (p[1] + p[2] + fi.t, p[3]), true),
-            ((; a = (; b = :(a + b))), (; a = (; b = p[1] + p[2])), true),
+            ((; a = (; b = :(a + b))), (; a = (; b = p[1] + p[2])), true)
         ]
             get = getp(sys, sym)
             if check_inference
