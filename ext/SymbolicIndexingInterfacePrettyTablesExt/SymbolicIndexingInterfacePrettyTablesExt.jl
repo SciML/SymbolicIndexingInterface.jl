@@ -1,7 +1,5 @@
 module SymbolicIndexingInterfacePrettyTablesExt
 
-__precompile__(false)
-
 using SymbolicIndexingInterface
 using SymbolicIndexingInterface: ParameterIndexingProxy, parameter_symbols, symbolic_type,
                                  ArraySymbolic, getp
