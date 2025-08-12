@@ -4,7 +4,6 @@ using RuntimeGeneratedFunctions
 import StaticArraysCore: MArray, similar_type
 import ArrayInterface
 using Accessors: @reset
-using PrettyTables # for pretty printing
 
 RuntimeGeneratedFunctions.init(@__MODULE__)
 
