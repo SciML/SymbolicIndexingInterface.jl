@@ -31,10 +31,10 @@ Method for customizing the table output. Keyword args:
 - scalarize: whether to scalarize array symbolics in the table output.
 - kwargs... are passed to the pretty_table call (if PrettyTables is loaded).
 """
-function show_params end
+show_params(io, pip; kwargs...) = _show_params(io, pip; kwargs...)
 
 # Fallback implementation when PrettyTables is not loaded
-function show_params(io::IO, pip::ParameterIndexingProxy; num_rows = 20,
+function _show_params(io::IO, pip::ParameterIndexingProxy; num_rows = 20,
         show_all = false, scalarize = true, kwargs...)
     params = Any[]
     vals = Any[]
