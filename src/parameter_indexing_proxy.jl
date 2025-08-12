@@ -29,8 +29,11 @@ Method for customizing the table output. Keyword args:
 - num_rows
 - show_all: whether to show all parameters. Overrides `num_rows`.
 - scalarize: whether to scalarize array symbolics in the table output.
-- kwargs... are passed to the pretty_table call.
+- kwargs... are passed to the pretty_table call (if PrettyTables is loaded).
 """
+function show_params end
+
+# Fallback implementation when PrettyTables is not loaded
 function show_params(io::IO, pip::ParameterIndexingProxy; num_rows = 20,
         show_all = false, scalarize = true, kwargs...)
     params = Any[]
@@ -59,9 +62,14 @@ function show_params(io::IO, pip::ParameterIndexingProxy; num_rows = 20,
         end
     end
 
-    pretty_table(io, [params[1:num_shown] vals[1:num_shown]];
-        header = ["Parameter", "Value"],
-        kwargs...)
+    # Fallback implementation without PrettyTables
+    println(io, "Parameter Indexing Proxy")
+    println(io, "=" ^ 50)
+    println(io, "Parameter                | Value")
+    println(io, "-" ^ 50)
+    for i in 1:num_shown
+        println(io, rpad(string(params[i]), 24) * " | " * string(vals[i]))
+    end
 
     if num_shown < length(params)
         println(io,
