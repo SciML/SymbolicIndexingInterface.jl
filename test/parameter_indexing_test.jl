@@ -5,6 +5,7 @@ using SymbolicIndexingInterface: IndexerOnlyTimeseries, IndexerNotTimeseries, In
                                  ParameterTimeseriesValueIndexMismatchError,
                                  MixedParameterTimeseriesIndexError
 using Test
+using AllocCheck
 
 arr = [1.0, 2.0, 3.0]
 @test parameter_values(arr) == arr
@@ -100,6 +101,12 @@ for sys in [
                 @inferred set!(p, newval)
             else
                 set!(p, newval)
+            end
+            if isconcretetype(eltype(newval))
+                # test only with concrete eltypes, otherwise we have
+                # dynamic dispatch due to the vals
+                @check_allocs test_setp(set!, p, newval) = set!(p, newval)
+                test_setp(set!, p, newval)
             end
             @test get(p) == newval
             set!(p, oldval)
