@@ -36,7 +36,7 @@ function SymbolicIndexingInterface.show_params(
     end
 
     pretty_table(io, [params[1:num_shown] vals[1:num_shown]];
-        header = ["Parameter", "Value"],
+        column_labels = ["Parameter", "Value"],
         kwargs...)
 
     if num_shown < length(params)
