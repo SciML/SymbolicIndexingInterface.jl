@@ -49,4 +49,7 @@ include("parameter_indexing_proxy.jl")
 
 export remake_buffer
 include("remake.jl")
+
+include("despecialize.jl")
+
 end
