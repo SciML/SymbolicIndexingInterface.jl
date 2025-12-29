@@ -15,6 +15,9 @@ if GROUP == "All" || GROUP == "Core"
     @safetestset "Quality Assurance" begin
         @time include("qa.jl")
     end
+    @safetestset "JET static analysis" begin
+        @time include("jet_test.jl")
+    end
     @safetestset "Interface test" begin
         @time include("example_test.jl")
     end
