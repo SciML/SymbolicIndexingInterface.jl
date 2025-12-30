@@ -165,7 +165,9 @@ end
 function _getsym(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
-        return getsym(sys, idx)
+        # Directly create GetStateIndex instead of recursive getsym call
+        # to avoid type instability from variable_index returning Union{Nothing, Int}
+        return GetStateIndex(idx)
     elseif is_parameter(sys, sym)
         return getp(sys, sym)
     elseif is_independent_variable(sys, sym)
@@ -336,7 +338,9 @@ end
 function _getsym(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
-        return getsym(sys, idx)
+        # Directly create GetStateIndex instead of recursive getsym call
+        # to avoid type instability from variable_index returning Union{Nothing, Int}
+        return GetStateIndex(idx)
     elseif is_parameter(sys, sym)
         return getp(sys, sym)
     end
