@@ -28,7 +28,7 @@ SafeTestsets = "0.0.1, 0.1"
 StaticArrays = "1.9"
 StaticArraysCore = "1.4"
 Test = "1"
-Zygote = "0.6.67"
+Zygote = "0.6.67, 0.7"
 julia = "1.10"
 
 [extras]
