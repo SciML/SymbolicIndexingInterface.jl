@@ -4,23 +4,25 @@
   gtag('js', new Date());
   gtag('config', 'UA-90474609-3', {'page_path': location.pathname + location.search + location.hash});
 </script><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script><link href="assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img src="assets/logo.png" alt="SymbolicIndexingInterface.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>SymbolicIndexingInterface.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>Home</a><ul class="internal"><li><a class="tocitem" href="#Installation"><span>Installation</span></a></li><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#Contributing"><span>Contributing</span></a></li><li><a class="tocitem" href="#Reproducibility"><span>Reproducibility</span></a></li></ul></li><li><a class="tocitem" href="terminology/">Terminology</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="usage/">Using the SciML Symbolic Indexing Interface</a></li><li><a class="tocitem" href="simple_sii_sys/">Simple Demonstration of a Symbolic System Structure</a></li><li><a class="tocitem" href="complete_sii/">Implementing the Complete Symbolic Indexing Interface</a></li></ul></li><li><a class="tocitem" href="solution_wrappers/">Defining Solution Wrapper Fallbacks</a></li><li><a class="tocitem" href="api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Home</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Home</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SciML/SymbolicIndexingInterface.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SciML/SymbolicIndexingInterface.jl/blob/master/docs/src/index.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="SymbolicIndexingInterface.jl:-Standardized-Symbolic-Indexing-of-Julia"><a class="docs-heading-anchor" href="#SymbolicIndexingInterface.jl:-Standardized-Symbolic-Indexing-of-Julia">SymbolicIndexingInterface.jl: Standardized Symbolic Indexing of Julia</a><a id="SymbolicIndexingInterface.jl:-Standardized-Symbolic-Indexing-of-Julia-1"></a><a class="docs-heading-anchor-permalink" href="#SymbolicIndexingInterface.jl:-Standardized-Symbolic-Indexing-of-Julia" title="Permalink"></a></h1><p>SymbolicIndexingInterface.jl is a set of interface functions for handling containers of symbolic variables.</p><h2 id="Installation"><a class="docs-heading-anchor" href="#Installation">Installation</a><a id="Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Installation" title="Permalink"></a></h2><p>To install SymbolicIndexingInterface.jl, use the Julia package manager:</p><pre><code class="language-julia hljs">using Pkg
-Pkg.add(&quot;SymbolicIndexingInterface&quot;)</code></pre><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>The symbolic indexing interface has 2 levels:</p><ol><li>The user level. At the user level, a modeler or engineer simply uses terms from a domain-specific language (DSL) inside of SciML functionality and will receive the requested values. For example, if a DSL defines a symbol <code>x</code>, then <code>sol[x]</code> returns the solution value(s) for <code>x</code>.</li><li>The DSL system structure level. This is the structure which defines the symbolic indexing for a given problem/solution. DSLs can tag a constructed problem/solution with this object in order to endow the SciML tools with the ability to index symbolically according to the definitions the DSL writer wants.</li></ol><h2 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h2><ul><li>Please refer to the <a href="https://github.com/SciML/ColPrac/blob/master/README.md">SciML ColPrac: Contributor&#39;s Guide on Collaborative Practices for Community Packages</a> for guidance on PRs, issues, and other matters relating to contributing to SciML.</li><li>There are a few community forums:<ul><li>the #diffeq-bridged channel in the <a href="https://julialang.org/slack/">Julia Slack</a></li><li><a href="https://gitter.im/JuliaDiffEq/Lobby">JuliaDiffEq</a> on Gitter</li><li>on the <a href="https://discourse.julialang.org">Julia Discourse forums</a></li><li>see also <a href="https://sciml.ai/community/">SciML Community page</a></li></ul></li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Project.toml`
+Pkg.add(&quot;SymbolicIndexingInterface&quot;)</code></pre><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>The symbolic indexing interface has 2 levels:</p><ol><li>The user level. At the user level, a modeler or engineer simply uses terms from a domain-specific language (DSL) inside of SciML functionality and will receive the requested values. For example, if a DSL defines a symbol <code>x</code>, then <code>sol[x]</code> returns the solution value(s) for <code>x</code>.</li><li>The DSL system structure level. This is the structure which defines the symbolic indexing for a given problem/solution. DSLs can tag a constructed problem/solution with this object in order to endow the SciML tools with the ability to index symbolically according to the definitions the DSL writer wants.</li></ol><h2 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h2><ul><li>Please refer to the <a href="https://github.com/SciML/ColPrac/blob/master/README.md">SciML ColPrac: Contributor&#39;s Guide on Collaborative Practices for Community Packages</a> for guidance on PRs, issues, and other matters relating to contributing to SciML.</li><li>There are a few community forums:<ul><li>the #diffeq-bridged channel in the <a href="https://julialang.org/slack/">Julia Slack</a></li><li><a href="https://gitter.im/JuliaDiffEq/Lobby">JuliaDiffEq</a> on Gitter</li><li>on the <a href="https://discourse.julialang.org">Julia Discourse forums</a></li><li>see also <a href="https://sciml.ai/community/">SciML Community page</a></li></ul></li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/github-runners/deepsea4-21/_work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Project.toml`
   [e30172f5] Documenter v1.16.1
   [961ee093] ModelingToolkit v11.4.0
   [1dea7af3] OrdinaryDiffEq v6.105.0
   [91a5bcdd] Plots v1.41.3
   [7e49a35a] RuntimeGeneratedFunctions v0.5.16
-  [2efcf032] SymbolicIndexingInterface v0.3.46 `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.12.3
+  [2efcf032] SymbolicIndexingInterface v0.3.46 `~/github-runners/deepsea4-21/_work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.12.3
 Commit 966d0af0fdf (2025-12-15 11:20 UTC)
 Build Info:
   Official https://julialang.org release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 4 × AMD EPYC 7763 64-Core Processor
+  CPU: 128 × AMD EPYC 7513 32-Core Processor
   WORD_SIZE: 64
   LLVM: libLLVM-18.1.7 (ORCJIT, znver3)
   GC: Built with stock GC
-Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Manifest.toml`
+Threads: 1 default, 1 interactive, 1 GC (on 128 virtual cores)
+Environment:
+  JULIA_DEPOT_PATH = /home/chrisrackauckas/github-runners/deepsea4-21/.julia</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/github-runners/deepsea4-21/_work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Manifest.toml`
   [47edcb42] ADTypes v1.21.0
   [a4c015fc] ANSIColoredPrinters v0.0.1
   [6e696c72] AbstractPlutoDingetjes v1.3.2
@@ -32,7 +34,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [4fba245c] ArrayInterface v7.22.0
   [4c555306] ArrayLayouts v1.12.2
   [e2ed5e7c] Bijections v0.2.2
-  [caf10ac8] BipartiteGraphs v0.1.4
+  [caf10ac8] BipartiteGraphs v0.1.5
   [d1d4a3ce] BitFlags v0.1.9
   [62783981] BitTwiddlingConvenienceFunctions v0.1.6
   [8e7c35d0] BlockArrays v1.9.3
@@ -81,7 +83,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [442a2c76] FastGaussQuadrature v1.1.0
   [a4df4552] FastPower v1.3.0
   [1a297f60] FillArrays v1.15.0
-  [64ca27bc] FindFirstFunctions v1.4.2
+  [64ca27bc] FindFirstFunctions v1.6.0
   [6a86dc24] FiniteDiff v2.29.0
   [53c48c17] FixedPointNumbers v0.8.5
   [1fa38f19] Format v1.3.7
@@ -182,7 +184,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [e409e4f3] PoissonRandom v0.4.7
   [f517fe37] Polyester v0.7.18
   [1d0040c9] PolyesterWeave v0.2.2
-  [d236fae5] PreallocationTools v0.4.34
+⌅ [d236fae5] PreallocationTools v0.4.34
   [aea7be01] PrecompileTools v1.3.3
   [21216c6a] Preferences v1.5.1
   [27ebfcd6] Primes v0.5.7
@@ -199,12 +201,12 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [7e49a35a] RuntimeGeneratedFunctions v0.5.16
   [9dfe8606] SCCNonlinearSolve v1.8.0
   [94e857df] SIMDTypes v0.1.0
-  [0bca4576] SciMLBase v2.130.0
+  [0bca4576] SciMLBase v2.131.0
   [19f34311] SciMLJacobianOperators v0.1.12
   [a6db7da4] SciMLLogging v1.8.0
   [c0aeaf25] SciMLOperators v1.14.1
-  [431bcebd] SciMLPublic v1.0.0
-  [53ae85a6] SciMLStructures v1.7.0
+  [431bcebd] SciMLPublic v1.0.1
+  [53ae85a6] SciMLStructures v1.9.0
   [6c6a2e73] Scratch v1.3.0
   [efcf1570] Setfield v1.1.2
   [992d4aef] Showoff v1.0.3
@@ -218,15 +220,15 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [64909d44] StateSelection v1.2.0
   [aedffcd0] Static v1.3.1
   [0d7ed370] StaticArrayInterface v1.8.0
-  [90137ffa] StaticArrays v1.9.15
+  [90137ffa] StaticArrays v1.9.16
   [1e83bf80] StaticArraysCore v1.4.4
   [10745b16] Statistics v1.11.1
   [82ae8749] StatsAPI v1.8.0
   [2913bbd2] StatsBase v0.34.9
   [7792a7ef] StrideArraysCore v0.5.8
   [ec057cc2] StructUtils v2.6.0
-  [2efcf032] SymbolicIndexingInterface v0.3.46 `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`
-  [19f23fe9] SymbolicLimits v0.2.4
+  [2efcf032] SymbolicIndexingInterface v0.3.46 `~/github-runners/deepsea4-21/_work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`
+⌅ [19f23fe9] SymbolicLimits v0.2.4
   [d1185830] SymbolicUtils v4.10.0
   [0c5d862f] Symbolics v7.4.1
   [ed4db957] TaskLocalValues v0.1.3
@@ -285,7 +287,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [e99dba38] Qt6Wayland_jll v6.8.2+2
   [a44049a8] Vulkan_Loader_jll v1.3.243+0
   [a2964d1f] Wayland_jll v1.24.0+0
-  [ffd25f8a] XZ_jll v5.8.1+0
+  [ffd25f8a] XZ_jll v5.8.2+0
   [f67eecfb] Xorg_libICE_jll v1.1.2+0
   [c834827a] Xorg_libSM_jll v1.2.6+0
   [4f6342f7] Xorg_libX11_jll v1.8.12+0
@@ -322,7 +324,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [f27f6e37] libvorbis_jll v1.3.8+0
   [009596ad] mtdev_jll v1.1.7+0
   [1317d2d5] oneTBB_jll v2022.0.0+1
-  [1270edf5] x264_jll v10164.0.1+0
+⌅ [1270edf5] x264_jll v10164.0.1+0
   [dfaa095f] x265_jll v4.1.0+0
   [d8fb68d0] xkbcommon_jll v1.13.0+0
   [0dad84c5] ArgTools v1.1.2
@@ -372,4 +374,4 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [8e850b90] libblastrampoline_jll v5.15.0+0
   [8e850ede] nghttp2_jll v1.64.0+1
   [3f19e933] p7zip_jll v17.7.0+0
-Info Packages marked with ⌃ and ⌅ have new versions available. Those with ⌃ may be upgradable, but those with ⌅ are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.46/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.46/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="terminology/">Terminology »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 29 December 2025 18:42">Monday 29 December 2025</span>. Using Julia version 1.12.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Info Packages marked with ⌃ and ⌅ have new versions available. Those with ⌃ may be upgradable, but those with ⌅ are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.46/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.46/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="terminology/">Terminology »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Wednesday 31 December 2025 10:36">Wednesday 31 December 2025</span>. Using Julia version 1.12.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
