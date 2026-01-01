@@ -51,6 +51,9 @@ if GROUP == "All" || GROUP == "Core"
     @safetestset "Simple Adjoints test" begin
         @time include("simple_adjoints_test.jl")
     end
+    @safetestset "Allocation tests" begin
+        @time include("alloc_test.jl")
+    end
 end
 
 if GROUP == "All" || GROUP == "Downstream"
