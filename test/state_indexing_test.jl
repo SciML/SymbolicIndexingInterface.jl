@@ -1,5 +1,6 @@
 using SymbolicIndexingInterface
 using SymbolicIndexingInterface: NotVariableOrParameter
+using AllocCheck
 
 struct FakeIntegrator{S, U, P, T}
     sys::S
@@ -86,6 +87,17 @@ for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
     @test get(u) == newval
     set!(u, val)
     @test get(u) == val
+
+    # Test that getter/setter usage has zero allocations for single symbol cases
+    # (array/tuple getters allocate a new array for the result)
+    if check_inference && isconcretetype(eltype(newval)) && sym isa Union{Symbol, Int}
+        @check_allocs test_getsym(get, u) = get(u)
+        test_getsym(get, u)
+        @check_allocs test_setsym(set!, u, newval) = set!(u, newval)
+        test_setsym(set!, u, newval)
+        # Restore val after @check_allocs test
+        set!(u, val)
+    end
 
     if sym isa Union{Vector, Tuple} && any(x -> x isa Union{AbstractArray, Tuple}, sym)
         continue
