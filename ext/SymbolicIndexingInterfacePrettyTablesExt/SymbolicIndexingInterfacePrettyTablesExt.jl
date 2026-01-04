@@ -2,13 +2,14 @@ module SymbolicIndexingInterfacePrettyTablesExt
 
 using SymbolicIndexingInterface
 using SymbolicIndexingInterface: ParameterIndexingProxy, parameter_symbols, symbolic_type,
-                                 ArraySymbolic, getp
+    ArraySymbolic, getp
 using PrettyTables
 
 # Override the fallback implementation with the PrettyTables version
 function SymbolicIndexingInterface.show_params(
         io::IO, pip::ParameterIndexingProxy; num_rows = 20,
-        show_all = false, scalarize = true, kwargs...)
+        show_all = false, scalarize = true, kwargs...
+    )
     params = Any[]
     vals = Any[]
     for p in parameter_symbols(pip.wrapped)
@@ -35,13 +36,17 @@ function SymbolicIndexingInterface.show_params(
         end
     end
 
-    pretty_table(io, [params[1:num_shown] vals[1:num_shown]];
+    pretty_table(
+        io, [params[1:num_shown] vals[1:num_shown]];
         column_labels = ["Parameter", "Value"],
-        kwargs...)
+        kwargs...
+    )
 
-    if num_shown < length(params)
-        println(io,
-            "$num_shown of $(length(params)) params shown. To show all the parameters, call `show_params(io, ps, show_all = true)`. Adjust the number of rows with the num_rows kwarg. Consult `show_params` docstring for more options.")
+    return if num_shown < length(params)
+        println(
+            io,
+            "$num_shown of $(length(params)) params shown. To show all the parameters, call `show_params(io, ps, show_all = true)`. Adjust the number of rows with the num_rows kwarg. Consult `show_params` docstring for more options."
+        )
     end
 end
 

@@ -22,12 +22,12 @@ The independent variable may be specified as a single symbolic variable instead 
 array containing a single variable if the system has only one independent variable.
 """
 struct SymbolCache{
-    V <: Union{Nothing, AbstractDict},
-    P <: Union{Nothing, AbstractDict},
-    T <: Union{Nothing, AbstractDict},
-    I,
-    D <: AbstractDict
-}
+        V <: Union{Nothing, AbstractDict},
+        P <: Union{Nothing, AbstractDict},
+        T <: Union{Nothing, AbstractDict},
+        I,
+        D <: AbstractDict,
+    }
     variables::V
     parameters::P
     timeseries_parameters::T
@@ -43,8 +43,10 @@ end
 to_dict_or_nothing(d::AbstractDict) = d
 to_dict_or_nothing(::Nothing) = nothing
 
-function SymbolCache(vars = nothing, params = nothing, indepvars = nothing;
-        defaults = Dict(), timeseries_parameters = nothing)
+function SymbolCache(
+        vars = nothing, params = nothing, indepvars = nothing;
+        defaults = Dict(), timeseries_parameters = nothing
+    )
     vars = to_dict_or_nothing(vars)
     params = to_dict_or_nothing(params)
     timeseries_parameters = to_dict_or_nothing(timeseries_parameters)
@@ -57,18 +59,25 @@ function SymbolCache(vars = nothing, params = nothing, indepvars = nothing;
                 throw(ArgumentError("Timeseries parameter $k must also be present in parameters."))
             end
             if !isa(v, ParameterTimeseriesIndex)
-                throw(TypeError(:SymbolCache, "index of timeseries parameter $k",
-                    ParameterTimeseriesIndex, v))
+                throw(
+                    TypeError(
+                        :SymbolCache, "index of timeseries parameter $k",
+                        ParameterTimeseriesIndex, v
+                    )
+                )
             end
         end
     end
-    return SymbolCache{typeof(vars), typeof(params), typeof(timeseries_parameters),
-        typeof(indepvars), typeof(defaults)}(
+    return SymbolCache{
+        typeof(vars), typeof(params), typeof(timeseries_parameters),
+        typeof(indepvars), typeof(defaults),
+    }(
         vars,
         params,
         timeseries_parameters,
         indepvars,
-        defaults)
+        defaults
+    )
 end
 
 function is_variable(sc::SymbolCache, sym)
@@ -112,7 +121,7 @@ function parameter_index(sc::SymbolCache, sym)
     end
 end
 function parameter_symbols(sc::SymbolCache)
-    sc.parameters === nothing ? [] : collect(keys(sc.parameters))
+    return sc.parameters === nothing ? [] : collect(keys(sc.parameters))
 end
 function is_timeseries_parameter(sc::SymbolCache, sym)
     sc.timeseries_parameters === nothing && return false
@@ -133,8 +142,9 @@ end
 
 for symT in [Any, Expr, AbstractArray]
     @eval function get_all_timeseries_indexes(
-            ::SymbolCache{Nothing, Nothing, Nothing}, ::$symT)
-        Set([ContinuousTimeseries()])
+            ::SymbolCache{Nothing, Nothing, Nothing}, ::$symT
+        )
+        return Set([ContinuousTimeseries()])
     end
 end
 
@@ -151,7 +161,8 @@ function get_all_timeseries_indexes(sc::SymbolCache, sym::Expr)
     exs = ExpressionSearcher()
     exs(sc, sym)
     return mapreduce(
-        Base.Fix1(get_all_timeseries_indexes, sc), union, exs.declared; init = Set())
+        Base.Fix1(get_all_timeseries_indexes, sc), union, exs.declared; init = Set()
+    )
 end
 function get_all_timeseries_indexes(sc::SymbolCache, sym::AbstractArray)
     return mapreduce(Base.Fix1(get_all_timeseries_indexes, sc), union, sym; init = Set())
@@ -222,15 +233,19 @@ function observed(sc::SymbolCache, expr::Expr)
             exs = ExpressionSearcher()
             exs(sc, expr)
             fnexpr = if is_time_dependent(sc)
-                :(function (u, p, t)
-                    $(exs.fnbody)
-                    return $expr
-                end)
+                :(
+                    function (u, p, t)
+                        $(exs.fnbody)
+                        return $expr
+                    end
+                )
             else
-                :(function (u, p)
-                    $(exs.fnbody)
-                    return $expr
-                end)
+                :(
+                    function (u, p)
+                        $(exs.fnbody)
+                        return $expr
+                    end
+                )
             end
             return RuntimeGeneratedFunctions.@RuntimeGeneratedFunction(fnexpr)
         end
@@ -252,17 +267,21 @@ function inplace_observed(sc::SymbolCache, exprs::Union{AbstractArray, Tuple})
                 push!(update_expr.args, :(buffer[$i] = $expr))
             end
             fnexpr = if is_time_dependent(sc)
-                :(function (buffer, u, p, t)
-                    $(exs.fnbody)
-                    $update_expr
-                    return buffer
-                end)
+                :(
+                    function (buffer, u, p, t)
+                        $(exs.fnbody)
+                        $update_expr
+                        return buffer
+                    end
+                )
             else
-                :(function (buffer, u, p)
-                    $(exs.fnbody)
-                    $update_expr
-                    return buffer
-                end)
+                :(
+                    function (buffer, u, p)
+                        $(exs.fnbody)
+                        $update_expr
+                        return buffer
+                    end
+                )
             end
             return RuntimeGeneratedFunctions.@RuntimeGeneratedFunction(fnexpr)
         end
@@ -325,14 +344,16 @@ end
 constant_structure(::SymbolCache) = true
 all_variable_symbols(sc::SymbolCache) = variable_symbols(sc)
 function all_symbols(sc::SymbolCache)
-    vcat(variable_symbols(sc), parameter_symbols(sc), independent_variable_symbols(sc))
+    return vcat(variable_symbols(sc), parameter_symbols(sc), independent_variable_symbols(sc))
 end
 default_values(sc::SymbolCache) = sc.defaults
 
 function Base.copy(sc::SymbolCache)
-    return SymbolCache(sc.variables === nothing ? nothing : copy(sc.variables),
+    return SymbolCache(
+        sc.variables === nothing ? nothing : copy(sc.variables),
         sc.parameters === nothing ? nothing : copy(sc.parameters),
         sc.timeseries_parameters === nothing ? nothing : copy(sc.timeseries_parameters),
         sc.independent_variables isa AbstractArray ? copy(sc.independent_variables) :
-        sc.independent_variables, copy(sc.defaults))
+            sc.independent_variables, copy(sc.defaults)
+    )
 end

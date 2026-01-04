@@ -5,15 +5,15 @@ using SymbolicIndexingInterface
 
 syss = [
     SymbolCache([x..., y]),
-    SymbolCache([x[1], y, z])
+    SymbolCache([x[1], y, z]),
 ]
 syms = [
     [x, y],
-    [x[1], y]
+    [x[1], y],
 ]
 probs = [
     ProblemState(; u = [1.0, 2.0, 3.0]),
-    ProblemState(; u = [4.0, 5.0, 6.0])
+    ProblemState(; u = [4.0, 5.0, 6.0]),
 ]
 
 bi = BatchedInterface(zip(syss, syms)...)
@@ -45,15 +45,15 @@ setter!(probs[1], 1, buf)
 
 syss = [
     SymbolCache([x..., y], [a, b...]),
-    SymbolCache([x[1], y, z], [a, b..., c])
+    SymbolCache([x[1], y, z], [a, b..., c]),
 ]
 syms = [
     [x, y, a, b...],
-    [x[1], y, b[2], c]
+    [x[1], y, b[2], c],
 ]
 probs = [
     ProblemState(; u = [1.0, 2.0, 3.0], p = [0.1, 0.2, 0.3]),
-    ProblemState(; u = [4.0, 5.0, 6.0], p = [0.1, 0.4, 0.5, 0.6])
+    ProblemState(; u = [4.0, 5.0, 6.0], p = [0.1, 0.4, 0.5, 0.6]),
 ]
 
 bi = BatchedInterface(zip(syss, syms)...)
