@@ -65,7 +65,7 @@ Check whether the given `sym` is a timeseries parameter in `indp`.
 """
 function is_timeseries_parameter(indp, sym)
     if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
-       (sc = symbolic_container(indp)) != indp
+            (sc = symbolic_container(indp)) != indp
         is_timeseries_parameter(sc, sym)
     else
         return false
@@ -98,7 +98,7 @@ parameter in `indp`. Defaults to returning `nothing`. Respects the
 """
 function timeseries_parameter_index(indp, sym)
     if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
-       (sc = symbolic_container(indp)) != indp
+            (sc = symbolic_container(indp)) != indp
         timeseries_parameter_index(symbolic_container(indp), sym)
     else
         return nothing
@@ -119,7 +119,7 @@ support generating parameter observed functions.
 """
 function parameter_observed(indp, sym)
     if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
-       (sc = symbolic_container(indp)) != indp
+            (sc = symbolic_container(indp)) != indp
         return parameter_observed(symbolic_container(indp), sym)
     else
         return nothing
@@ -152,7 +152,7 @@ By default, this function returns `Set([ContinuousTimeseries()])`.
 """
 function get_all_timeseries_indexes(indp, sym)
     if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
-       (sc = symbolic_container(indp)) != indp
+            (sc = symbolic_container(indp)) != indp
         return get_all_timeseries_indexes(symbolic_container(indp), sym)
     else
         return Set([ContinuousTimeseries()])
@@ -222,8 +222,8 @@ default.
 See also: [`observed`](@ref), [`parameter_observed`](@ref), [`symbolic_container`](@ref).
 """
 function supports_tuple_observed(indp)
-    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
-       (sc = symbolic_container(indp)) !== indp
+    return if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
+            (sc = symbolic_container(indp)) !== indp
         supports_tuple_observed(sc)
     else
         false
@@ -251,7 +251,7 @@ All value providers associated with a non-markovian index provider must implemen
 Returns `true` by default.
 """
 function is_markovian(indp)
-    if hasmethod(symbolic_container, Tuple{typeof(indp)})
+    return if hasmethod(symbolic_container, Tuple{typeof(indp)})
         is_markovian(symbolic_container(indp))
     else
         true
@@ -294,8 +294,8 @@ Return a dictionary mapping symbols in the index provider to their default value
 This includes parameter symbols. The dictionary must be mutable.
 """
 function default_values(indp)
-    if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
-       (sc = symbolic_container(indp)) != indp
+    return if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
+            (sc = symbolic_container(indp)) != indp
         default_values(symbolic_container(indp))
     else
         Dict()

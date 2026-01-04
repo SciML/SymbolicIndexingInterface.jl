@@ -13,18 +13,18 @@ function SymbolicIndexingInterface.variable_index(sys::SystemMockup, sym, t = no
     if !constant_structure(sys) && t === nothing
         error("time index must be present")
     end
-    findfirst(isequal(sym), variable_symbols(sys, t))
+    return findfirst(isequal(sym), variable_symbols(sys, t))
 end
 function SymbolicIndexingInterface.variable_symbols(sys::SystemMockup, i = nothing)
     return constant_structure(sys) ? sys.vars : circshift(sys.vars, i)
 end
 SymbolicIndexingInterface.is_parameter(sys::SystemMockup, sym) = sym in sys.params
 function SymbolicIndexingInterface.parameter_index(sys::SystemMockup, sym)
-    findfirst(isequal(sym), sys.params)
+    return findfirst(isequal(sym), sys.params)
 end
 SymbolicIndexingInterface.parameter_symbols(sys::SystemMockup) = sys.params
 function SymbolicIndexingInterface.is_independent_variable(sys::SystemMockup, sym)
-    sys.indepvar !== nothing && isequal(sym, sys.indepvar)
+    return sys.indepvar !== nothing && isequal(sym, sys.indepvar)
 end
 function SymbolicIndexingInterface.independent_variable_symbols(sys::SystemMockup)
     if sys.indepvar === nothing
@@ -34,7 +34,7 @@ function SymbolicIndexingInterface.independent_variable_symbols(sys::SystemMocku
     end
 end
 function SymbolicIndexingInterface.is_observed(sys::SystemMockup, sym)
-    is_variable(sys, sym) || is_parameter(sys, sym) || is_independent_variable(sys, sym)
+    return is_variable(sys, sym) || is_parameter(sys, sym) || is_independent_variable(sys, sym)
 end
 function SymbolicIndexingInterface.observed(sys::SystemMockup, sym, states = nothing)
     if !constant_structure(sys) && states === nothing
@@ -43,8 +43,8 @@ function SymbolicIndexingInterface.observed(sys::SystemMockup, sym, states = not
     states = states isa Vector ? states : variable_symbols(sys, states)
     if is_variable(sys, sym)
         return is_time_dependent(sys) ?
-               (u, p, t) -> u[findfirst(isequal(sym), states)] :
-               (u, p) -> u[findfirst(isequal(sym), states)]
+            (u, p, t) -> u[findfirst(isequal(sym), states)] :
+            (u, p) -> u[findfirst(isequal(sym), states)]
     end
     idx = parameter_index(sys, sym)
     if idx !== nothing
@@ -58,7 +58,7 @@ SymbolicIndexingInterface.is_time_dependent(sys::SystemMockup) = isequal(sys.ind
 SymbolicIndexingInterface.constant_structure(sys::SystemMockup) = sys.static
 SymbolicIndexingInterface.all_variable_symbols(sys::SystemMockup) = sys.vars
 function SymbolicIndexingInterface.all_symbols(sys::SystemMockup)
-    vcat(sys.vars, sys.params, independent_variable_symbols(sys))
+    return vcat(sys.vars, sys.params, independent_variable_symbols(sys))
 end
 
 sys = SystemMockup(true, [:x, :y, :z], [:a, :b, :c], :t)

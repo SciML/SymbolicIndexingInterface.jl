@@ -45,7 +45,8 @@ Note that here `params` is the parameter object.
 """
 function with_updated_parameter_timeseries_values(indp, params, args...)
     return with_updated_parameter_timeseries_values(
-        symbolic_container(indp), params, args...)
+        symbolic_container(indp), params, args...
+    )
 end
 
 """
@@ -62,7 +63,7 @@ function set_parameter! end
 
 # Tuple only included for the error message
 function set_parameter!(sys::Union{AbstractArray, Tuple}, val, idx)
-    sys[idx] = val
+    return sys[idx] = val
 end
 set_parameter!(sys, val, idx) = set_parameter!(parameter_values(sys), val, idx)
 
@@ -168,10 +169,10 @@ abstract type AbstractSetIndexer <: AbstractIndexer end
 (ai::AbstractParameterGetIndexer)(prob) = ai(is_parameter_timeseries(prob), prob)
 (ai::AbstractParameterGetIndexer)(prob, i) = ai(is_parameter_timeseries(prob), prob, i)
 function (ai::AbstractParameterGetIndexer)(buffer::AbstractArray, prob)
-    ai(buffer, is_parameter_timeseries(prob), prob)
+    return ai(buffer, is_parameter_timeseries(prob), prob)
 end
 function (ai::AbstractParameterGetIndexer)(buffer::AbstractArray, prob, i)
-    ai(buffer, is_parameter_timeseries(prob), prob, i)
+    return ai(buffer, is_parameter_timeseries(prob), prob, i)
 end
 
 abstract type IndexerTimeseriesType end
@@ -215,7 +216,7 @@ struct CallWith{A}
 end
 
 function (cw::CallWith)(arg)
-    arg(cw.args...)
+    return arg(cw.args...)
 end
 
 function _call(f, args...)
@@ -228,7 +229,7 @@ struct Fix1Multiple{F, A}
 end
 
 function (fn::Fix1Multiple)(args...)
-    fn.f(fn.arg, args...)
+    return fn.f(fn.arg, args...)
 end
 
 struct OOPSetter{S, I, D}
@@ -245,7 +246,7 @@ end
 
 function (os::OOPSetter{false})(valp, val)
     buffer = hasmethod(parameter_values, Tuple{typeof(valp)}) ? parameter_values(valp) :
-             valp
+        valp
     return remake_buffer(os.indp, buffer, (os.idxs,), (val,))
 end
 
@@ -260,7 +261,7 @@ end
 
 function (os::OOPSetter{false})(valp, val::Union{Tuple, AbstractArray})
     buffer = hasmethod(parameter_values, Tuple{typeof(valp)}) ? parameter_values(valp) :
-             valp
+        valp
     if os.idxs isa Union{Tuple, AbstractArray}
         return remake_buffer(os.indp, buffer, os.idxs, val)
     else
@@ -270,7 +271,7 @@ end
 
 function _root_indp(indp)
     if hasmethod(symbolic_container, Tuple{typeof(indp)}) &&
-       (sc = symbolic_container(indp)) != indp
+            (sc = symbolic_container(indp)) != indp
         return _root_indp(sc)
     else
         return indp
@@ -288,46 +289,63 @@ struct ParameterTimeseriesValueIndexMismatchError{P <: IsTimeseriesTrait} <: Exc
 
     function ParameterTimeseriesValueIndexMismatchError{Timeseries}(valp, indexer, args)
         if is_parameter_timeseries(valp) != Timeseries()
-            throw(ArgumentError("""
-                This should never happen. Expected parameter timeseries value provider, \
-                got $(valp). Open an issue in SymbolicIndexingInterface.jl with an MWE.
-            """))
+            throw(
+                ArgumentError(
+                    """
+                        This should never happen. Expected parameter timeseries value provider, \
+                    got $(valp). Open an issue in SymbolicIndexingInterface.jl with an MWE.
+                    """
+                )
+            )
         end
         return new{Timeseries}(valp, indexer, args)
     end
     function ParameterTimeseriesValueIndexMismatchError{NotTimeseries}(valp, indexer)
         if is_parameter_timeseries(valp) != NotTimeseries()
-            throw(ArgumentError("""
-                This should never happen. Expected non-parameter timeseries value \
-                provider, got $(valp). Open an issue in SymbolicIndexingInterface.jl \
-                with an MWE.
-            """))
+            throw(
+                ArgumentError(
+                    """
+                        This should never happen. Expected non-parameter timeseries value \
+                    provider, got $(valp). Open an issue in SymbolicIndexingInterface.jl \
+                    with an MWE.
+                    """
+                )
+            )
         end
         if is_indexer_timeseries(indexer) != IndexerOnlyTimeseries()
-            throw(ArgumentError("""
-                This should never happen. Expected timeseries indexer, got $(indexer). \
-                Open an issue in SymbolicIndexingInterface.jl with an MWE.
-            """))
+            throw(
+                ArgumentError(
+                    """
+                        This should never happen. Expected timeseries indexer, got $(indexer). \
+                    Open an issue in SymbolicIndexingInterface.jl with an MWE.
+                    """
+                )
+            )
         end
         return new{NotTimeseries}(valp, indexer, nothing)
     end
 end
 
 function Base.showerror(io::IO, err::ParameterTimeseriesValueIndexMismatchError{Timeseries})
-    print(io, """
-        Invalid indexing operation: tried to access object of type $(typeof(err.valp)) \
+    return print(
+        io, """
+            Invalid indexing operation: tried to access object of type $(typeof(err.valp)) \
         (which is a parameter timeseries object) with non-timeseries indexer \
         $(err.indexer) at index $(err.args) in the timeseries.
-    """)
+        """
+    )
 end
 
 function Base.showerror(
-        io::IO, err::ParameterTimeseriesValueIndexMismatchError{NotTimeseries})
-    print(io, """
-        Invalid indexing operation: tried to access object of type $(typeof(err.valp)) \
+        io::IO, err::ParameterTimeseriesValueIndexMismatchError{NotTimeseries}
+    )
+    return print(
+        io, """
+            Invalid indexing operation: tried to access object of type $(typeof(err.valp)) \
         (which is not a parameter timeseries object) using timeseries indexer \
         $(err.indexer).
-    """)
+        """
+    )
 end
 
 struct MixedParameterTimeseriesIndexError <: Exception
@@ -336,11 +354,13 @@ struct MixedParameterTimeseriesIndexError <: Exception
 end
 
 function Base.showerror(io::IO, err::MixedParameterTimeseriesIndexError)
-    print(io, """
-        Invalid indexing operation: tried to access object of type $(typeof(err.obj)) \
+    return print(
+        io, """
+            Invalid indexing operation: tried to access object of type $(typeof(err.obj)) \
         (which is a parameter timeseries object) with variables having mixed timeseries \
         indexes $(err.ts_idxs).
-    """)
+        """
+    )
 end
 
 struct NotVariableOrParameter <: Exception
@@ -349,26 +369,29 @@ struct NotVariableOrParameter <: Exception
 end
 
 function Base.showerror(io::IO, err::NotVariableOrParameter)
-    print(
+    return print(
         io, """
-      `$(err.fn)` requires that the symbolic variable(s) passed to it satisfy `is_variable`
-      or `is_parameter`. Got `$(err.sym)` which is neither.
-  """)
+            `$(err.fn)` requires that the symbolic variable(s) passed to it satisfy `is_variable`
+            or `is_parameter`. Got `$(err.sym)` which is neither.
+        """
+    )
 end
 
 function MustBeBothStateAndParameterProviderError(missing_state::Bool)
-    ArgumentError("""
+    return ArgumentError(
+        """
         A setter returned from `setsym_oop` must be called with a value provider that \
         contains both states and parameters. The given value provided does not \
         implement `$(missing_state ? "state_values" : "parameter_values")`.
-        """)
+        """
+    )
 end
 
 function check_both_state_and_parameter_provider(valp)
     if !hasmethod(state_values, Tuple{typeof(valp)}) || state_values(valp) === valp
         throw(MustBeBothStateAndParameterProviderError(true))
     end
-    if !hasmethod(parameter_values, Tuple{typeof(valp)}) || parameter_values(valp) === valp
+    return if !hasmethod(parameter_values, Tuple{typeof(valp)}) || parameter_values(valp) === valp
         throw(MustBeBothStateAndParameterProviderError(false))
     end
 end

@@ -3,17 +3,17 @@ using SymbolicIndexingInterface
 syss = [
     SymbolCache([:x, :y, :z], [:a, :b, :c], :t),
     SymbolCache([:z, :w, :v], [:c, :e, :f]),
-    SymbolCache([:w, :x, :u], [:e, :a, :f])
+    SymbolCache([:w, :x, :u], [:e, :a, :f]),
 ]
 syms = [
     [:x, :z, :b, :c],
     [:z, :w, :c, :f],
-    [:w, :x, :e, :a]
+    [:w, :x, :e, :a],
 ]
 probs = [
     ProblemState(; u = [1.0, 2.0, 3.0], p = [0.1, 0.2, 0.3]),
     ProblemState(; u = [4.0, 5.0, 6.0], p = [0.4, 0.5, 0.6]),
-    ProblemState(; u = [7.0, 8.0, 9.0], p = [0.7, 0.8, 0.9])
+    ProblemState(; u = [7.0, 8.0, 9.0], p = [0.7, 0.8, 0.9]),
 ]
 
 @test_throws ErrorException BatchedInterface((syss[1], [:x, 3]))
@@ -23,9 +23,9 @@ probs = [
 bi = BatchedInterface(zip(syss, syms)...)
 @test variable_symbols(bi) == [:x, :z, :b, :c, :w, :f, :e, :a]
 @test variable_index.((bi,), [:a, :b, :c, :e, :f, :x, :y, :z, :w, :v, :u]) ==
-      [8, 3, 4, 7, 6, 1, nothing, 2, 5, nothing, nothing]
+    [8, 3, 4, 7, 6, 1, nothing, 2, 5, nothing, nothing]
 @test is_variable.((bi,), [:a, :b, :c, :e, :f, :x, :y, :z, :w, :v, :u]) ==
-      Bool[1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0]
+    Bool[1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0]
 @test associated_systems(bi) == [1, 1, 1, 1, 2, 2, 3, 3]
 
 getter = getsym(bi)
