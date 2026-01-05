@@ -5,7 +5,10 @@ using SymbolicIndexingInterface: IndexerOnlyTimeseries, IndexerNotTimeseries, In
                                  ParameterTimeseriesValueIndexMismatchError,
                                  MixedParameterTimeseriesIndexError
 using Test
-using AllocCheck
+# AllocCheck uses LLVM introspection which can break on pre-release Julia versions
+if isempty(VERSION.prerelease)
+    using AllocCheck
+end
 
 arr = [1.0, 2.0, 3.0]
 @test parameter_values(arr) == arr
@@ -102,9 +105,10 @@ for sys in [
             else
                 set!(p, newval)
             end
-            if isconcretetype(eltype(newval))
+            if isconcretetype(eltype(newval)) && isempty(VERSION.prerelease)
                 # test only with concrete eltypes, otherwise we have
                 # dynamic dispatch due to the vals
+                # AllocCheck skipped on pre-release Julia due to LLVM incompatibilities
                 @check_allocs test_setp(set!, p, newval) = set!(p, newval)
                 test_setp(set!, p, newval)
             end
