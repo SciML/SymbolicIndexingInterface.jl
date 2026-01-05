@@ -6,7 +6,7 @@ using SymbolicIndexingInterface: IndexerOnlyTimeseries, IndexerNotTimeseries, In
                                  MixedParameterTimeseriesIndexError
 using Test
 # AllocCheck uses LLVM introspection which can break on pre-release Julia versions
-if isempty(VERSION.prerelease)
+@static if isempty(VERSION.prerelease)
     using AllocCheck
 end
 
@@ -105,12 +105,13 @@ for sys in [
             else
                 set!(p, newval)
             end
-            if isconcretetype(eltype(newval)) && isempty(VERSION.prerelease)
-                # test only with concrete eltypes, otherwise we have
-                # dynamic dispatch due to the vals
-                # AllocCheck skipped on pre-release Julia due to LLVM incompatibilities
-                @check_allocs test_setp(set!, p, newval) = set!(p, newval)
-                test_setp(set!, p, newval)
+            @static if isempty(VERSION.prerelease)
+                if isconcretetype(eltype(newval))
+                    # test only with concrete eltypes, otherwise we have
+                    # dynamic dispatch due to the vals
+                    @check_allocs test_setp(set!, p, newval) = set!(p, newval)
+                    test_setp(set!, p, newval)
+                end
             end
             @test get(p) == newval
             set!(p, oldval)
