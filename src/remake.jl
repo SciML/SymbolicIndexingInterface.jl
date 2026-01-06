@@ -64,7 +64,7 @@ end
 remake_buffer(sys, ::Nothing, idxs, vals) = nothing
 
 function remake_buffer(sys, oldbuffer, idxs, vals)
-    remake_buffer(sys, oldbuffer, Dict(idxs .=> vals))
+    return remake_buffer(sys, oldbuffer, Dict(idxs .=> vals))
 end
 
 mutable struct TupleRemakeWrapper
@@ -74,13 +74,13 @@ end
 function set_parameter!(sys::TupleRemakeWrapper, val, idx)
     tp = sys.t
     @reset tp[idx] = val
-    sys.t = tp
+    return sys.t = tp
 end
 
 function set_state!(sys::TupleRemakeWrapper, val, idx)
     tp = sys.t
     @reset tp[idx] = val
-    sys.t = tp
+    return sys.t = tp
 end
 
 function remake_buffer(sys, oldbuffer::Tuple, idxs, vals)
@@ -92,6 +92,8 @@ function remake_buffer(sys, oldbuffer::Tuple, idxs, vals)
 end
 
 @deprecate remake_buffer(sys, oldbuffer, vals::Dict) remake_buffer(
-    sys, oldbuffer, keys(vals), values(vals))
+    sys, oldbuffer, keys(vals), values(vals)
+)
 @deprecate remake_buffer(sys, oldbuffer::Tuple, vals::Dict) remake_buffer(
-    sys, oldbuffer, keys(vals), values(vals))
+    sys, oldbuffer, keys(vals), values(vals)
+)

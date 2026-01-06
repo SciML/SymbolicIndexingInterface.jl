@@ -56,7 +56,7 @@ function BatchedInterface(syssyms::Tuple...)
         allsyms = []
         root_indp = sys
         while applicable(symbolic_container, root_indp) &&
-            (sc = symbolic_container(root_indp)) != root_indp
+                (sc = symbolic_container(root_indp)) != root_indp
             root_indp = sc
         end
         push!(index_providers, root_indp)
@@ -86,8 +86,10 @@ function BatchedInterface(syssyms::Tuple...)
             end
             push!(symbol_subset, findfirst(isequal(sym), symbol_order))
             push!(system_isstate, is_variable(sys, sym))
-            push!(symbol_indexes,
-                system_isstate[end] ? variable_index(sys, sym) : parameter_index(sys, sym))
+            push!(
+                symbol_indexes,
+                system_isstate[end] ? variable_index(sys, sym) : parameter_index(sys, sym)
+            )
         end
         push!(system_to_symbol_subset, symbol_subset)
         push!(system_to_symbol_indexes, identity.(symbol_indexes))
@@ -97,11 +99,14 @@ function BatchedInterface(syssyms::Tuple...)
     associated_indexes = identity.(associated_indexes)
     system_to_symbol_indexes = identity.(system_to_symbol_indexes)
 
-    return BatchedInterface{typeof(symbol_order), typeof(associated_indexes),
-        eltype(eltype(system_to_symbol_indexes)), eltype(index_providers)}(
+    return BatchedInterface{
+        typeof(symbol_order), typeof(associated_indexes),
+        eltype(eltype(system_to_symbol_indexes)), eltype(index_providers),
+    }(
         symbol_order, associated_systems, associated_indexes, isstate,
         system_to_symbol_subset, system_to_symbol_indexes, system_to_isstate,
-        identity.(index_providers))
+        identity.(index_providers)
+    )
 end
 
 variable_symbols(bi::BatchedInterface) = bi.symbol_order
@@ -142,8 +147,11 @@ function getsym(bi::BatchedInterface)
     probnames = [Symbol(:prob, i) for i in 1:numprobs]
 
     fnbody = quote end
-    for (i, (prob, idx, isstate)) in enumerate(zip(
-        bi.associated_systems, bi.associated_indexes, bi.isstate))
+    for (i, (prob, idx, isstate)) in enumerate(
+            zip(
+                bi.associated_systems, bi.associated_indexes, bi.isstate
+            )
+        )
         symname = Symbol(:sym, i)
         getter = isstate ? state_values : parameter_values
         probname = probnames[prob]
@@ -180,7 +188,7 @@ function getsym(bi::BatchedInterface)
     )
 
     return let oop = @RuntimeGeneratedFunction(oopfn),
-        iip = @RuntimeGeneratedFunction(iipfn)
+            iip = @RuntimeGeneratedFunction(iipfn)
 
         _getter(probs...) = oop(probs...)
         _getter(out::AbstractArray, probs...) = iip(out, probs...)
@@ -219,9 +227,11 @@ function setsym(bi::BatchedInterface)
             end
             # also run hook
             if !all(bi.system_to_isstate[sys_idx])
-                paramidxs = [bi.system_to_symbol_indexes[sys_idx][idx_in_subset]
-                             for idx_in_subset in 1:length(subset)
-                             if !bi.system_to_isstate[sys_idx][idx_in_subset]]
+                paramidxs = [
+                    bi.system_to_symbol_indexes[sys_idx][idx_in_subset]
+                        for idx_in_subset in 1:length(subset)
+                        if !bi.system_to_isstate[sys_idx][idx_in_subset]
+                ]
                 push!(fnbody.args, :($finalize_parameters_hook!($probname, $paramidxs)))
             end
         end
@@ -256,9 +266,11 @@ function setsym(bi::BatchedInterface)
             end
             # also run hook
             if !all(bi.system_to_isstate[sys_idx])
-                paramidxs = [bi.system_to_symbol_indexes[sys_idx][idx_in_subset]
-                             for idx_in_subset in 1:length(subset)
-                             if !bi.system_to_isstate[sys_idx][idx_in_subset]]
+                paramidxs = [
+                    bi.system_to_symbol_indexes[sys_idx][idx_in_subset]
+                        for idx_in_subset in 1:length(subset)
+                        if !bi.system_to_isstate[sys_idx][idx_in_subset]
+                ]
                 push!(ifbody.args, :($finalize_parameters_hook!($probname, $paramidxs)))
             end
         end
@@ -271,7 +283,7 @@ function setsym(bi::BatchedInterface)
         )
     end
     return let full_update = @RuntimeGeneratedFunction(full_update_fnexpr),
-        partial_update = @RuntimeGeneratedFunction(partial_update_fnexpr)
+            partial_update = @RuntimeGeneratedFunction(partial_update_fnexpr)
 
         setter!(args...) = full_update(args...)
         setter!(prob, idx::Int, vals::AbstractVector) = partial_update(prob, idx, vals)
@@ -321,9 +333,14 @@ function setsym_oop(bi::BatchedInterface)
             vals_idxs = union_idxs[isstate]
             push!(curexpr.args, :($state_idxssym = $state_idxs))
             push!(curexpr.args, :($state_valssym = $view($arg, $vals_idxs)))
-            push!(curexpr.args,
-                :($statessym = $remake_buffer(
-                    syss[$sys_i], $state_values($prob), $state_idxssym, $state_valssym)))
+            push!(
+                curexpr.args,
+                :(
+                    $statessym = $remake_buffer(
+                        syss[$sys_i], $state_values($prob), $state_idxssym, $state_valssym
+                    )
+                )
+            )
         end
 
         paramssym = Symbol(:params_, sys_i)
@@ -336,9 +353,14 @@ function setsym_oop(bi::BatchedInterface)
             vals_idxs = union_idxs[.!isstate]
             push!(curexpr.args, :($param_idxssym = $param_idxs))
             push!(curexpr.args, :($param_valssym = $view($arg, $vals_idxs)))
-            push!(curexpr.args,
-                :($paramssym = $remake_buffer(
-                    syss[$sys_i], $parameter_values($prob), $param_idxssym, $param_valssym)))
+            push!(
+                curexpr.args,
+                :(
+                    $paramssym = $remake_buffer(
+                        syss[$sys_i], $parameter_values($prob), $param_idxssym, $param_valssym
+                    )
+                )
+            )
         end
 
         return curexpr, statessym, paramssym
@@ -364,13 +386,15 @@ function setsym_oop(bi::BatchedInterface)
     push!(cur_partial_update_expr.args, :(error("Invalid problem index $idx")))
 
     full_update_fnexpr = Expr(
-        :function, Expr(:tuple, :syss, probnames..., arg), full_update_expr)
+        :function, Expr(:tuple, :syss, probnames..., arg), full_update_expr
+    )
     partial_update_fnexpr = Expr(
-        :function, Expr(:tuple, :syss, :prob, :idx, arg), partial_update_expr)
+        :function, Expr(:tuple, :syss, :prob, :idx, arg), partial_update_expr
+    )
 
     return let full_update = @RuntimeGeneratedFunction(full_update_fnexpr),
-        partial_update = @RuntimeGeneratedFunction(partial_update_fnexpr),
-        syss = Tuple(bi.index_providers)
+            partial_update = @RuntimeGeneratedFunction(partial_update_fnexpr),
+            syss = Tuple(bi.index_providers)
 
         setter(args...) = full_update(syss, args...)
         setter(prob, idx::Int, vals::AbstractVector) = partial_update(syss, prob, idx, vals)

@@ -19,7 +19,7 @@ struct ProblemState{U, P, T, H}
 end
 
 function ProblemState(; u = nothing, p = nothing, t = nothing, h = nothing)
-    ProblemState(u, p, t, h)
+    return ProblemState(u, p, t, h)
 end
 
 state_values(ps::ProblemState) = ps.u
