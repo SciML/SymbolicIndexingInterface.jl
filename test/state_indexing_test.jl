@@ -1,6 +1,9 @@
 using SymbolicIndexingInterface
 using SymbolicIndexingInterface: NotVariableOrParameter
-using AllocCheck
+# AllocCheck uses LLVM introspection which can break on pre-release Julia versions
+@static if isempty(VERSION.prerelease)
+    using AllocCheck
+end
 
 struct FakeIntegrator{S, U, P, T}
     sys::S
@@ -118,13 +121,15 @@ for (sym, val, newval, check_inference) in [
 
     # Test that getter/setter usage has zero allocations for single symbol cases
     # (array/tuple getters allocate a new array for the result)
-    if check_inference && isconcretetype(eltype(newval)) && sym isa Union{Symbol, Int}
-        @check_allocs test_getsym(get, u) = get(u)
-        test_getsym(get, u)
-        @check_allocs test_setsym(set!, u, newval) = set!(u, newval)
-        test_setsym(set!, u, newval)
-        # Restore val after @check_allocs test
-        set!(u, val)
+    @static if isempty(VERSION.prerelease)
+        if check_inference && isconcretetype(eltype(newval)) && sym isa Union{Symbol, Int}
+            @check_allocs test_getsym(get, u) = get(u)
+            test_getsym(get, u)
+            @check_allocs test_setsym(set!, u, newval) = set!(u, newval)
+            test_setsym(set!, u, newval)
+            # Restore val after @check_allocs test
+            set!(u, val)
+        end
     end
 
     if sym isa Union{Vector, Tuple} && any(x -> x isa Union{AbstractArray, Tuple}, sym)
