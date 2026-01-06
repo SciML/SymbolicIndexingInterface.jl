@@ -1964,9 +1964,9 @@ version = "0.5.16"
 
 [[deps.SCCNonlinearSolve]]
 deps = ["CommonSolve", "PrecompileTools", "Reexport", "SciMLBase", "SymbolicIndexingInterface"]
-git-tree-sha1 = "6fea85394f369e2fd8061558ad9daf0aa16c91f2"
+git-tree-sha1 = "d350af26fb9f83cffa3dadb15c336e78a01f8d51"
 uuid = "9dfe8606-65a1-4bb3-9748-cb89d1561431"
-version = "1.8.0"
+version = "1.8.1"
 weakdeps = ["ChainRulesCore"]
 
     [deps.SCCNonlinearSolve.extensions]
