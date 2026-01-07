@@ -147,7 +147,7 @@ expression, and thus it needs to be provided to the `ProblemState`.
 
 ## Parameter Indexing: Getting and Setting Parameter Values
 
-Parameters cannot be obtained using this syntax, and instead require using [`getp`](@ref) and [`setp`](@ref).
+Parameters cannot be obtained using the `sol[x]` syntax described above, and instead require using [`getp`](@ref) and [`setp`](@ref).
 
 !!! note
     The reason why parameters use a separate syntax is to be able to ensure type stability
