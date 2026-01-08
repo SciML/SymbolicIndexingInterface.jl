@@ -25,6 +25,44 @@ The symbolic indexing interface has 2 levels:
    object in order to endow the SciML tools with the ability to index symbolically according
    to the definitions the DSL writer wants.
 
+## Quick Example
+
+```julia
+# Use ModelingToolkit to make a solution
+
+using ModelingToolkit, OrdinaryDiffEq, SymbolicIndexingInterface, Plots
+using ModelingToolkit: t_nounits as t, D_nounits as D
+
+@parameters σ ρ β
+@variables x(t) y(t) z(t) w(t)
+
+eqs = [D(D(x)) ~ σ * (y - x),
+    D(y) ~ x * (ρ - z) - y,
+    D(z) ~ x * y - β * z,
+    w ~ x + y + z]
+
+@mtkbuild sys = ODESystem(eqs, t)
+
+u0 = [D(x) => 2.0,
+    x => 1.0,
+    y => 0.0,
+    z => 0.0]
+
+p = [σ => 28.0,
+    ρ => 10.0,
+    β => 8 / 3]
+
+tspan = (0.0, 100.0)
+prob = ODEProblem(sys, u0, tspan, p, jac = true)
+sol = solve(prob, Tsit5())
+
+# Now index it symbolically
+
+sol[x]
+```
+
+For more detailed usage examples, see the [tutorials](@ref usage.md).
+
 ## Contributing
 
 - Please refer to the

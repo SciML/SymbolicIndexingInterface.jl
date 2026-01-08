@@ -143,7 +143,7 @@ Note that the method definitions are all assuming `constant_structure(p) == true
 In case `constant_structure(p) == false`, the following methods would change:
 - `constant_structure(::ExampleSystem) = false`
 - `variable_index(sys::ExampleSystem, sym)` would become
-  `variable_index(sys::ExampleSystem, sym i)` where `i` is the time index at which
+  `variable_index(sys::ExampleSystem, sym, i)` where `i` is the time index at which
   the index of `sym` is required.
 - `variable_symbols(sys::ExampleSystem)` would become
   `variable_symbols(sys::ExampleSystem, i)` where `i` is the time index at which
@@ -175,7 +175,7 @@ end
 ```
 
 If a type contains the value of state variables, it can define [`state_values`](@ref) to
-enable the usage of [`getsym`](@ref) and [`setsym`](@ref). These methods retturn getter/
+enable the usage of [`getsym`](@ref) and [`setsym`](@ref). These methods return getter/
 setter functions to access or update the value of a state variable (or a collection of
 them). If the type also supports generating [`observed`](@ref) functions, `getsym` also
 enables returning functions to access the value of arbitrary expressions involving
@@ -242,7 +242,7 @@ SymbolicIndexingInterface.current_time(sol::ExampleSolution) = sol.t
 Then the following example would work:
 ```julia
 # using the same system that the ExampleIntegrator used
-sol = ExampleSolution([[1.0, 2.0, 3.0], [1.5, 2.5, 3.5]], [4.0, 5.0], [6.0, 7.0], sys)
+sol = ExampleSolution([[1.0, 2.0, 3.0], [1.5, 2.5, 3.5]], [6.0, 7.0], [4.0, 5.0], sys)
 getx = getsym(sys, :x)
 getx(sol) # [1.0, 1.5]
 
