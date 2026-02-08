@@ -79,6 +79,6 @@ end
     buf = Dict("a" => 1, "b" => 2)
     buf2 = remake_buffer(sys, buf, collect(keys(buf)), collect(values(buf)))
     @test isequal(buf, buf2)
-    buf2 = remake_buffer(sys, buf, buf)
+    buf2 = remake_buffer(sys, buf, keys(buf), values(buf))
     @test isequal(buf, buf2)
 end
