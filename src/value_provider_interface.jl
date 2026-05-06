@@ -169,7 +169,13 @@ abstract type AbstractSetIndexer <: AbstractIndexer end
 (ai::AbstractParameterGetIndexer)(prob) = ai(is_parameter_timeseries(prob), prob)
 (ai::AbstractParameterGetIndexer)(prob, i) = ai(is_parameter_timeseries(prob), prob, i)
 function (ai::AbstractParameterGetIndexer)(buffer::AbstractArray, prob)
-    return ai(buffer, is_parameter_timeseries(prob), prob)
+    # It's ambiguous whether `buffer` is the value provider or `prob`. `getter(sol, 4)`
+    # hits this method because `DiffEqArray <: AbstractArray`.
+    if is_parameter_timeseries(buffer) isa Timeseries
+        return ai(Timeseries(), buffer, prob)
+    else
+        return ai(buffer, is_parameter_timeseries(prob), prob)
+    end
 end
 function (ai::AbstractParameterGetIndexer)(buffer::AbstractArray, prob, i)
     return ai(buffer, is_parameter_timeseries(prob), prob, i)
