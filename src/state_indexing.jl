@@ -41,7 +41,11 @@ function (gsi::GetStateIndex)(::Timeseries, prob, i::Union{Int, CartesianIndex})
     return getindex(state_values(prob, i), gsi.idx)
 end
 function (gsi::GetStateIndex)(::Timeseries, prob, i)
-    return getindex.(state_values(prob, i), gsi.idx)
+    # Wrap `gsi.idx` in a 1-tuple so it broadcasts as a scalar across the
+    # `state_values(prob, i)` collection. Without the wrap, an array-valued
+    # `gsi.idx` (e.g. `Vector{Int}` from an array-symbolic) is broadcast
+    # element-wise and errors with a shape mismatch against the time axis.
+    return getindex.(state_values(prob, i), (gsi.idx,))
 end
 function (gsi::GetStateIndex)(::NotTimeseries, prob)
     return state_values(prob, gsi.idx)
