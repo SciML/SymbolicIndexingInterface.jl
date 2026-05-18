@@ -375,6 +375,24 @@ let sol = sol, sys = sys
     @test getter(sol) == []
 end
 
+# A single `GetStateIndex` with a `Vector{Int}` idx — the shape downstream
+# packages construct when binding an array-valued symbolic (e.g. `x(t)[1:3]`)
+# to a single set of consecutive state indices. The non-`Int`/`CartesianIndex`
+# `i` overload must broadcast the idx vector as a scalar across the timeseries
+# rather than zipping it elementwise (otherwise a length-N timeseries against
+# a length-K idx vector errors with `DimensionMismatch`).
+let sol = sol
+    idx = [1, 2]
+    gsi = SymbolicIndexingInterface.GetStateIndex(idx)
+    expected = [u_t[idx] for u_t in sol.u]
+    @test gsi(Timeseries(), sol) == expected
+    @test gsi(Timeseries(), sol, :) == expected
+    @test gsi(Timeseries(), sol, 1:length(sol.u)) == expected
+    @test gsi(Timeseries(), sol, eachindex(sol.u)) == expected
+    @test gsi(Timeseries(), sol, trues(length(sol.u))) == expected
+    @test gsi(Timeseries(), sol, 2) == sol.u[2][idx]
+end
+
 sys = SymbolCache([:x, :y, :z], [:a, :b, :c])
 u = [1.0, 2.0, 3.0]
 p = [10.0, 20.0, 30.0]
