@@ -119,7 +119,8 @@ using Test
 
         # Additional type optimization tests
         @test_opt target_modules = (SymbolicIndexingInterface,) is_independent_variable(
-            sc, :t)
+            sc, :t
+        )
         @test_opt target_modules = (SymbolicIndexingInterface,) independent_variable_symbols(sc)
         @test_opt target_modules = (SymbolicIndexingInterface,) all_variable_symbols(sc)
         @test_opt target_modules = (SymbolicIndexingInterface,) all_symbols(sc)
@@ -157,11 +158,13 @@ using Test
 
     @testset "remake_buffer static analysis" begin
         rep = JET.report_call(
-            remake_buffer, (typeof(sc), Vector{Float64}, Vector{Int}, Vector{Float64}))
+            remake_buffer, (typeof(sc), Vector{Float64}, Vector{Int}, Vector{Float64})
+        )
         @test length(JET.get_reports(rep)) == 0
 
         rep = JET.report_call(
-            remake_buffer, (typeof(sc), NTuple{3, Float64}, Vector{Int}, Vector{Float64}))
+            remake_buffer, (typeof(sc), NTuple{3, Float64}, Vector{Int}, Vector{Float64})
+        )
         @test length(JET.get_reports(rep)) == 0
     end
 end
