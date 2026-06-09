@@ -11,13 +11,19 @@ function activate_downstream_env()
     return Pkg.instantiate()
 end
 
-if GROUP == "All" || GROUP == "Core"
+if GROUP == "QA"
+    Pkg.activate(joinpath(@__DIR__, "qa"))
+    Pkg.develop(PackageSpec(path = dirname(@__DIR__)))
+    Pkg.instantiate()
     @safetestset "Quality Assurance" begin
         @time include("qa.jl")
     end
     @safetestset "JET static analysis" begin
         @time include("jet_test.jl")
     end
+end
+
+if GROUP == "All" || GROUP == "Core"
     @safetestset "Interface test" begin
         @time include("example_test.jl")
     end
