@@ -1,18 +1,18 @@
 [deps]
-Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
-JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
 SciMLTesting = "09d9d899-5365-40a9-917a-5f67fddea283"
 SymbolicIndexingInterface = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
+SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
+Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [sources]
 SymbolicIndexingInterface = {path = "../.."}
 
 [compat]
-Aqua = "0.8"
-JET = "0.9, 0.10, 0.11"
+ModelingToolkit = "9.60"
 SafeTestsets = "0.0.1, 0.1"
 SciMLTesting = "1"
+SymbolicUtils = "3.2"
 Test = "1"
-julia = "1.10"
