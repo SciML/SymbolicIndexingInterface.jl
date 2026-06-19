@@ -61,7 +61,7 @@ sol = solve(prob, Tsit5())
 sol[x]
 ```
 
-For more detailed usage examples, see the [tutorials](@ref usage.md).
+For more detailed usage examples, see the [tutorials](usage.md).
 
 ## Contributing
 
