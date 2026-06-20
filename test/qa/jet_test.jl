@@ -160,11 +160,7 @@ using Test
         rep = JET.report_call(
             remake_buffer, (typeof(sc), Vector{Float64}, Vector{Int}, Vector{Float64})
         )
-        # JET: remake_buffer(::SymbolCache, ::Vector{Float64}, ::Vector{Int}, ::Vector{Float64})
-        # allocates a Vector{Union{}} buffer (src/remake.jl:41), causing an invalid `typeassert`
-        # builtin call inside copyto!/_unsetindex! — tracked in
-        # https://github.com/SciML/SymbolicIndexingInterface.jl/issues/163
-        @test_broken length(JET.get_reports(rep)) == 0
+        @test length(JET.get_reports(rep)) == 0
 
         rep = JET.report_call(
             remake_buffer, (typeof(sc), NTuple{3, Float64}, Vector{Int}, Vector{Float64})
