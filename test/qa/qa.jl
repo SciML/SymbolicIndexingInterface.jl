@@ -1,7 +1,6 @@
 using SymbolicIndexingInterface
-using Aqua
-using ExplicitImports
 using SciMLTesting
+using Test
 
 # ExplicitImports per-check ignore-lists: each entry is a dependency name that is
 # genuinely required but is neither exported nor declared `public` by its owner
@@ -16,8 +15,6 @@ using SciMLTesting
 #                      array types (`MArray`, …), not `similar_type`.
 run_qa(
     SymbolicIndexingInterface;
-    Aqua = Aqua,
-    ExplicitImports = ExplicitImports,
     explicit_imports = true,
     ei_kwargs = (;
         all_qualified_accesses_are_public = (; ignore = (:init, :ismutable, :Fix1)),
