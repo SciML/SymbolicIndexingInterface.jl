@@ -70,7 +70,9 @@ state_values
 set_state!
 current_time
 getsym
+getu
 setsym
+setu
 ```
 
 !!! note

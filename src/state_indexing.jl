@@ -451,7 +451,18 @@ function _setsym(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
     return setsym(sys, collect(sym))
 end
 
+"""
+    getu(indp, sym)
+
+Compatibility alias for [`getsym`](@ref).
+"""
 const getu = getsym
+
+"""
+    setu(indp, sym)
+
+Compatibility alias for [`setsym`](@ref).
+"""
 const setu = setsym
 
 """
