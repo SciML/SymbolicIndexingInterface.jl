@@ -34,23 +34,26 @@ sol = solve(prob, Tsit5())
 
 # Now index it symbolically
 
-sol[x]</code></pre><p>For more detailed usage examples, see the <a href="usage/">tutorials</a>.</p><h2 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h2><ul><li>Please refer to the <a href="https://github.com/SciML/ColPrac/blob/master/README.md">SciML ColPrac: Contributor&#39;s Guide on Collaborative Practices for Community Packages</a> for guidance on PRs, issues, and other matters relating to contributing to SciML.</li><li>There are a few community forums:<ul><li>the #diffeq-bridged channel in the <a href="https://julialang.org/slack/">Julia Slack</a></li><li><a href="https://gitter.im/JuliaDiffEq/Lobby">JuliaDiffEq</a> on Gitter</li><li>on the <a href="https://discourse.julialang.org">Julia Discourse forums</a></li><li>see also <a href="https://sciml.ai/community/">SciML Community page</a></li></ul></li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Project.toml`
+sol[x]</code></pre><p>For more detailed usage examples, see the <a href="usage/">tutorials</a>.</p><h2 id="Contributing"><a class="docs-heading-anchor" href="#Contributing">Contributing</a><a id="Contributing-1"></a><a class="docs-heading-anchor-permalink" href="#Contributing" title="Permalink"></a></h2><ul><li>Please refer to the <a href="https://github.com/SciML/ColPrac/blob/master/README.md">SciML ColPrac: Contributor&#39;s Guide on Collaborative Practices for Community Packages</a> for guidance on PRs, issues, and other matters relating to contributing to SciML.</li><li>There are a few community forums:<ul><li>the #diffeq-bridged channel in the <a href="https://julialang.org/slack/">Julia Slack</a></li><li><a href="https://gitter.im/JuliaDiffEq/Lobby">JuliaDiffEq</a> on Gitter</li><li>on the <a href="https://discourse.julialang.org">Julia Discourse forums</a></li><li>see also <a href="https://sciml.ai/community/">SciML Community page</a></li></ul></li></ul><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `~/_work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Project.toml`
   <span class="sgr90">[e30172f5] </span>Documenter v1.17.0
   <span class="sgr90">[961ee093] </span>ModelingToolkit v11.31.1
   <span class="sgr90">[1dea7af3] </span>OrdinaryDiffEq v7.1.2
   <span class="sgr90">[91a5bcdd] </span>Plots v1.41.6
   <span class="sgr90">[7e49a35a] </span>RuntimeGeneratedFunctions v0.5.21
-  <span class="sgr90">[2efcf032] </span>SymbolicIndexingInterface v0.3.50 `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.12.6
+  <span class="sgr90">[2efcf032] </span>SymbolicIndexingInterface v0.3.51 `~/_work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.12.6
 Commit 15346901f00 (2026-04-09 19:20 UTC)
 Build Info:
   Official https://julialang.org release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 4 × AMD EPYC 7763 64-Core Processor
+  CPU: 40 × Intel(R) Xeon(R) Silver 4114 CPU @ 2.20GHz
   WORD_SIZE: 64
-  LLVM: libLLVM-18.1.7 (ORCJIT, znver3)
+  LLVM: libLLVM-18.1.7 (ORCJIT, skylake-avx512)
   GC: Built with stock GC
-Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Manifest.toml`
+Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)
+Environment:
+  JULIA_CPU_THREADS = 4
+  JULIA_NUM_PRECOMPILE_TASKS = 4</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `~/_work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl/docs/Manifest.toml`
   <span class="sgr90">[47edcb42] </span>ADTypes v1.22.2
   <span class="sgr90">[14f7f29c] </span>AMD v0.5.3
   <span class="sgr90">[a4c015fc] </span>ANSIColoredPrinters v0.0.1
@@ -64,7 +67,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   <span class="sgr90">[4c555306] </span>ArrayLayouts v1.12.2
   <span class="sgr90">[aae01518] </span>BandedMatrices v1.11.0
   <span class="sgr90">[e2ed5e7c] </span>Bijections v0.2.2
-  <span class="sgr90">[b2a6c25c] </span>BinaryHeaps v1.0.2
+  <span class="sgr90">[b2a6c25c] </span>BinaryHeaps v1.0.3
   <span class="sgr90">[caf10ac8] </span>BipartiteGraphs v0.1.9
   <span class="sgr90">[d1d4a3ce] </span>BitFlags v0.1.10
   <span class="sgr90">[8e7c35d0] </span>BlockArrays v1.9.5
@@ -108,7 +111,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   <span class="sgr90">[a4df4552] </span>FastPower v1.3.4
   <span class="sgr90">[1a297f60] </span>FillArrays v1.16.0
   <span class="sgr90">[64ca27bc] </span>FindFirstFunctions v3.0.2
-  <span class="sgr90">[6a86dc24] </span>FiniteDiff v2.31.1
+  <span class="sgr90">[6a86dc24] </span>FiniteDiff v2.32.0
 <span class="sgr33">⌅</span> <span class="sgr90">[53c48c17] </span>FixedPointNumbers v0.8.6
   <span class="sgr90">[1fa38f19] </span>Format v1.3.7
   <span class="sgr90">[f6369f11] </span>ForwardDiff v1.4.1
@@ -138,7 +141,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   <span class="sgr90">[b964fa9f] </span>LaTeXStrings v1.4.0
   <span class="sgr90">[23fbe1c1] </span>Latexify v0.16.10
   <span class="sgr90">[0e77f7df] </span>LazilyInitializedFields v1.3.0
-  <span class="sgr90">[87fe0de2] </span>LineSearch v0.1.11
+  <span class="sgr90">[87fe0de2] </span>LineSearch v0.1.12
 <span class="sgr33">⌅</span> <span class="sgr90">[7ed4a6bd] </span>LinearSolve v4.3.0
   <span class="sgr90">[2ab3a3ac] </span>LogExpFunctions v1.0.1
   <span class="sgr90">[e6f89c97] </span>LoggingExtras v1.2.0
@@ -151,7 +154,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   <span class="sgr90">[961ee093] </span>ModelingToolkit v11.31.1
   <span class="sgr90">[7771a370] </span>ModelingToolkitBase v1.51.0
   <span class="sgr90">[6bb917b9] </span>ModelingToolkitTearing v1.18.2
-  <span class="sgr90">[2e0e35c7] </span>Moshi v0.3.9
+  <span class="sgr90">[2e0e35c7] </span>Moshi v0.3.10
   <span class="sgr90">[46d2c3a1] </span>MuladdMacro v0.2.6
   <span class="sgr90">[102ac46a] </span>MultivariatePolynomials v0.5.19
   <span class="sgr90">[d8a4904e] </span>MutableArithmetics v1.8.0
@@ -222,7 +225,7 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   <span class="sgr90">[82ae8749] </span>StatsAPI v1.8.0
   <span class="sgr90">[2913bbd2] </span>StatsBase v0.34.12
   <span class="sgr90">[ec057cc2] </span>StructUtils v2.8.2
-  <span class="sgr90">[2efcf032] </span>SymbolicIndexingInterface v0.3.50 `~/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`
+  <span class="sgr90">[2efcf032] </span>SymbolicIndexingInterface v0.3.51 `~/_work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl`
   <span class="sgr90">[19f23fe9] </span>SymbolicLimits v1.1.2
   <span class="sgr90">[d1185830] </span>SymbolicUtils v4.40.0
   <span class="sgr90">[0c5d862f] </span>Symbolics v7.31.0
@@ -371,4 +374,4 @@ Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   <span class="sgr90">[8e850b90] </span>libblastrampoline_jll v5.15.0+0
   <span class="sgr90">[8e850ede] </span>nghttp2_jll v1.64.0+1
   <span class="sgr90">[3f19e933] </span>p7zip_jll v17.7.0+0
-<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr33">⌅</span> have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.50/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.50/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="terminology/">Terminology »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 11 July 2026 22:24">Saturday 11 July 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr33">⌅</span> have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.51/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SymbolicIndexingInterface.jl/tree/gh-pages/v0.3.51/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="terminology/">Terminology »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Sunday 12 July 2026 08:41">Sunday 12 July 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
