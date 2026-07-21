@@ -16,8 +16,10 @@ using Test
 run_qa(
     SymbolicIndexingInterface;
     explicit_imports = true,
+    api_docs = true,
     ei_kwargs = (;
         all_qualified_accesses_are_public = (; ignore = (:init, :ismutable, :Fix1)),
         all_explicit_imports_are_public = (; ignore = (:similar_type,)),
     ),
+    api_docs_kwargs = (; rendered = true),
 )
