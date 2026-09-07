@@ -1,6 +1,7 @@
 module SymbolicIndexingInterface
 
 using RuntimeGeneratedFunctions: RuntimeGeneratedFunctions, @RuntimeGeneratedFunction
+using PrecompileTools: @compile_workload, @setup_workload
 import StaticArraysCore: MArray, similar_type
 import ArrayInterface
 using Accessors: @reset
@@ -51,5 +52,6 @@ export remake_buffer
 include("remake.jl")
 
 include("despecialize.jl")
+include("precompilation.jl")
 
 end
