@@ -36,12 +36,16 @@ struct ParameterTimeseriesCollection{T, P}
 
     function ParameterTimeseriesCollection(collection::T, paramcache::P) where {T, P}
         if any(x -> is_timeseries(x) == NotTimeseries(), collection)
-            throw(ArgumentError("""
-                All objects in the collection `ParameterTimeseriesCollection` must be \
-                timeseries objects.
-            """))
+            throw(
+                ArgumentError(
+                    """
+                        All objects in the collection `ParameterTimeseriesCollection` must be \
+                    timeseries objects.
+                    """
+                )
+            )
         end
-        new{T, P}(collection, paramcache)
+        return new{T, P}(collection, paramcache)
     end
 end
 
@@ -60,25 +64,30 @@ function Base.getindex(ptc::ParameterTimeseriesCollection, idx::ParameterTimeser
 end
 function Base.getindex(
         ptc::ParameterTimeseriesCollection, idx::ParameterTimeseriesIndex, subidx::Union{
-            Int, CartesianIndex})
+            Int, CartesianIndex,
+        }
+    )
     timeseries = ptc.collection[idx.timeseries_idx]
     return state_values(timeseries, subidx)[idx.parameter_idx]
 end
 function Base.getindex(
-        ptc::ParameterTimeseriesCollection, idx::ParameterTimeseriesIndex, ::Colon)
+        ptc::ParameterTimeseriesCollection, idx::ParameterTimeseriesIndex, ::Colon
+    )
     return ptc[idx]
 end
 function Base.getindex(
-        ptc::ParameterTimeseriesCollection, idx::ParameterTimeseriesIndex, subidx::AbstractArray{Bool})
+        ptc::ParameterTimeseriesCollection, idx::ParameterTimeseriesIndex, subidx::AbstractArray{Bool}
+    )
     timeseries = ptc.collection[idx.timeseries_idx]
-    map(only(to_indices(current_time(timeseries), (subidx,)))) do i
+    return map(only(to_indices(current_time(timeseries), (subidx,)))) do i
         state_values(timeseries, i)[idx.parameter_idx]
     end
 end
 function Base.getindex(
-        ptc::ParameterTimeseriesCollection, idx::ParameterTimeseriesIndex, subidx)
+        ptc::ParameterTimeseriesCollection, idx::ParameterTimeseriesIndex, subidx
+    )
     timeseries = ptc.collection[idx.timeseries_idx]
-    getindex.(state_values.((timeseries,), subidx), idx.parameter_idx)
+    return getindex.(state_values.((timeseries,), subidx), idx.parameter_idx)
 end
 function Base.getindex(ptc::ParameterTimeseriesCollection, ts_idx, subidx)
     return state_values(ptc.collection[ts_idx], subidx)
@@ -92,11 +101,12 @@ function parameter_values(ptc::ParameterTimeseriesCollection)
 end
 
 function parameter_values(
-        ptc::ParameterTimeseriesCollection, idx::ParameterTimeseriesIndex, subidx)
+        ptc::ParameterTimeseriesCollection, idx::ParameterTimeseriesIndex, subidx
+    )
     return ptc[idx, subidx]
 end
 function parameter_values(prob, i::ParameterTimeseriesIndex, j)
-    parameter_values(get_parameter_timeseries_collection(prob), i, j)
+    return parameter_values(get_parameter_timeseries_collection(prob), i, j)
 end
 function parameter_timeseries(ptc::ParameterTimeseriesCollection, idx)
     return current_time(ptc[idx])
@@ -120,8 +130,10 @@ and [`with_updated_parameter_timeseries_values`](@ref).
 """
 function parameter_values_at_time(indp, valp, t)
     ptc = get_parameter_timeseries_collection(valp)
-    with_updated_parameter_timeseries_values(indp, ptc.paramcache,
-        (ts_idx => _timeseries_value(ptc, ts_idx, t) for ts_idx in eachindex(ptc))...)
+    return with_updated_parameter_timeseries_values(
+        indp, ptc.paramcache,
+        (ts_idx => _timeseries_value(ptc, ts_idx, t) for ts_idx in eachindex(ptc))...
+    )
 end
 
 """

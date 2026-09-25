@@ -1,5 +1,11 @@
 using SymbolicIndexingInterface
-using SymbolicIndexingInterface: NotVariableOrParameter
+using SymbolicIndexingInterface: NotVariableOrParameter, IndexerMixedTimeseries,
+    is_indexer_timeseries, MixedParameterTimeseriesIndexError, parameter_values_at_time,
+    TimeDependentObservedFunction
+# AllocCheck uses LLVM introspection which can break on pre-release Julia versions
+@static if isempty(VERSION.prerelease)
+    using AllocCheck
+end
 
 struct FakeIntegrator{S, U, P, T}
     sys::S
@@ -23,39 +29,67 @@ p = [11.0, 12.0, 13.0]
 t = 0.5
 fi = FakeIntegrator(sys, copy(u), copy(p), t)
 # checking inference for non-concretely typed arrays will always fail
-for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
-     (:y, u[2], 4.0, true)
-     (:z, u[3], 4.0, true)
-     (1, u[1], 4.0, true)
-     ([:x, :y], u[1:2], 4ones(2), true)
-     ([1, 2], u[1:2], 4ones(2), true)
-     ((:z, :y), (u[3], u[2]), (4.0, 5.0), true)
-     ((3, 2), (u[3], u[2]), (4.0, 5.0), true)
-     ([:x, [:y, :z]], [u[1], u[2:3]],
-         [4.0, [5.0, 6.0]], false)
-     ([:x, 2:3], [u[1], u[2:3]],
-         [4.0, [5.0, 6.0]], false)
-     ([:x, (:y, :z)], [u[1], (u[2], u[3])],
-         [4.0, (5.0, 6.0)], false)
-     ([:x, Tuple(2:3)], [u[1], (u[2], u[3])],
-         [4.0, (5.0, 6.0)], false)
-     ([:x, [:y], (:z,)], [u[1], [u[2]], (u[3],)],
-         [4.0, [5.0], (6.0,)], false)
-     ([:x, [:y], (3,)], [u[1], [u[2]], (u[3],)],
-         [4.0, [5.0], (6.0,)], false)
-     ((:x, [:y, :z]), (u[1], u[2:3]),
-         (4.0, [5.0, 6.0]), true)
-     ((:x, (:y, :z)), (u[1], (u[2], u[3])),
-         (4.0, (5.0, 6.0)), true)
-     ((1, (:y, :z)), (u[1], (u[2], u[3])),
-         (4.0, (5.0, 6.0)), true)
-     ((:x, [:y], (:z,)), (u[1], [u[2]], (u[3],)),
-         (4.0, [5.0], (6.0,)), true)
-     ((a = :x, b = [:x, :y], c = (d = :z, e = :x)),
-         (a = u[1], b = u[1:2],
-             c = (d = u[3], e = u[1])),
-         (a = 4.0, b = [4.0, 5.0],
-             c = (d = 6.0, e = 4.0)), true)]
+for (sym, val, newval, check_inference) in [
+        (:x, u[1], 4.0, true)
+        (:y, u[2], 4.0, true)
+        (:z, u[3], 4.0, true)
+        (1, u[1], 4.0, true)
+        ([:x, :y], u[1:2], 4ones(2), true)
+        ([1, 2], u[1:2], 4ones(2), true)
+        ((:z, :y), (u[3], u[2]), (4.0, 5.0), true)
+        ((3, 2), (u[3], u[2]), (4.0, 5.0), true)
+        (
+            [:x, [:y, :z]], [u[1], u[2:3]],
+            [4.0, [5.0, 6.0]], false,
+        )
+        (
+            [:x, 2:3], [u[1], u[2:3]],
+            [4.0, [5.0, 6.0]], false,
+        )
+        (
+            [:x, (:y, :z)], [u[1], (u[2], u[3])],
+            [4.0, (5.0, 6.0)], false,
+        )
+        (
+            [:x, Tuple(2:3)], [u[1], (u[2], u[3])],
+            [4.0, (5.0, 6.0)], false,
+        )
+        (
+            [:x, [:y], (:z,)], [u[1], [u[2]], (u[3],)],
+            [4.0, [5.0], (6.0,)], false,
+        )
+        (
+            [:x, [:y], (3,)], [u[1], [u[2]], (u[3],)],
+            [4.0, [5.0], (6.0,)], false,
+        )
+        (
+            (:x, [:y, :z]), (u[1], u[2:3]),
+            (4.0, [5.0, 6.0]), true,
+        )
+        (
+            (:x, (:y, :z)), (u[1], (u[2], u[3])),
+            (4.0, (5.0, 6.0)), true,
+        )
+        (
+            (1, (:y, :z)), (u[1], (u[2], u[3])),
+            (4.0, (5.0, 6.0)), true,
+        )
+        (
+            (:x, [:y], (:z,)), (u[1], [u[2]], (u[3],)),
+            (4.0, [5.0], (6.0,)), true,
+        )
+        (
+            (a = :x, b = [:x, :y], c = (d = :z, e = :x)),
+            (
+                a = u[1], b = u[1:2],
+                c = (d = u[3], e = u[1]),
+            ),
+            (
+                a = 4.0, b = [4.0, 5.0],
+                c = (d = 6.0, e = 4.0),
+            ), true,
+        )
+    ]
     get = getsym(sys, sym)
     set! = setsym(sys, sym)
     if check_inference
@@ -87,6 +121,19 @@ for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
     set!(u, val)
     @test get(u) == val
 
+    # Test that getter/setter usage has zero allocations for single symbol cases
+    # (array/tuple getters allocate a new array for the result)
+    @static if isempty(VERSION.prerelease)
+        if check_inference && isconcretetype(eltype(newval)) && sym isa Union{Symbol, Int}
+            @check_allocs test_getsym(get, u) = get(u)
+            test_getsym(get, u)
+            @check_allocs test_setsym(set!, u, newval) = set!(u, newval)
+            test_setsym(set!, u, newval)
+            # Restore val after @check_allocs test
+            set!(u, val)
+        end
+    end
+
     if sym isa Union{Vector, Tuple} && any(x -> x isa Union{AbstractArray, Tuple}, sym)
         continue
     end
@@ -102,10 +149,10 @@ for (sym, val, newval, check_inference) in [(:x, u[1], 4.0, true)
 end
 
 for (sym, val, check_inference) in [
-    (:(x + y), u[1] + u[2], true),
-    ([:(x + y), :z], [u[1] + u[2], u[3]], false),
-    ((:(x + y), :(z + y)), (u[1] + u[2], u[2] + u[3]), false)
-]
+        (:(x + y), u[1] + u[2], true),
+        ([:(x + y), :z], [u[1] + u[2], u[3]], false),
+        ((:(x + y), :(z + y)), (u[1] + u[2], u[2] + u[3]), false),
+    ]
     get = getsym(sys, sym)
     if check_inference
         @inferred get(fi)
@@ -126,13 +173,15 @@ let fi = fi, sys = sys
     @test getter(fi) == ()
 end
 
-for (sym, oldval, newval, check_inference) in [(:a, p[1], 4.0, true)
-     (:b, p[2], 5.0, true)
-     (:c, p[3], 6.0, true)
-     ([:a, :b], p[1:2], [4.0, 5.0], true)
-     ((:c, :b), (p[3], p[2]), (6.0, 5.0), true)
-     ([:x, :a], [u[1], p[1]], [4.0, 5.0], false)
-     ((:y, :b), (u[2], p[2]), (5.0, 6.0), true)]
+for (sym, oldval, newval, check_inference) in [
+        (:a, p[1], 4.0, true)
+        (:b, p[2], 5.0, true)
+        (:c, p[3], 6.0, true)
+        ([:a, :b], p[1:2], [4.0, 5.0], true)
+        ((:c, :b), (p[3], p[2]), (6.0, 5.0), true)
+        ([:x, :a], [u[1], p[1]], [4.0, 5.0], false)
+        ((:y, :b), (u[2], p[2]), (5.0, 6.0), true)
+    ]
     get = getsym(fi, sym)
     set! = setsym(fi, sym)
     if check_inference
@@ -161,10 +210,10 @@ for (sym, oldval, newval, check_inference) in [(:a, p[1], 4.0, true)
 end
 
 for (sym, val, check_inference) in [
-    (:t, t, true),
-    ([:x, :a, :t], [u[1], p[1], t], false),
-    ((:x, :a, :t), (u[1], p[1], t), false)
-]
+        (:t, t, true),
+        ([:x, :a, :t], [u[1], p[1], t], false),
+        ((:x, :a, :t), (u[1], p[1], t), false),
+    ]
     get = getsym(fi, sym)
     if check_inference
         @inferred get(fi)
@@ -182,9 +231,14 @@ struct FakeSolution{S, U, P, T}
 end
 
 SymbolicIndexingInterface.is_timeseries(::Type{<:FakeSolution}) = Timeseries()
-function SymbolicIndexingInterface.is_timeseries(::Type{<:FakeSolution{
-        S, U, P, Nothing}}) where {S, U, P}
-    NotTimeseries()
+function SymbolicIndexingInterface.is_timeseries(
+        ::Type{
+            <:FakeSolution{
+                S, U, P, Nothing,
+            },
+        }
+    ) where {S, U, P}
+    return NotTimeseries()
 end
 SymbolicIndexingInterface.symbolic_container(fp::FakeSolution) = fp.sys
 SymbolicIndexingInterface.state_values(fp::FakeSolution) = fp.u
@@ -200,50 +254,76 @@ xvals = getindex.(sol.u, 1)
 yvals = getindex.(sol.u, 2)
 zvals = getindex.(sol.u, 3)
 
-for (sym, ans, check_inference) in [(:x, xvals, true)
-     (:y, yvals, true)
-     (:z, zvals, true)
-     (1, xvals, true)
-     ([:x, :y], vcat.(xvals, yvals), true)
-     (1:2, vcat.(xvals, yvals), true)
-     ([:x, 2], vcat.(xvals, yvals), true)
-     ((:z, :y), tuple.(zvals, yvals), true)
-     ((3, 2), tuple.(zvals, yvals), true)
-     ([:x, [:y, :z]],
-         vcat.(xvals, [[x] for x in vcat.(yvals, zvals)]),
-         false)
-     ([:x, (:y, :z)],
-         vcat.(xvals, tuple.(yvals, zvals)), false)
-     ([1, (:y, :z)],
-         vcat.(xvals, tuple.(yvals, zvals)), false)
-     ([:x, [:y, :z], (:x, :z)],
-         vcat.(xvals, [[x] for x in vcat.(yvals, zvals)],
-             tuple.(xvals, zvals)),
-         false)
-     ([:x, [:y, 3], (1, :z)],
-         vcat.(xvals, [[x] for x in vcat.(yvals, zvals)],
-             tuple.(xvals, zvals)),
-         false)
-     ((:x, [:y, :z]),
-         tuple.(xvals, vcat.(yvals, zvals)), true)
-     ((:x, (:y, :z)),
-         tuple.(xvals, tuple.(yvals, zvals)), true)
-     ((:x, [:y, :z], (:z, :y)),
-         tuple.(xvals, vcat.(yvals, zvals),
-             tuple.(zvals, yvals)),
-         true)
-     ([:x, :a], vcat.(xvals, p[1]), false)
-     ((:y, :b), tuple.(yvals, p[2]), true)
-     (:t, t, true)
-     ([:x, :a, :t], vcat.(xvals, p[1], t), false)
-     ((:x, :a, :t), tuple.(xvals, p[1], t), true)]
+for (sym, ans, check_inference) in [
+        (:x, xvals, true)
+        (:y, yvals, true)
+        (:z, zvals, true)
+        (1, xvals, true)
+        ([:x, :y], vcat.(xvals, yvals), true)
+        (1:2, vcat.(xvals, yvals), true)
+        ([:x, 2], vcat.(xvals, yvals), true)
+        ((:z, :y), tuple.(zvals, yvals), true)
+        ((3, 2), tuple.(zvals, yvals), true)
+        (
+            [:x, [:y, :z]],
+            vcat.(xvals, [[x] for x in vcat.(yvals, zvals)]),
+            false,
+        )
+        (
+            [:x, (:y, :z)],
+            vcat.(xvals, tuple.(yvals, zvals)), false,
+        )
+        (
+            [1, (:y, :z)],
+            vcat.(xvals, tuple.(yvals, zvals)), false,
+        )
+        (
+            [:x, [:y, :z], (:x, :z)],
+            vcat.(
+                xvals, [[x] for x in vcat.(yvals, zvals)],
+                tuple.(xvals, zvals)
+            ),
+            false,
+        )
+        (
+            [:x, [:y, 3], (1, :z)],
+            vcat.(
+                xvals, [[x] for x in vcat.(yvals, zvals)],
+                tuple.(xvals, zvals)
+            ),
+            false,
+        )
+        (
+            (:x, [:y, :z]),
+            tuple.(xvals, vcat.(yvals, zvals)), true,
+        )
+        (
+            (:x, (:y, :z)),
+            tuple.(xvals, tuple.(yvals, zvals)), true,
+        )
+        (
+            (:x, [:y, :z], (:z, :y)),
+            tuple.(
+                xvals, vcat.(yvals, zvals),
+                tuple.(zvals, yvals)
+            ),
+            true,
+        )
+        ([:x, :a], vcat.(xvals, p[1]), false)
+        ((:y, :b), tuple.(yvals, p[2]), true)
+        (:t, t, true)
+        ([:x, :a, :t], vcat.(xvals, p[1], t), false)
+        ((:x, :a, :t), tuple.(xvals, p[1], t), true)
+    ]
     get = getsym(sys, sym)
     if check_inference
         @inferred get(sol)
     end
     @test get(sol) == ans
-    for i in [rand(eachindex(u)), CartesianIndex(1), :,
-        rand(Bool, length(u)), rand(eachindex(u), 3), 1:3]
+    for i in [
+            rand(eachindex(u)), CartesianIndex(1), :,
+            rand(Bool, length(u)), rand(eachindex(u), 3), 1:3,
+        ]
         if check_inference
             @inferred get(sol, i)
         end
@@ -252,17 +332,19 @@ for (sym, ans, check_inference) in [(:x, xvals, true)
 end
 
 for (sym, val, check_inference) in [
-    (:(x + y), xvals .+ yvals, true),
-    ([:(x + y), :z], vcat.(xvals .+ yvals, zvals), false),
-    ((:(x + y), :(z + y)), tuple.(xvals .+ yvals, yvals .+ zvals), false)
-]
+        (:(x + y), xvals .+ yvals, true),
+        ([:(x + y), :z], vcat.(xvals .+ yvals, zvals), false),
+        ((:(x + y), :(z + y)), tuple.(xvals .+ yvals, yvals .+ zvals), false),
+    ]
     get = getsym(sys, sym)
     if check_inference
         @inferred get(sol)
     end
     @test get(sol) == val
-    for i in [rand(eachindex(u)), CartesianIndex(1), :,
-        rand(Bool, length(u)), rand(eachindex(u), 3), 1:3]
+    for i in [
+            rand(eachindex(u)), CartesianIndex(1), :,
+            rand(Bool, length(u)), rand(eachindex(u), 3), 1:3,
+        ]
         if check_inference
             @inferred get(sol, i)
         end
@@ -270,11 +352,13 @@ for (sym, val, check_inference) in [
     end
 end
 
-for (sym, val) in [(:a, p[1])
-                   (:b, p[2])
-                   (:c, p[3])
-                   ([:a, :b], p[1:2])
-                   ((:c, :b), (p[3], p[2]))]
+for (sym, val) in [
+        (:a, p[1])
+        (:b, p[2])
+        (:c, p[3])
+        ([:a, :b], p[1:2])
+        ((:c, :b), (p[3], p[2]))
+    ]
     get = getsym(sys, sym)
     @inferred get(sol)
     @test get(sol) == val
@@ -293,6 +377,24 @@ let sol = sol, sys = sys
     @test getter(sol) == []
 end
 
+# A single `GetStateIndex` with a `Vector{Int}` idx — the shape downstream
+# packages construct when binding an array-valued symbolic (e.g. `x(t)[1:3]`)
+# to a single set of consecutive state indices. The non-`Int`/`CartesianIndex`
+# `i` overload must broadcast the idx vector as a scalar across the timeseries
+# rather than zipping it elementwise (otherwise a length-N timeseries against
+# a length-K idx vector errors with `DimensionMismatch`).
+let sol = sol
+    idx = [1, 2]
+    gsi = SymbolicIndexingInterface.GetStateIndex(idx)
+    expected = [u_t[idx] for u_t in sol.u]
+    @test gsi(Timeseries(), sol) == expected
+    @test gsi(Timeseries(), sol, :) == expected
+    @test gsi(Timeseries(), sol, 1:length(sol.u)) == expected
+    @test gsi(Timeseries(), sol, eachindex(sol.u)) == expected
+    @test gsi(Timeseries(), sol, trues(length(sol.u))) == expected
+    @test gsi(Timeseries(), sol, 2) == sol.u[2][idx]
+end
+
 sys = SymbolCache([:x, :y, :z], [:a, :b, :c])
 u = [1.0, 2.0, 3.0]
 p = [10.0, 20.0, 30.0]
@@ -300,26 +402,26 @@ fs = FakeSolution(sys, u, p, nothing)
 @test is_timeseries(fs) == NotTimeseries()
 
 for (sym, val, check_inference) in [
-    (:x, u[1], true),
-    (1, u[1], true),
-    ([:x, :y], u[1:2], true),
-    ((:x, :y), Tuple(u[1:2]), true),
-    (1:2, u[1:2], true),
-    ([:x, 2], u[1:2], true),
-    ((:x, 2), Tuple(u[1:2]), true),
-    ([1, 2], u[1:2], true),
-    ((1, 2), Tuple(u[1:2]), true),
-    (:a, p[1], true),
-    ([:a, :b], p[1:2], true),
-    ((:a, :b), Tuple(p[1:2]), true),
-    ([:x, :a], [u[1], p[1]], false),
-    ((:x, :a), (u[1], p[1]), true),
-    ([1, :a], [u[1], p[1]], false),
-    ((1, :a), (u[1], p[1]), true),
-    (:(x + y + a + b), u[1] + u[2] + p[1] + p[2], true),
-    ([:(x + a), :(y + b)], [u[1] + p[1], u[2] + p[2]], true),
-    ((:(x + a), :(y + b)), (u[1] + p[1], u[2] + p[2]), true)
-]
+        (:x, u[1], true),
+        (1, u[1], true),
+        ([:x, :y], u[1:2], true),
+        ((:x, :y), Tuple(u[1:2]), true),
+        (1:2, u[1:2], true),
+        ([:x, 2], u[1:2], true),
+        ((:x, 2), Tuple(u[1:2]), true),
+        ([1, 2], u[1:2], true),
+        ((1, 2), Tuple(u[1:2]), true),
+        (:a, p[1], true),
+        ([:a, :b], p[1:2], true),
+        ((:a, :b), Tuple(p[1:2]), true),
+        ([:x, :a], [u[1], p[1]], false),
+        ((:x, :a), (u[1], p[1]), true),
+        ([1, :a], [u[1], p[1]], false),
+        ((1, :a), (u[1], p[1]), true),
+        (:(x + y + a + b), u[1] + u[2] + p[1] + p[2], true),
+        ([:(x + a), :(y + b)], [u[1] + p[1], u[2] + p[2]], true),
+        ((:(x + a), :(y + b)), (u[1] + p[1], u[2] + p[2]), true),
+    ]
     getter = getsym(sys, sym)
     if check_inference
         @inferred getter(fs)
@@ -334,15 +436,15 @@ end
 SymbolicIndexingInterface.symbolic_container(hw::NonMarkovianWrapper) = hw.sys
 SymbolicIndexingInterface.is_markovian(::NonMarkovianWrapper) = false
 function SymbolicIndexingInterface.observed(hw::NonMarkovianWrapper, sym)
-    let inner = observed(hw.sys, sym)
+    return let inner = observed(hw.sys, sym)
         fn(u, h, p, t) = inner(u .+ h(t - 0.1), p, t)
     end
 end
 function SymbolicIndexingInterface.get_history_function(fs::FakeSolution)
-    t -> t .* ones(length(fs.u[1]))
+    return t -> t .* ones(length(fs.u[1]))
 end
 function SymbolicIndexingInterface.get_history_function(fi::FakeIntegrator)
-    t -> t .* ones(length(fi.u))
+    return t -> t .* ones(length(fi.u))
 end
 
 sys = NonMarkovianWrapper(SymbolCache([:x, :y, :z], [:a, :b, :c], :t))
@@ -391,4 +493,95 @@ SymbolicIndexingInterface.supports_tuple_observed(::TupleObservedWrapper) = true
     @test all(getter(ps) .≈ (0.3, 0.5))
     @test getter(ps) isa Tuple
     @test_nowarn @inferred getter(ps)
+end
+
+struct MixedTSDiffEqArray
+    t::Vector{Float64}
+    u::Vector{Vector{Float64}}
+end
+SymbolicIndexingInterface.current_time(mda::MixedTSDiffEqArray) = mda.t
+SymbolicIndexingInterface.state_values(mda::MixedTSDiffEqArray) = mda.u
+SymbolicIndexingInterface.is_timeseries(::Type{MixedTSDiffEqArray}) = Timeseries()
+
+struct MixedTSParameterObject
+    p::Vector{Float64}
+end
+SymbolicIndexingInterface.parameter_values(mpo::MixedTSParameterObject) = mpo.p
+function SymbolicIndexingInterface.with_updated_parameter_timeseries_values(
+        ::SymbolCache, mpo::MixedTSParameterObject, args::Pair...
+    )
+    for (ts_idx, val) in args
+        mpo.p[1 + ts_idx] = only(val)
+    end
+    return mpo
+end
+Base.getindex(mpo::MixedTSParameterObject, i) = mpo.p[i]
+
+# A timeseries solution object with both continuous states and a parameter
+# timeseries, used to test indexing observed variables that mix the two.
+struct MixedTSSolution{S}
+    sys::S
+    u::Vector{Vector{Float64}}
+    t::Vector{Float64}
+    p::MixedTSParameterObject
+    p_ts::ParameterTimeseriesCollection
+end
+SymbolicIndexingInterface.state_values(fs::MixedTSSolution) = fs.u
+SymbolicIndexingInterface.current_time(fs::MixedTSSolution) = fs.t
+SymbolicIndexingInterface.symbolic_container(fs::MixedTSSolution) = fs.sys
+SymbolicIndexingInterface.parameter_values(fs::MixedTSSolution) = fs.p
+SymbolicIndexingInterface.parameter_values(fs::MixedTSSolution, i) = fs.p[i]
+SymbolicIndexingInterface.get_parameter_timeseries_collection(fs::MixedTSSolution) = fs.p_ts
+SymbolicIndexingInterface.is_timeseries(::Type{<:MixedTSSolution}) = Timeseries()
+SymbolicIndexingInterface.is_parameter_timeseries(::Type{<:MixedTSSolution}) = Timeseries()
+SymbolicIndexingInterface.get_history_function(fs::MixedTSSolution) = t -> t .* ones(3)
+
+@testset "Indexing mixed timeseries vars when one is continuous" begin
+    sc = SymbolCache(
+        [:x, :y, :z], [:a, :b], :t;
+        timeseries_parameters = Dict(:b => ParameterTimeseriesIndex(1, 1))
+    )
+    b_ts = MixedTSDiffEqArray(collect(0.0:0.1:0.9), [[2.5i] for i in 1:10])
+    p0 = MixedTSParameterObject([20.0, b_ts.u[end][1]])
+
+    for sys in [sc, NonMarkovianWrapper(sc)]
+        markovian = sys === sc
+        u = [i * ones(3) for i in 1:5]
+        t = [0.2i for i in 1:5]
+        ptc = ParameterTimeseriesCollection([deepcopy(b_ts)], deepcopy(p0))
+        fs = MixedTSSolution(sys, u, t, deepcopy(p0), ptc)
+
+        xval = getindex.(fs.u, 1)
+        bval_at_t = [parameter_values_at_time(sys, fs, ti)[2] for ti in fs.t]
+        # `NonMarkovianWrapper`'s observed function adds `h(t - 0.1)` to the
+        # state before calling the underlying observed function.
+        hval_at_t = markovian ? zeros(length(fs.t)) : [ti - 0.1 for ti in fs.t]
+        expected = xval .+ hval_at_t .+ bval_at_t
+
+        getter = getsym(sys, :(x + b))
+        @test is_indexer_timeseries(getter) == IndexerMixedTimeseries()
+        @test getter(fs) ≈ expected
+        for subidx in [
+                1, CartesianIndex(2), :, rand(Bool, length(fs.t)),
+                rand(eachindex(fs.t), 3), 1:3,
+            ]
+            target = subidx isa Colon ? expected : expected[subidx]
+            @test getter(fs, subidx) ≈ target
+        end
+    end
+
+    # A `TimeDependentObservedFunction` is only ever constructed by `getsym`
+    # when its combined timeseries indexes include `ContinuousTimeseries()`
+    # (that's the only case where it makes sense to hold parameter timeseries
+    # values fixed while iterating over the continuous timeseries). Directly
+    # constructing one without `ContinuousTimeseries()` in `ts_idxs` should
+    # still throw, since there is no continuous timeseries to iterate over.
+    o = TimeDependentObservedFunction{true}([1, 2], (u, p, t) -> u[1] + p[2])
+    b_ts = MixedTSDiffEqArray(collect(0.0:0.1:0.9), [[2.5i] for i in 1:10])
+    p0 = MixedTSParameterObject([20.0, b_ts.u[end][1]])
+    fs = MixedTSSolution(
+        sc, [i * ones(3) for i in 1:5], [0.2i for i in 1:5], deepcopy(p0),
+        ParameterTimeseriesCollection([deepcopy(b_ts)], deepcopy(p0))
+    )
+    @test_throws MixedParameterTimeseriesIndexError o(Timeseries(), fs)
 end

@@ -2,7 +2,8 @@ using SymbolicIndexingInterface
 using Test
 
 sc = SymbolCache(
-    [:x, :y, :z], [:a, :b], [:t]; defaults = Dict(:x => 1, :y => :(2b), :b => :(2a + x)))
+    [:x, :y, :z], [:a, :b], [:t]; defaults = Dict(:x => 1, :y => :(2b), :b => :(2a + x))
+)
 
 @test all(is_variable.((sc,), [:x, :y, :z]))
 @test all(.!is_variable.((sc,), [:a, :b, :t, :q]))
@@ -64,21 +65,29 @@ pobsfn3(buffer, 2ones(2), 3.0)
 @test_throws TypeError parameter_observed(sc, [:(a + b), 4])
 @test_throws TypeError parameter_observed(sc, (:(a + b), 4))
 
-sc = SymbolCache([:x, :y], [:a, :b, :c], :t;
+sc = SymbolCache(
+    [:x, :y], [:a, :b, :c], :t;
     timeseries_parameters = Dict(
-        :b => ParameterTimeseriesIndex(1, 1), :c => ParameterTimeseriesIndex(2, 1)))
+        :b => ParameterTimeseriesIndex(1, 1), :c => ParameterTimeseriesIndex(2, 1)
+    )
+)
 @test only(get_all_timeseries_indexes(sc, :(a + c))) == 2
 @test only(get_all_timeseries_indexes(sc, [:a, :c])) == 2
 @test isempty(get_all_timeseries_indexes(sc, :(2a)))
 @test isempty(get_all_timeseries_indexes(sc, [:(2a), :(3a)]))
 @test sort(collect(get_all_timeseries_indexes(sc, [:b, :c]))) == [1, 2]
 
-@test_throws ArgumentError SymbolCache([:x, :y], [:a, :b], :t;
-    timeseries_parameters = Dict(:c => ParameterTimeseriesIndex(1, 1)))
+@test_throws ArgumentError SymbolCache(
+    [:x, :y], [:a, :b], :t;
+    timeseries_parameters = Dict(:c => ParameterTimeseriesIndex(1, 1))
+)
 @test_throws TypeError SymbolCache(
-    [:x, :y], [:a, :c], :t; timeseries_parameters = Dict(:c => (1, 1)))
-@test_nowarn SymbolCache([:x, :y], [:a, :c], :t;
-    timeseries_parameters = Dict(:c => ParameterTimeseriesIndex(1, 1)))
+    [:x, :y], [:a, :c], :t; timeseries_parameters = Dict(:c => (1, 1))
+)
+@test_nowarn SymbolCache(
+    [:x, :y], [:a, :c], :t;
+    timeseries_parameters = Dict(:c => ParameterTimeseriesIndex(1, 1))
+)
 
 sc = SymbolCache([:x, :y], [:a, :b])
 @test !is_time_dependent(sc)
@@ -90,7 +99,8 @@ obsfn = observed(sc, :(x + b))
 @test_nowarn SymbolCache([:x, :y])
 
 @test_throws ArgumentError SymbolCache(
-    [:x, :y], [:a, :b]; timeseries_parameters = Dict(:b => ParameterTimeseriesIndex(1, 1)))
+    [:x, :y], [:a, :b]; timeseries_parameters = Dict(:b => ParameterTimeseriesIndex(1, 1))
+)
 
 sc = SymbolCache()
 @test all(.!is_variable.((sc,), [:x, :y, :a, :b, :t]))

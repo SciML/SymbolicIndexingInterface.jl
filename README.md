@@ -32,17 +32,17 @@ The symbolic indexing interface has 2 levels:
 # Use ModelingToolkit to make a solution
 
 using ModelingToolkit, OrdinaryDiffEq, SymbolicIndexingInterface, Plots
+using ModelingToolkit: t_nounits as t, D_nounits as D
 
 @parameters σ ρ β
-@variables t x(t) y(t) z(t) w(t)
-D = Differential(t)
+@variables x(t) y(t) z(t) w(t)
 
 eqs = [D(D(x)) ~ σ * (y - x),
     D(y) ~ x * (ρ - z) - y,
     D(z) ~ x * y - β * z,
     w ~ x + y + z]
 
-@mtkbuild sys = ODESystem(eqs)
+@mtkbuild sys = ODESystem(eqs, t)
 
 u0 = [D(x) => 2.0,
     x => 1.0,

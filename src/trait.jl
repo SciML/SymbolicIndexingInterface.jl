@@ -102,7 +102,7 @@ function _symbolic_evaluate_helper(expr, syms::Dict)
     for arg in expr.args
         push!(newexpr.args, _symbolic_evaluate_helper(arg, syms))
     end
-    newexpr
+    return newexpr
 end
 
 ############ IsTimeseriesTrait

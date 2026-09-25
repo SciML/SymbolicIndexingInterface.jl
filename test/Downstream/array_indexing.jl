@@ -1,20 +1,25 @@
 using ModelingToolkit, SymbolicIndexingInterface
-using ModelingToolkit: t_nounits as t, D_nounits as D
+using ModelingToolkit: t_nounits as t, D_nounits as D, SymbolicContinuousCallback
 
 @variables x(t)[1:2]
-@parameters p[1:2, 1:2] q(t)[1:2] r[1:2]
+@parameters p[1:2, 1:2] r[1:2]
+@discretes q(t)[1:2]
 
-ev = [x[1] ~ 2.0] => [q ~ -ones(2)]
+ev = SymbolicContinuousCallback(
+    [x[1] ~ 2.0] => [q ~ -ones(2)], discrete_parameters = q, iv = t
+)
 @mtkbuild sys = ODESystem(
-    [D(x) ~ p * x + q + r], t, [x], [p, q, r...]; continuous_events = [ev])
+    [D(x) ~ p * x + q + r], t, [x], [p, q, r...]; continuous_events = [ev]
+)
 @test is_timeseries_parameter(sys, q)
 @test !is_timeseries_parameter(sys, p)
-@test !is_parameter(sys, r)
+@test is_parameter(sys, r)
 @test is_parameter(sys, r[1])
 @test is_parameter(sys, r[2])
 
 prob = ODEProblem(
-    sys, [x => ones(2)], (0.0, 10.0), [p => ones(2, 2), q => ones(2), r => 2ones(2)])
+    sys, [x => ones(2)], (0.0, 10.0), [p => ones(2, 2), q => ones(2), r => 2ones(2)]
+)
 @test prob.ps[q] ≈ ones(2)
 @test prob.ps[p] ≈ ones(2, 2)
 @test prob.ps[r] ≈ 2ones(2)
