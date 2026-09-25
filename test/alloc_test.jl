@@ -1,6 +1,9 @@
 using SymbolicIndexingInterface
-using AllocCheck
 using Test
+# AllocCheck uses LLVM introspection which can break on pre-release Julia versions
+@static if isempty(VERSION.prerelease)
+    using AllocCheck
+end
 
 @testset "AllocCheck - Zero Allocation Getters/Setters" begin
     # Create test data
@@ -17,11 +20,16 @@ using Test
         getter(p)
         getter(ps)
 
-        @check_allocs test_scalar_getp_p(getter, p) = getter(p)
-        @test test_scalar_getp_p(getter, p) == p[1]
+        @test getter(p) == p[1]
+        @test getter(ps) == p[1]
 
-        @check_allocs test_scalar_getp_ps(getter, ps) = getter(ps)
-        @test test_scalar_getp_ps(getter, ps) == p[1]
+        @static if isempty(VERSION.prerelease)
+            @check_allocs test_scalar_getp_p(getter, p) = getter(p)
+            @test test_scalar_getp_p(getter, p) == p[1]
+
+            @check_allocs test_scalar_getp_ps(getter, ps) = getter(ps)
+            @test test_scalar_getp_ps(getter, ps) == p[1]
+        end
     end
 
     # Test scalar state getter - should not allocate
@@ -31,11 +39,16 @@ using Test
         getter(u)
         getter(ps)
 
-        @check_allocs test_scalar_getsym_u(getter, u) = getter(u)
-        @test test_scalar_getsym_u(getter, u) == u[1]
+        @test getter(u) == u[1]
+        @test getter(ps) == u[1]
 
-        @check_allocs test_scalar_getsym_ps(getter, ps) = getter(ps)
-        @test test_scalar_getsym_ps(getter, ps) == u[1]
+        @static if isempty(VERSION.prerelease)
+            @check_allocs test_scalar_getsym_u(getter, u) = getter(u)
+            @test test_scalar_getsym_u(getter, u) == u[1]
+
+            @check_allocs test_scalar_getsym_ps(getter, ps) = getter(ps)
+            @test test_scalar_getsym_ps(getter, ps) == u[1]
+        end
     end
 
     # Test tuple parameter getter - should not allocate
@@ -44,8 +57,12 @@ using Test
         # Warm up
         getter(ps)
 
-        @check_allocs test_tuple_getp(getter, ps) = getter(ps)
-        @test test_tuple_getp(getter, ps) == (p[1], p[2], p[3])
+        @test getter(ps) == (p[1], p[2], p[3])
+
+        @static if isempty(VERSION.prerelease)
+            @check_allocs test_tuple_getp(getter, ps) = getter(ps)
+            @test test_tuple_getp(getter, ps) == (p[1], p[2], p[3])
+        end
     end
 
     # Test tuple state getter - should not allocate
@@ -54,8 +71,12 @@ using Test
         # Warm up
         getter(ps)
 
-        @check_allocs test_tuple_getsym(getter, ps) = getter(ps)
-        @test test_tuple_getsym(getter, ps) == (u[1], u[2], u[3])
+        @test getter(ps) == (u[1], u[2], u[3])
+
+        @static if isempty(VERSION.prerelease)
+            @check_allocs test_tuple_getsym(getter, ps) = getter(ps)
+            @test test_tuple_getsym(getter, ps) == (u[1], u[2], u[3])
+        end
     end
 
     # Test scalar parameter setter - should not allocate
@@ -65,8 +86,12 @@ using Test
         # Warm up
         setter(p_copy, 5.0)
 
-        @check_allocs test_scalar_setp(setter, p_copy, val) = setter(p_copy, val)
-        test_scalar_setp(setter, p_copy, 6.0)
+        @static if isempty(VERSION.prerelease)
+            @check_allocs test_scalar_setp(setter, p_copy, val) = setter(p_copy, val)
+            test_scalar_setp(setter, p_copy, 6.0)
+        else
+            setter(p_copy, 6.0)
+        end
         @test p_copy[1] == 6.0
     end
 
@@ -77,8 +102,12 @@ using Test
         # Warm up
         setter(u_copy, 5.0)
 
-        @check_allocs test_scalar_setsym(setter, u_copy, val) = setter(u_copy, val)
-        test_scalar_setsym(setter, u_copy, 6.0)
+        @static if isempty(VERSION.prerelease)
+            @check_allocs test_scalar_setsym(setter, u_copy, val) = setter(u_copy, val)
+            test_scalar_setsym(setter, u_copy, 6.0)
+        else
+            setter(u_copy, 6.0)
+        end
         @test u_copy[1] == 6.0
     end
 
@@ -89,8 +118,12 @@ using Test
         # Warm up
         getter(buffer, ps)
 
-        @check_allocs test_inplace_getp(getter, buffer, ps) = getter(buffer, ps)
-        test_inplace_getp(getter, buffer, ps)
+        @static if isempty(VERSION.prerelease)
+            @check_allocs test_inplace_getp(getter, buffer, ps) = getter(buffer, ps)
+            test_inplace_getp(getter, buffer, ps)
+        else
+            getter(buffer, ps)
+        end
         @test buffer == p[1:3]
     end
 
@@ -102,36 +135,53 @@ using Test
         getter(ps)
         getter(ps)
 
-        @check_allocs test_observed_getsym(getter, ps) = getter(ps)
-        @test test_observed_getsym(getter, ps) == u[1] + u[2]
+        @test getter(ps) == u[1] + u[2]
+
+        @static if isempty(VERSION.prerelease)
+            @check_allocs test_observed_getsym(getter, ps) = getter(ps)
+            @test test_observed_getsym(getter, ps) == u[1] + u[2]
+        end
     end
 
     # Test index lookups - should not allocate
     @testset "Index lookups" begin
-        @check_allocs test_variable_index(sys, sym) = variable_index(sys, sym)
-        @test test_variable_index(sys, :x) == 1
+        @test variable_index(sys, :x) == 1
+        @test parameter_index(sys, :a) == 1
+        @test is_variable(sys, :x) == true
+        @test is_parameter(sys, :a) == true
 
-        @check_allocs test_parameter_index(sys, sym) = parameter_index(sys, sym)
-        @test test_parameter_index(sys, :a) == 1
+        @static if isempty(VERSION.prerelease)
+            @check_allocs test_variable_index(sys, sym) = variable_index(sys, sym)
+            @test test_variable_index(sys, :x) == 1
 
-        @check_allocs test_is_variable(sys, sym) = is_variable(sys, sym)
-        @test test_is_variable(sys, :x) == true
+            @check_allocs test_parameter_index(sys, sym) = parameter_index(sys, sym)
+            @test test_parameter_index(sys, :a) == 1
 
-        @check_allocs test_is_parameter(sys, sym) = is_parameter(sys, sym)
-        @test test_is_parameter(sys, :a) == true
+            @check_allocs test_is_variable(sys, sym) = is_variable(sys, sym)
+            @test test_is_variable(sys, :x) == true
+
+            @check_allocs test_is_parameter(sys, sym) = is_parameter(sys, sym)
+            @test test_is_parameter(sys, :a) == true
+        end
     end
 
     # Test value provider interface functions
     @testset "Value provider interface" begin
-        @check_allocs test_parameter_values(p) = parameter_values(p)
-        @test test_parameter_values(p) == p
-
-        @check_allocs test_state_values(u) = state_values(u)
-        @test test_state_values(u) == u
-
-        @check_allocs test_current_time_vec(t_vec) = current_time(t_vec)
+        @test parameter_values(p) == p
+        @test state_values(u) == u
         t_vec = [0.0, 0.5, 1.0]
-        @test test_current_time_vec(t_vec) == t_vec
+        @test current_time(t_vec) == t_vec
+
+        @static if isempty(VERSION.prerelease)
+            @check_allocs test_parameter_values(p) = parameter_values(p)
+            @test test_parameter_values(p) == p
+
+            @check_allocs test_state_values(u) = state_values(u)
+            @test test_state_values(u) == u
+
+            @check_allocs test_current_time_vec(t_vec) = current_time(t_vec)
+            @test test_current_time_vec(t_vec) == t_vec
+        end
     end
 end
 
@@ -145,8 +195,12 @@ end
     # Warm up
     setter(p_copy, (5.0, 6.0))
 
-    @check_allocs test_tuple_setp(setter, p_copy, val) = setter(p_copy, val)
-    test_tuple_setp(setter, p_copy, (7.0, 8.0))
+    @static if isempty(VERSION.prerelease)
+        @check_allocs test_tuple_setp(setter, p_copy, val) = setter(p_copy, val)
+        test_tuple_setp(setter, p_copy, (7.0, 8.0))
+    else
+        setter(p_copy, (7.0, 8.0))
+    end
     @test p_copy[1] == 7.0
     @test p_copy[2] == 8.0
 end
