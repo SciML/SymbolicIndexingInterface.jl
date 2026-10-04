@@ -295,7 +295,7 @@ function OOPSetter(indp, idxs, isstate)
 end
 
 _subset_values(val::AbstractArray, positions, _) = val[positions]
-# subsetting a (possibly heterogeneous) `Tuple` of values is only inferrable
+# subsetting a (possibly heterogeneous) `Tuple` of values is only inferable
 # with the positions available as compile-time constants, hence the `Val`
 function _subset_values(val::Tuple, positions, ::Val{P}) where {P}
     return ntuple(i -> val[P[i]], Val(length(P)))
