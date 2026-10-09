@@ -12,12 +12,11 @@ type-stability, to maintain performance. The returned buffer should be of the sa
 (ignoring type-parameters) as `oldbuffer`.
 
 This method is already implemented for `oldbuffer::AbstractArray` and `oldbuffer::Tuple`,
-and supports static arrays as well.
+and supports static arrays as well. Unsupported buffer types throw an `ArgumentError`
+naming the type; define a dedicated `remake_buffer` method for that buffer type.
 
 The deprecated version of this method which takes a `Dict` mapping symbols to values
-instead of `idxs` and `vals` will dispatch to the new method. In addition if
-no `remake_buffer` method exists with the new signature, it will call
-`remake_buffer(sys, oldbuffer, Dict(idxs .=> vals))`.
+instead of `idxs` and `vals` will dispatch to the new method.
 
 Note that the new method signature allows `idxs` to be indexes, instead of requiring
 that they be symbolic variables. Thus, any type which implements the new method must
@@ -63,7 +62,11 @@ end
 remake_buffer(sys, ::Nothing, idxs, vals) = nothing
 
 function remake_buffer(sys, oldbuffer, idxs, vals)
-    return remake_buffer(sys, oldbuffer, Dict(idxs .=> vals))
+    throw(
+        ArgumentError(
+            "remake_buffer is not implemented for buffer type $(typeof(oldbuffer)); define a method `remake_buffer(::Any, ::$(typeof(oldbuffer)), idxs, vals)`"
+        )
+    )
 end
 
 mutable struct TupleRemakeWrapper

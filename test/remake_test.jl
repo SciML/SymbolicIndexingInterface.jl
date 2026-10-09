@@ -82,3 +82,22 @@ end
     buf2 = remake_buffer(sys, buf, keys(buf), values(buf))
     @test isequal(buf, buf2)
 end
+
+struct UnsupportedRemakeBuffer
+    v::Vector{Float64}
+end
+
+@testset "`remake_buffer` unsupported buffer types" begin
+    sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
+    nt_err = @test_throws ArgumentError remake_buffer(
+        sys, (x = 1.0, y = 2.0, z = 3.0), [:x], [9.0]
+    )
+    @test occursin("NamedTuple", sprint(showerror, nt_err.value))
+    @test occursin("remake_buffer", sprint(showerror, nt_err.value))
+
+    custom_err = @test_throws ArgumentError remake_buffer(
+        sys, UnsupportedRemakeBuffer([1.0, 2.0, 3.0]), [:x], [9.0]
+    )
+    @test occursin("UnsupportedRemakeBuffer", sprint(showerror, custom_err.value))
+    @test occursin("remake_buffer", sprint(showerror, custom_err.value))
+end
