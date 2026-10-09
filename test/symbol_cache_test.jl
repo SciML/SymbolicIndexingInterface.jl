@@ -76,6 +76,21 @@ sc = SymbolCache(
 @test isempty(get_all_timeseries_indexes(sc, :(2a)))
 @test isempty(get_all_timeseries_indexes(sc, [:(2a), :(3a)]))
 @test sort(collect(get_all_timeseries_indexes(sc, [:b, :c]))) == [1, 2]
+mixed = [:x, :b, :(x + a)]
+mixed_idxs = get_all_timeseries_indexes(sc, mixed)
+@test mixed_idxs isa Set{Any}
+@test mixed_idxs == Set(Any[ContinuousTimeseries(), 1])
+
+@noinline _get_all_timeseries_indexes_alloc_barrier(sc, sym) = get_all_timeseries_indexes(
+    sc, sym
+)
+let
+    sc_alloc = SymbolCache([Symbol(:x, i) for i in 1:100], [:p1, :p2], :t)
+    vars = [Symbol(:x, i) for i in 1:100]
+    _get_all_timeseries_indexes_alloc_barrier(sc_alloc, vars)
+    allocs = @allocations _get_all_timeseries_indexes_alloc_barrier(sc_alloc, vars)
+    @test allocs <= 16
+end
 
 @test_throws ArgumentError SymbolCache(
     [:x, :y], [:a, :b], :t;
