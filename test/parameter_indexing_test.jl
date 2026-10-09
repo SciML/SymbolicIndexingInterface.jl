@@ -662,3 +662,41 @@ for (sym, val, check_inference) in [
         @test buffer == collect(val)
     end
 end
+
+struct EqCountingArrayProvider{T} <: AbstractVector{T}
+    data::Vector{T}
+    p::Vector{Float64}
+    eq_count::Base.RefValue{Int}
+end
+Base.size(x::EqCountingArrayProvider) = size(x.data)
+Base.getindex(x::EqCountingArrayProvider, i::Int) = x.data[i]
+function Base.:(==)(a::EqCountingArrayProvider, b::AbstractArray)
+    a.eq_count[] += 1
+    return a.data == b
+end
+function Base.:(==)(a::AbstractArray, b::EqCountingArrayProvider)
+    b.eq_count[] += 1
+    return a == b.data
+end
+function Base.:(==)(a::EqCountingArrayProvider, b::EqCountingArrayProvider)
+    a.eq_count[] += 1
+    b.eq_count[] += 1
+    return a.data == b.data
+end
+SymbolicIndexingInterface.symbolic_container(x::EqCountingArrayProvider) =
+    SymbolCache([:x, :y], [:a, :b], :t)
+SymbolicIndexingInterface.parameter_values(x::EqCountingArrayProvider) = x.p
+SymbolicIndexingInterface.current_time(::EqCountingArrayProvider) = 0.0
+SymbolicIndexingInterface.is_timeseries(::Type{<:EqCountingArrayProvider}) = NotTimeseries()
+
+let
+    sys = SymbolCache([:x, :y], [:a, :b], :t)
+    provider = EqCountingArrayProvider([1.0, 2.0], [3.0, 4.0], Ref(0))
+    getter = getp(sys, :(a + b))
+    @test getter(provider) == 7.0
+    @test provider.eq_count[] == 0
+    buffer = zeros(2)
+    getter2 = getp(sys, [:(a + b), :a])
+    @test getter2(buffer, provider) == [7.0, 3.0]
+    @test provider.eq_count[] == 0
+end
