@@ -164,8 +164,27 @@ function get_all_timeseries_indexes(sc::SymbolCache, sym::Expr)
         Base.Fix1(get_all_timeseries_indexes, sc), union, exs.declared; init = Set()
     )
 end
+function _accumulate_timeseries_indexes!(acc, sc::SymbolCache, sym)
+    if is_variable(sc, sym) || is_independent_variable(sc, sym)
+        push!(acc, ContinuousTimeseries())
+    elseif is_timeseries_parameter(sc, sym)
+        push!(acc, timeseries_parameter_index(sc, sym).timeseries_idx)
+    end
+    return acc
+end
+function _accumulate_timeseries_indexes!(acc, sc::SymbolCache, sym::Expr)
+    return union!(acc, get_all_timeseries_indexes(sc, sym))
+end
+function _accumulate_timeseries_indexes!(acc, sc::SymbolCache, sym::AbstractArray)
+    for s in sym
+        _accumulate_timeseries_indexes!(acc, sc, s)
+    end
+    return acc
+end
 function get_all_timeseries_indexes(sc::SymbolCache, sym::AbstractArray)
-    return mapreduce(Base.Fix1(get_all_timeseries_indexes, sc), union, sym; init = Set())
+    acc = Set()
+    _accumulate_timeseries_indexes!(acc, sc, sym)
+    return acc
 end
 function is_independent_variable(sc::SymbolCache, sym)
     sc.independent_variables === nothing && return false
