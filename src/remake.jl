@@ -70,8 +70,8 @@ remake_buffer(sys, ::Nothing, idxs, vals) = nothing
 const _REMAKE_BUFFER_DICT_FALLBACK = :__SII_remake_buffer_dict_fallback__
 
 function remake_buffer(sys, oldbuffer, idxs, vals)
-    # Preserve master's Dict dispatch for deprecated 3-arg implementers. Detect
-    # same-object re-entry from SII's own @deprecate catch-all (nested remakes of a
+    # Forward to the deprecated 3-arg Dict method for implementers that only define it.
+    # Detect same-object re-entry from SII's own @deprecate catch-all (nested remakes of a
     # different buffer must still forward).
     if get(task_local_storage(), _REMAKE_BUFFER_DICT_FALLBACK, nothing) === oldbuffer
         throw(
