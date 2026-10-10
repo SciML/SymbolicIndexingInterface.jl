@@ -82,3 +82,99 @@ end
     buf2 = remake_buffer(sys, buf, keys(buf), values(buf))
     @test isequal(buf, buf2)
 end
+
+struct UnsupportedRemakeBuffer
+    v::Vector{Float64}
+end
+
+struct DictOnlyRemakeBuffer
+    v::Vector{Float64}
+end
+
+struct NarrowDictOnlyRemakeBuffer
+    v::Vector{Float64}
+end
+
+function _dict_only_remake(sys, oldbuffer, vals::Dict)
+    newv = copy(oldbuffer.v)
+    for (k, val) in vals
+        i = variable_index(sys, k)
+        i === nothing || (newv[i] = val)
+    end
+    return typeof(oldbuffer)(newv)
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::DictOnlyRemakeBuffer, vals::Dict
+    )
+    return _dict_only_remake(sys, oldbuffer, vals)
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::NarrowDictOnlyRemakeBuffer, vals::Dict{Symbol, Float64}
+    )
+    return _dict_only_remake(sys, oldbuffer, vals)
+end
+
+@testset "`remake_buffer` unsupported buffer types" begin
+    sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
+    nt_err = @test_throws ArgumentError remake_buffer(
+        sys, (x = 1.0, y = 2.0, z = 3.0), [:x], [9.0]
+    )
+    @test occursin("NamedTuple", sprint(showerror, nt_err.value))
+    @test occursin("remake_buffer", sprint(showerror, nt_err.value))
+
+    custom_err = @test_throws ArgumentError remake_buffer(
+        sys, UnsupportedRemakeBuffer([1.0, 2.0, 3.0]), [:x], [9.0]
+    )
+    @test occursin("UnsupportedRemakeBuffer", sprint(showerror, custom_err.value))
+    @test occursin("remake_buffer", sprint(showerror, custom_err.value))
+end
+
+struct NestedInnerRemakeBuffer
+    v::Vector{Float64}
+end
+
+struct NestedOuterRemakeBuffer
+    a::NestedInnerRemakeBuffer
+    v::Vector{Float64}
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::NestedInnerRemakeBuffer, vals::Dict
+    )
+    return _dict_only_remake(sys, oldbuffer, vals)
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::NestedOuterRemakeBuffer, vals::Dict
+    )
+    inner = remake_buffer(sys, oldbuffer.a, collect(keys(vals)), collect(values(vals)))
+    newv = copy(oldbuffer.v)
+    for (k, val) in vals
+        i = variable_index(sys, k)
+        i === nothing || (newv[i] = val)
+    end
+    return NestedOuterRemakeBuffer(inner, newv)
+end
+
+@testset "`remake_buffer` Dict-only implementer" begin
+    sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
+    buf = DictOnlyRemakeBuffer([1.0, 2.0, 3.0])
+    newbuf = remake_buffer(sys, buf, [:y], [7.0])
+    @test newbuf isa DictOnlyRemakeBuffer
+    @test newbuf.v == [1.0, 7.0, 3.0]
+
+    narrow = NarrowDictOnlyRemakeBuffer([1.0, 2.0, 3.0])
+    newnarrow = remake_buffer(sys, narrow, [:y], [7.0])
+    @test newnarrow isa NarrowDictOnlyRemakeBuffer
+    @test newnarrow.v == [1.0, 7.0, 3.0]
+
+    nested = NestedOuterRemakeBuffer(
+        NestedInnerRemakeBuffer([1.0, 2.0, 3.0]), [1.0, 2.0, 3.0]
+    )
+    newnested = remake_buffer(sys, nested, [:y], [7.0])
+    @test newnested isa NestedOuterRemakeBuffer
+    @test newnested.a.v == [1.0, 7.0, 3.0]
+    @test newnested.v == [1.0, 7.0, 3.0]
+end
