@@ -131,6 +131,33 @@ end
     @test occursin("remake_buffer", sprint(showerror, custom_err.value))
 end
 
+struct NestedInnerRemakeBuffer
+    v::Vector{Float64}
+end
+
+struct NestedOuterRemakeBuffer
+    a::NestedInnerRemakeBuffer
+    v::Vector{Float64}
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::NestedInnerRemakeBuffer, vals::Dict
+    )
+    return _dict_only_remake(sys, oldbuffer, vals)
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::NestedOuterRemakeBuffer, vals::Dict
+    )
+    inner = remake_buffer(sys, oldbuffer.a, collect(keys(vals)), collect(values(vals)))
+    newv = copy(oldbuffer.v)
+    for (k, val) in vals
+        i = variable_index(sys, k)
+        i === nothing || (newv[i] = val)
+    end
+    return NestedOuterRemakeBuffer(inner, newv)
+end
+
 @testset "`remake_buffer` Dict-only implementer" begin
     sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
     buf = DictOnlyRemakeBuffer([1.0, 2.0, 3.0])
@@ -142,4 +169,12 @@ end
     newnarrow = remake_buffer(sys, narrow, [:y], [7.0])
     @test newnarrow isa NarrowDictOnlyRemakeBuffer
     @test newnarrow.v == [1.0, 7.0, 3.0]
+
+    nested = NestedOuterRemakeBuffer(
+        NestedInnerRemakeBuffer([1.0, 2.0, 3.0]), [1.0, 2.0, 3.0]
+    )
+    newnested = remake_buffer(sys, nested, [:y], [7.0])
+    @test newnested isa NestedOuterRemakeBuffer
+    @test newnested.a.v == [1.0, 7.0, 3.0]
+    @test newnested.v == [1.0, 7.0, 3.0]
 end

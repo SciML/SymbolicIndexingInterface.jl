@@ -19,7 +19,8 @@ instead of `idxs` and `vals` will dispatch to the new method. In addition, if no
 4-arg `remake_buffer` method exists for the buffer type, the generic 4-arg fallback
 calls `remake_buffer(sys, oldbuffer, Dict(idxs .=> vals))` so packages that only
 implemented the deprecated 3-arg `Dict` API still work (including methods typed more
-narrowly than `Dict`, e.g. `Dict{Symbol,Float64}`). If that call re-enters this
+narrowly than `Dict`, e.g. `Dict{Symbol,Float64}`, and nested remakes of a different
+buffer that also only has a Dict method). If the same `oldbuffer` object re-enters this
 fallback through SII's own deprecated catch-all, an `ArgumentError` is thrown naming
 the buffer type instead of recursing.
 
@@ -70,15 +71,16 @@ const _REMAKE_BUFFER_DICT_FALLBACK = :__SII_remake_buffer_dict_fallback__
 
 function remake_buffer(sys, oldbuffer, idxs, vals)
     # Preserve master's Dict dispatch for deprecated 3-arg implementers. Detect
-    # re-entry from SII's own @deprecate catch-all instead of reflecting with `which`.
-    if get(task_local_storage(), _REMAKE_BUFFER_DICT_FALLBACK, false)
+    # same-object re-entry from SII's own @deprecate catch-all (nested remakes of a
+    # different buffer must still forward).
+    if get(task_local_storage(), _REMAKE_BUFFER_DICT_FALLBACK, nothing) === oldbuffer
         throw(
             ArgumentError(
-                "remake_buffer is not implemented for buffer type $(typeof(oldbuffer)); define a method `remake_buffer(::Any, ::$(typeof(oldbuffer)), idxs, vals)`"
+                "no applicable `remake_buffer` method for buffer type $(typeof(oldbuffer)); define a method `remake_buffer(::Any, ::$(typeof(oldbuffer)), idxs, vals)`"
             )
         )
     end
-    return task_local_storage(_REMAKE_BUFFER_DICT_FALLBACK, true) do
+    return task_local_storage(_REMAKE_BUFFER_DICT_FALLBACK, oldbuffer) do
         remake_buffer(sys, oldbuffer, Dict(idxs .=> vals))
     end
 end
