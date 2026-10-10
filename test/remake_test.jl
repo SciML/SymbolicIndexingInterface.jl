@@ -158,6 +158,51 @@ function SymbolicIndexingInterface.remake_buffer(
     return NestedOuterRemakeBuffer(inner, newv)
 end
 
+struct OneAtATimeRemakeBuffer
+    v::Vector{Float64}
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::OneAtATimeRemakeBuffer, vals::Dict
+    )
+    if length(vals) == 1
+        return _dict_only_remake(sys, oldbuffer, vals)
+    end
+    k1 = first(keys(vals))
+    buf = remake_buffer(sys, oldbuffer, [k1], [vals[k1]])
+    rest_ks = [k for k in keys(vals) if k !== k1]
+    rest_vs = [vals[k] for k in rest_ks]
+    return remake_buffer(sys, buf, rest_ks, rest_vs)
+end
+
+struct IsbitsRemakeBuffer
+    x::Float64
+    y::Float64
+    z::Float64
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::IsbitsRemakeBuffer, vals::Dict
+    )
+    if length(vals) == 1
+        k, v = only(pairs(vals))
+        x, y, z = oldbuffer.x, oldbuffer.y, oldbuffer.z
+        if k === :x || k === 1
+            x = v
+        elseif k === :y || k === 2
+            y = v
+        elseif k === :z || k === 3
+            z = v
+        end
+        return IsbitsRemakeBuffer(x, y, z)
+    end
+    k1 = first(keys(vals))
+    buf = remake_buffer(sys, oldbuffer, [k1], [vals[k1]])
+    rest_ks = [k for k in keys(vals) if k !== k1]
+    rest_vs = [vals[k] for k in rest_ks]
+    return remake_buffer(sys, buf, rest_ks, rest_vs)
+end
+
 @testset "`remake_buffer` Dict-only implementer" begin
     sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
     buf = DictOnlyRemakeBuffer([1.0, 2.0, 3.0])
@@ -177,4 +222,19 @@ end
     @test newnested isa NestedOuterRemakeBuffer
     @test newnested.a.v == [1.0, 7.0, 3.0]
     @test newnested.v == [1.0, 7.0, 3.0]
+
+    one = remake_buffer(
+        sys, OneAtATimeRemakeBuffer([1.0, 2.0, 3.0]), [:x, :y], [9.0, 8.0]
+    )
+    @test one isa OneAtATimeRemakeBuffer
+    @test one.v == [9.0, 8.0, 3.0]
+
+    isbits_changed = remake_buffer(
+        sys, IsbitsRemakeBuffer(1.0, 2.0, 3.0), [:x, :y], [9.0, 8.0]
+    )
+    @test isbits_changed == IsbitsRemakeBuffer(9.0, 8.0, 3.0)
+    isbits_equal_peel = remake_buffer(
+        sys, IsbitsRemakeBuffer(1.0, 2.0, 3.0), [:x, :y], [1.0, 8.0]
+    )
+    @test isbits_equal_peel == IsbitsRemakeBuffer(1.0, 8.0, 3.0)
 end
