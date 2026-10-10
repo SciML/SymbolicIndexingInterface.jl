@@ -91,15 +91,29 @@ struct DictOnlyRemakeBuffer
     v::Vector{Float64}
 end
 
-function SymbolicIndexingInterface.remake_buffer(
-        sys, oldbuffer::DictOnlyRemakeBuffer, vals::Dict
-    )
+struct NarrowDictOnlyRemakeBuffer
+    v::Vector{Float64}
+end
+
+function _dict_only_remake(sys, oldbuffer, vals::Dict)
     newv = copy(oldbuffer.v)
     for (k, val) in vals
         i = variable_index(sys, k)
         i === nothing || (newv[i] = val)
     end
-    return DictOnlyRemakeBuffer(newv)
+    return typeof(oldbuffer)(newv)
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::DictOnlyRemakeBuffer, vals::Dict
+    )
+    return _dict_only_remake(sys, oldbuffer, vals)
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::NarrowDictOnlyRemakeBuffer, vals::Dict{Symbol, Float64}
+    )
+    return _dict_only_remake(sys, oldbuffer, vals)
 end
 
 @testset "`remake_buffer` unsupported buffer types" begin
@@ -123,4 +137,9 @@ end
     newbuf = remake_buffer(sys, buf, [:y], [7.0])
     @test newbuf isa DictOnlyRemakeBuffer
     @test newbuf.v == [1.0, 7.0, 3.0]
+
+    narrow = NarrowDictOnlyRemakeBuffer([1.0, 2.0, 3.0])
+    newnarrow = remake_buffer(sys, narrow, [:y], [7.0])
+    @test newnarrow isa NarrowDictOnlyRemakeBuffer
+    @test newnarrow.v == [1.0, 7.0, 3.0]
 end
