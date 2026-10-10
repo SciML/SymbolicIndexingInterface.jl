@@ -12,11 +12,15 @@ type-stability, to maintain performance. The returned buffer should be of the sa
 (ignoring type-parameters) as `oldbuffer`.
 
 This method is already implemented for `oldbuffer::AbstractArray` and `oldbuffer::Tuple`,
-and supports static arrays as well. Unsupported buffer types throw an `ArgumentError`
-naming the type; define a dedicated `remake_buffer` method for that buffer type.
+and supports static arrays as well.
 
 The deprecated version of this method which takes a `Dict` mapping symbols to values
-instead of `idxs` and `vals` will dispatch to the new method.
+instead of `idxs` and `vals` will dispatch to the new method. In addition, if no
+4-arg `remake_buffer` method exists for the buffer type, the generic 4-arg fallback
+calls `remake_buffer(sys, oldbuffer, Dict(idxs .=> vals))` when a non-SII 3-arg
+`Dict` method applies for that buffer type (packages that only implemented the
+deprecated API). If the only applicable 3-arg method is SII's own deprecated
+fallback, an `ArgumentError` is thrown naming the buffer type instead of recursing.
 
 Note that the new method signature allows `idxs` to be indexes, instead of requiring
 that they be symbolic variables. Thus, any type which implements the new method must
@@ -62,11 +66,17 @@ end
 remake_buffer(sys, ::Nothing, idxs, vals) = nothing
 
 function remake_buffer(sys, oldbuffer, idxs, vals)
-    throw(
-        ArgumentError(
-            "remake_buffer is not implemented for buffer type $(typeof(oldbuffer)); define a method `remake_buffer(::Any, ::$(typeof(oldbuffer)), idxs, vals)`"
+    # Forward to a package's deprecated 3-arg Dict method when one exists; only
+    # SII's own catch-all deprecate would recurse, so error in that case.
+    m = which(remake_buffer, Tuple{typeof(sys), typeof(oldbuffer), Dict{Any, Any}})
+    if m.module === @__MODULE__
+        throw(
+            ArgumentError(
+                "remake_buffer is not implemented for buffer type $(typeof(oldbuffer)); define a method `remake_buffer(::Any, ::$(typeof(oldbuffer)), idxs, vals)`"
+            )
         )
-    )
+    end
+    return remake_buffer(sys, oldbuffer, Dict(idxs .=> vals))
 end
 
 mutable struct TupleRemakeWrapper

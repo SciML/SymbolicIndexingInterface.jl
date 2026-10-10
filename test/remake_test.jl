@@ -87,6 +87,21 @@ struct UnsupportedRemakeBuffer
     v::Vector{Float64}
 end
 
+struct DictOnlyRemakeBuffer
+    v::Vector{Float64}
+end
+
+function SymbolicIndexingInterface.remake_buffer(
+        sys, oldbuffer::DictOnlyRemakeBuffer, vals::Dict
+    )
+    newv = copy(oldbuffer.v)
+    for (k, val) in vals
+        i = variable_index(sys, k)
+        i === nothing || (newv[i] = val)
+    end
+    return DictOnlyRemakeBuffer(newv)
+end
+
 @testset "`remake_buffer` unsupported buffer types" begin
     sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
     nt_err = @test_throws ArgumentError remake_buffer(
@@ -100,4 +115,12 @@ end
     )
     @test occursin("UnsupportedRemakeBuffer", sprint(showerror, custom_err.value))
     @test occursin("remake_buffer", sprint(showerror, custom_err.value))
+end
+
+@testset "`remake_buffer` Dict-only implementer" begin
+    sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
+    buf = DictOnlyRemakeBuffer([1.0, 2.0, 3.0])
+    newbuf = remake_buffer(sys, buf, [:y], [7.0])
+    @test newbuf isa DictOnlyRemakeBuffer
+    @test newbuf.v == [1.0, 7.0, 3.0]
 end
