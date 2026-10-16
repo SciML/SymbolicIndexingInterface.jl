@@ -80,6 +80,24 @@ mixed = [:x, :b, :(x + a)]
 mixed_idxs = get_all_timeseries_indexes(sc, mixed)
 @test mixed_idxs isa Set{Any}
 @test mixed_idxs == Set(Any[ContinuousTimeseries(), 1])
+for s in [:x, :t, :a, :b, :c, :q, :(x + a), :(2a), :(b + c)]
+    @test get_all_timeseries_indexes(sc, [s]) == get_all_timeseries_indexes(sc, s)
+    @test get_all_timeseries_indexes(sc, [[s]]) == get_all_timeseries_indexes(sc, s)
+end
+
+struct WrappedTimeseriesExpression
+    expr::Expr
+end
+SymbolicIndexingInterface.symbolic_type(::Type{WrappedTimeseriesExpression}) = ScalarSymbolic()
+function SymbolicIndexingInterface.get_all_timeseries_indexes(
+        sc::SymbolCache, s::WrappedTimeseriesExpression
+    )
+    return get_all_timeseries_indexes(sc, s.expr)
+end
+wrapped = WrappedTimeseriesExpression(:(x + c))
+@test get_all_timeseries_indexes(sc, wrapped) == Set(Any[ContinuousTimeseries(), 2])
+@test get_all_timeseries_indexes(sc, [wrapped]) == get_all_timeseries_indexes(sc, wrapped)
+@test get_all_timeseries_indexes(sc, [:b, wrapped]) == Set(Any[ContinuousTimeseries(), 1, 2])
 
 @noinline _get_all_timeseries_indexes_alloc_barrier(sc, sym) = get_all_timeseries_indexes(
     sc, sym

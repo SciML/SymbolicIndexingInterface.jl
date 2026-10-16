@@ -148,14 +148,18 @@ for symT in [Any, Expr, AbstractArray]
     end
 end
 
-function get_all_timeseries_indexes(sc::SymbolCache, sym)
+function _timeseries_index(sc::SymbolCache, sym)
     if is_variable(sc, sym) || is_independent_variable(sc, sym)
-        return Set([ContinuousTimeseries()])
+        return ContinuousTimeseries()
     elseif is_timeseries_parameter(sc, sym)
-        return Set([timeseries_parameter_index(sc, sym).timeseries_idx])
+        return timeseries_parameter_index(sc, sym).timeseries_idx
     else
-        return Set()
+        return nothing
     end
+end
+function get_all_timeseries_indexes(sc::SymbolCache, sym)
+    idx = _timeseries_index(sc, sym)
+    return idx === nothing ? Set() : Set([idx])
 end
 function get_all_timeseries_indexes(sc::SymbolCache, sym::Expr)
     exs = ExpressionSearcher()
@@ -165,25 +169,20 @@ function get_all_timeseries_indexes(sc::SymbolCache, sym::Expr)
     )
 end
 function _accumulate_timeseries_indexes!(acc, sc::SymbolCache, sym)
-    if is_variable(sc, sym) || is_independent_variable(sc, sym)
-        push!(acc, ContinuousTimeseries())
-    elseif is_timeseries_parameter(sc, sym)
-        push!(acc, timeseries_parameter_index(sc, sym).timeseries_idx)
-    end
-    return acc
-end
-function _accumulate_timeseries_indexes!(acc, sc::SymbolCache, sym::Expr)
     return union!(acc, get_all_timeseries_indexes(sc, sym))
 end
-function _accumulate_timeseries_indexes!(acc, sc::SymbolCache, sym::AbstractArray)
-    for s in sym
-        _accumulate_timeseries_indexes!(acc, sc, s)
-    end
+# `Symbol` is not owned by downstream packages, so it cannot carry a custom
+# `get_all_timeseries_indexes` method and can skip the per-element `Set`.
+function _accumulate_timeseries_indexes!(acc, sc::SymbolCache, sym::Symbol)
+    idx = _timeseries_index(sc, sym)
+    idx === nothing || push!(acc, idx)
     return acc
 end
 function get_all_timeseries_indexes(sc::SymbolCache, sym::AbstractArray)
     acc = Set()
-    _accumulate_timeseries_indexes!(acc, sc, sym)
+    for s in sym
+        _accumulate_timeseries_indexes!(acc, sc, s)
+    end
     return acc
 end
 function is_independent_variable(sc::SymbolCache, sym)
