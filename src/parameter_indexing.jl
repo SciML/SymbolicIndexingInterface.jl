@@ -236,7 +236,7 @@ function (gpo::GetParameterObserved{<:Vector})(::NotTimeseries, prob)
     # is the parameter object, so use that and pass `nothing` for the time expecting
     # it to not be used
     return if hasmethod(parameter_values, Tuple{typeof(prob)}) &&
-            (ps = parameter_values(prob)) != prob
+            (ps = parameter_values(prob)) !== prob
         gpo.obsfn(ps, current_time(prob))
     else
         gpo.obsfn(prob, nothing)
@@ -246,7 +246,7 @@ function (gpo::GetParameterObserved{<:Vector, true})(
         buffer::AbstractArray, ::NotTimeseries, prob
     )
     return if hasmethod(parameter_values, Tuple{typeof(prob)}) &&
-            (ps = parameter_values(prob)) != prob
+            (ps = parameter_values(prob)) !== prob
         gpo.obsfn(buffer, ps, current_time(prob))
     else
         gpo.obsfn(buffer, prob, nothing)
@@ -263,7 +263,7 @@ function (gpo::GetParameterObserved{<:Vector, false})(::AbstractArray, ::Timeser
 end
 function (gpo::GetParameterObserved)(::NotTimeseries, prob)
     return if hasmethod(parameter_values, Tuple{typeof(prob)}) &&
-            (ps = parameter_values(prob)) != prob
+            (ps = parameter_values(prob)) !== prob
         gpo.obsfn(ps, current_time(prob))
     else
         gpo.obsfn(prob, nothing)
@@ -271,7 +271,7 @@ function (gpo::GetParameterObserved)(::NotTimeseries, prob)
 end
 function (gpo::GetParameterObserved)(buffer::AbstractArray, ::NotTimeseries, prob)
     if hasmethod(parameter_values, Tuple{typeof(prob)}) &&
-            (ps = parameter_values(prob)) != prob
+            (ps = parameter_values(prob)) !== prob
         gpo.obsfn(buffer, ps, current_time(prob))
     else
         gpo.obsfn(buffer, prob, nothing)
