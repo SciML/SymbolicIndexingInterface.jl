@@ -765,8 +765,11 @@ function _setp(sys, ::NotSymbolic, ::NotSymbolic, p)
 end
 
 function _setp(sys, ::ScalarSymbolic, ::SymbolicTypeTrait, p)
-    idx = parameter_index(sys, p)
-    return SetParameterIndex(idx)
+    if is_parameter(sys, p)
+        idx = parameter_index(sys, p)
+        return SetParameterIndex(idx)
+    end
+    error("Invalid symbol $p for `setp`")
 end
 
 struct MultipleSetters{S} <: AbstractSetIndexer

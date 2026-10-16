@@ -617,6 +617,7 @@ for sym in [
         (:err, :b),
     ]
     @test_throws ErrorException getp(sys, sym)
+    @test_throws ErrorException setp(sys, sym)
 end
 
 let fs = fs, sys = sys
