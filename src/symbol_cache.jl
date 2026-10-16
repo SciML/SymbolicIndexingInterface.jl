@@ -150,16 +150,16 @@ end
 
 function _timeseries_index(sc::SymbolCache, sym)
     if is_variable(sc, sym) || is_independent_variable(sc, sym)
-        return ContinuousTimeseries()
+        return Some(ContinuousTimeseries())
     elseif is_timeseries_parameter(sc, sym)
-        return timeseries_parameter_index(sc, sym).timeseries_idx
+        return Some(timeseries_parameter_index(sc, sym).timeseries_idx)
     else
         return nothing
     end
 end
 function get_all_timeseries_indexes(sc::SymbolCache, sym)
     idx = _timeseries_index(sc, sym)
-    return idx === nothing ? Set() : Set([idx])
+    return idx === nothing ? Set() : Set([something(idx)])
 end
 function get_all_timeseries_indexes(sc::SymbolCache, sym::Expr)
     exs = ExpressionSearcher()
@@ -175,7 +175,7 @@ end
 # `get_all_timeseries_indexes` method and can skip the per-element `Set`.
 function _accumulate_timeseries_indexes!(acc, sc::SymbolCache, sym::Symbol)
     idx = _timeseries_index(sc, sym)
-    idx === nothing || push!(acc, idx)
+    idx === nothing || push!(acc, something(idx))
     return acc
 end
 function get_all_timeseries_indexes(sc::SymbolCache, sym::AbstractArray)

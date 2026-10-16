@@ -99,6 +99,17 @@ wrapped = WrappedTimeseriesExpression(:(x + c))
 @test get_all_timeseries_indexes(sc, [wrapped]) == get_all_timeseries_indexes(sc, wrapped)
 @test get_all_timeseries_indexes(sc, [:b, wrapped]) == Set(Any[ContinuousTimeseries(), 1, 2])
 
+sc_nothing_idx = SymbolCache(
+    [:x], [:p, :q], :t;
+    timeseries_parameters = Dict(:p => ParameterTimeseriesIndex(nothing, 1))
+)
+@test get_all_timeseries_indexes(sc_nothing_idx, :p) == Set([nothing])
+@test get_all_timeseries_indexes(sc_nothing_idx, [:p]) == Set([nothing])
+@test get_all_timeseries_indexes(sc_nothing_idx, [:x, :p, :q]) ==
+    Set(Any[ContinuousTimeseries(), nothing])
+@test isempty(get_all_timeseries_indexes(sc_nothing_idx, :q))
+@test isempty(get_all_timeseries_indexes(sc_nothing_idx, [:q]))
+
 @noinline _get_all_timeseries_indexes_alloc_barrier(sc, sym) = get_all_timeseries_indexes(
     sc, sym
 )
