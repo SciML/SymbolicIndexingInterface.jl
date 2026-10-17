@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial · SymbolicIndexingInterface.jl</title><script async src="https://www.googletagmanager.com/gtag/js?id=UA-90474609-3"></script><script>  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-90474609-3', {'page_path': location.pathname + location.search + location.hash});
+</script><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://docs.sciml.ai/SymbolicIndexingInterface/stable/tutorial/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="SymbolicIndexingInterface.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">SymbolicIndexingInterface.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Tutorial</a><ul class="internal"><li><a class="tocitem" href="#Defining-a-fallback"><span>Defining a fallback</span></a></li><li><a class="tocitem" href="#Defining-the-interface-in-its-entirety"><span>Defining the interface in its entirety</span></a></li><li><a class="tocitem" href="#Optional-methods"><span>Optional methods</span></a></li><li class="toplevel"><a class="tocitem" href="#Implementing-the-SymbolicTypeTrait-for-a-type"><span>Implementing the <code>SymbolicTypeTrait</code> for a type</span></a></li></ul></li><li><a class="tocitem" href="../usage/">Usage</a></li><li><a class="tocitem" href="../api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tutorial</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorial</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/SciML/SymbolicIndexingInterface.jl/blob/master/docs/src/tutorial.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Implementing-SymbolicIndexingInterface-for-a-type"><a class="docs-heading-anchor" href="#Implementing-SymbolicIndexingInterface-for-a-type">Implementing SymbolicIndexingInterface for a type</a><a id="Implementing-SymbolicIndexingInterface-for-a-type-1"></a><a class="docs-heading-anchor-permalink" href="#Implementing-SymbolicIndexingInterface-for-a-type" title="Permalink"></a></h1><p>Implementing the interface for a type allows it to be used by existing symbolic indexing infrastructure. There are multiple ways to implement it, and the entire interface is not always necessary.</p><h2 id="Defining-a-fallback"><a class="docs-heading-anchor" href="#Defining-a-fallback">Defining a fallback</a><a id="Defining-a-fallback-1"></a><a class="docs-heading-anchor-permalink" href="#Defining-a-fallback" title="Permalink"></a></h2><p>The simplest case is when the type contains an object that already implements the interface. All its methods can simply be forwarded to that object. To do so, SymbolicIndexingInterface.jl provides the <a href="../api/#SymbolicIndexingInterface.symbolic_container"><code>symbolic_container</code></a> method. For example,</p><pre><code class="language-julia hljs">struct MySolutionWrapper{T&lt;:SciMLBase.AbstractTimeseriesSolution}
+  sol::T
+  # other properties...
+end
+
+symbolic_container(sys::MySolutionWrapper) = sys.sol</code></pre><p><code>MySolutionWrapper</code> wraps an <code>AbstractTimeseriesSolution</code> which already implements the interface. Since <code>symbolic_container</code> will return the wrapped solution, all method calls such as <code>is_parameter(sys::MySolutionWrapper, sym)</code> will be forwarded to <code>is_parameter(sys.sol, sym)</code>.</p><p>In case some methods need to function differently than those of the wrapped type, they can selectively be defined. For example, suppose <code>MySolutionWrapper</code> does not support observed quantities. The following method can be defined (in addition to the one above):</p><pre><code class="language-julia hljs">is_observed(sys::MySolutionWrapper, sym) = false</code></pre><h2 id="Defining-the-interface-in-its-entirety"><a class="docs-heading-anchor" href="#Defining-the-interface-in-its-entirety">Defining the interface in its entirety</a><a id="Defining-the-interface-in-its-entirety-1"></a><a class="docs-heading-anchor-permalink" href="#Defining-the-interface-in-its-entirety" title="Permalink"></a></h2><p>Not all of the methods in the interface are required. Some only need to be implemented if a type supports specific functionality. Consider the following struct which needs to implement the interface:</p><pre><code class="language-julia hljs">struct ExampleSolution
+  state_index::Dict{Symbol,Int}
+  parameter_index::Dict{Symbol,Int}
+  independent_variable::Union{Symbol,Nothing}
+  # mapping from observed variable to Expr to calculate its value
+  observed::Dict{Symbol,Expr}
+  u::Vector{Vector{Float64}}
+  p::Vector{Float64}
+  t::Vector{Float64}
+end</code></pre><h3 id="Mandatory-methods"><a class="docs-heading-anchor" href="#Mandatory-methods">Mandatory methods</a><a id="Mandatory-methods-1"></a><a class="docs-heading-anchor-permalink" href="#Mandatory-methods" title="Permalink"></a></h3><pre><code class="language-julia hljs">function SymbolicIndexingInterface.is_variable(sys::ExampleSolution, sym)
+  haskey(sys.state_index, sym)
+end
+
+function SymbolicIndexingInterface.variable_index(sys::ExampleSolution, sym)
+  get(sys.state_index, sym, nothing)
+end
+
+function SymbolicIndexingInterface.variable_symbols(sys::ExampleSolution)
+  collect(keys(sys.state_index))
+end
+
+function SymbolicIndexingInterface.is_parameter(sys::ExampleSolution, sym)
+  haskey(sys.parameter_index, sym)
+end
+
+function SymbolicIndexingInterface.parameter_index(sys::ExampleSolution, sym)
+  get(sys.parameter_index, sym, nothing)
+end
+
+function SymbolicIndexingInterface.parameter_symbols(sys::ExampleSolution)
+  collect(keys(sys.parameter_index))
+end
+
+function SymbolicIndexingInterface.is_independent_variable(sys::ExampleSolution, sym)
+  # note we have to check separately for `nothing`, otherwise
+  # `is_independent_variable(p, nothing)` would return `true`.
+  sys.independent_variable !== nothing &amp;&amp; sym === sys.independent_variable
+end
+
+function SymbolicIndexingInterface.independent_variable_symbols(sys::ExampleSolution)
+  sys.independent_variable === nothing ? [] : [sys.independent_variable]
+end
+
+# this type accepts `Expr` for observed expressions involving state/parameter/observed
+# variables
+SymbolicIndexingInterface.is_observed(sys::ExampleSolution, sym) = sym isa Expr || sym isa Symbol &amp;&amp; haskey(sys.observed, sym)
+
+function SymbolicIndexingInterface.observed(sys::ExampleSolution, sym::Expr)
+  if is_time_dependent(sys)
+    return function (u, p, t)
+      # compute value from `sym`, leveraging `variable_index` and
+      # `parameter_index` to turn symbols into indices
+    end
+  else
+    return function (u, p)
+      # compute value from `sym`, leveraging `variable_index` and
+      # `parameter_index` to turn symbols into indices
+    end
+  end
+end
+
+function SymbolicIndexingInterface.is_time_dependent(sys::ExampleSolution)
+  sys.independent_variable !== nothing
+end
+
+SymbolicIndexingInterface.constant_structure(::ExampleSolution) = true
+
+function SymbolicIndexingInterface.all_solvable_symbols(sys::ExampleSolution)
+  return vcat(
+    collect(keys(sys.state_index)),
+    collect(keys(sys.observed)),
+  )
+end
+
+function SymbolicIndexingInterface.all_symbols(sys::ExampleSolution)
+  return vcat(
+    all_solvable_symbols(sys),
+    collect(keys(sys.parameter_index)),
+    sys.independent_variable === nothing ? Symbol[] : sys.independent_variable
+  )
+end</code></pre><p>Note that the method definitions are all assuming <code>constant_structure(p) == true</code>.</p><p>In case <code>constant_structure(p) == false</code>, the following methods would change:</p><ul><li><code>constant_structure(::ExampleSolution) = false</code></li><li><code>variable_index(sys::ExampleSolution, sym)</code> would become <code>variable_index(sys::ExampleSolution, sym i)</code> where <code>i</code> is the time index at which the index of <code>sym</code> is required.</li><li><code>variable_symbols(sys::ExampleSolution)</code> would become <code>variable_symbols(sys::ExampleSolution, i)</code> where <code>i</code> is the time index at which the variable symbols are required.</li><li><code>observed(sys::ExampleSolution, sym)</code> would become <code>observed(sys::ExampleSolution, sym, i)</code> where <code>i</code> is either the time index at which the index of <code>sym</code> is required or a <code>Vector</code> of state symbols at the current time index.</li></ul><h2 id="Optional-methods"><a class="docs-heading-anchor" href="#Optional-methods">Optional methods</a><a id="Optional-methods-1"></a><a class="docs-heading-anchor-permalink" href="#Optional-methods" title="Permalink"></a></h2><p>Note that <code>observed</code> is optional if <code>is_observed</code> is always <code>false</code>, or the type is only responsible for identifying observed values and <code>observed</code> will always be called on a type that wraps this type. An example is <code>ModelingToolkit.AbstractSystem</code>, which can identify whether a value is observed, but cannot implement <code>observed</code> itself.</p><p>Other optional methods relate to parameter indexing. If a type contains the values of parameter variables, it must implement <a href="../api/#SymbolicIndexingInterface.parameter_values"><code>parameter_values</code></a>. This will allow the default definitions of <a href="../api/#SymbolicIndexingInterface.getp"><code>getp</code></a> and <a href="../api/#SymbolicIndexingInterface.setp"><code>setp</code></a> to work. While <code>setp</code> is not typically useful for solution objects, it may be useful for integrators. Typically the default implementations for <code>getp</code> and <code>setp</code> will suffice and manually defining them is not necessary.</p><pre><code class="language-julia hljs">function SymbolicIndexingInterface.parameter_values(sys::ExampleSolution)
+  sys.p
+end</code></pre><h1 id="Implementing-the-SymbolicTypeTrait-for-a-type"><a class="docs-heading-anchor" href="#Implementing-the-SymbolicTypeTrait-for-a-type">Implementing the <code>SymbolicTypeTrait</code> for a type</a><a id="Implementing-the-SymbolicTypeTrait-for-a-type-1"></a><a class="docs-heading-anchor-permalink" href="#Implementing-the-SymbolicTypeTrait-for-a-type" title="Permalink"></a></h1><p>The <code>SymbolicTypeTrait</code> is used to identify values that can act as symbolic variables. It has three variants:</p><ul><li><a href="../api/#SymbolicIndexingInterface.NotSymbolic"><code>NotSymbolic</code></a> for quantities that are not symbolic. This is the default for all types.</li><li><a href="../api/#SymbolicIndexingInterface.ScalarSymbolic"><code>ScalarSymbolic</code></a> for quantities that are symbolic, and represent a single logical value.</li><li><a href="../api/#SymbolicIndexingInterface.ArraySymbolic"><code>ArraySymbolic</code></a> for quantities that are symbolic, and represent an array of values. Types implementing this trait must return an array of <code>ScalarSymbolic</code> variables of the appropriate size and dimensions when <code>collect</code>ed.</li></ul><p>The trait is implemented through the <a href="../api/#SymbolicIndexingInterface.symbolic_type"><code>symbolic_type</code></a> function. Consider the following example types:</p><pre><code class="language-julia hljs">struct MySym
+  name::Symbol
+end
+
+struct MySymArr{N}
+  name::Symbol
+  size::NTuple{N,Int}
+end</code></pre><p>They must implement the following functions:</p><pre><code class="language-julia hljs">SymbolicIndexingInterface.symbolic_type(::Type{MySym}) = ScalarSymbolic()
+SymbolicIndexingInterface.hasname(::MySym) = true
+SymbolicIndexingInterface.getname(sym::MySym) = sym.name
+
+SymbolicIndexingInterface.symbolic_type(::Type{&lt;:MySymArr}) = ArraySymbolic()
+SymbolicIndexingInterface.hasname(::MySymArr) = true
+SymbolicIndexingInterface.getname(sym::MySymArr) = sym.name
+function Base.collect(sym::MySymArr)
+  [
+    MySym(Symbol(sym.name, :_, join(idxs, &quot;_&quot;)))
+    for idxs in Iterators.product(Base.OneTo.(sym.size)...)
+  ]
+end</code></pre><p><a href="../api/#SymbolicIndexingInterface.hasname"><code>hasname</code></a> is not required to always be <code>true</code> for symbolic types. For example, <code>Symbolics.Num</code> returns <code>false</code> whenever the wrapped value is a number, or an expression.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../usage/">Usage »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 27 December 2023 16:16">Wednesday 27 December 2023</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
