@@ -148,14 +148,18 @@ for symT in [Any, Expr, AbstractArray]
     end
 end
 
-function get_all_timeseries_indexes(sc::SymbolCache, sym)
+function _timeseries_index(sc::SymbolCache, sym)
     if is_variable(sc, sym) || is_independent_variable(sc, sym)
-        return Set([ContinuousTimeseries()])
+        return Some(ContinuousTimeseries())
     elseif is_timeseries_parameter(sc, sym)
-        return Set([timeseries_parameter_index(sc, sym).timeseries_idx])
+        return Some(timeseries_parameter_index(sc, sym).timeseries_idx)
     else
-        return Set()
+        return nothing
     end
+end
+function get_all_timeseries_indexes(sc::SymbolCache, sym)
+    idx = _timeseries_index(sc, sym)
+    return idx === nothing ? Set() : Set([something(idx)])
 end
 function get_all_timeseries_indexes(sc::SymbolCache, sym::Expr)
     exs = ExpressionSearcher()
@@ -164,8 +168,22 @@ function get_all_timeseries_indexes(sc::SymbolCache, sym::Expr)
         Base.Fix1(get_all_timeseries_indexes, sc), union, exs.declared; init = Set()
     )
 end
+function _accumulate_timeseries_indexes!(acc, sc::SymbolCache, sym)
+    return union!(acc, get_all_timeseries_indexes(sc, sym))
+end
+# `Symbol` is not owned by downstream packages, so it cannot carry a custom
+# `get_all_timeseries_indexes` method and can skip the per-element `Set`.
+function _accumulate_timeseries_indexes!(acc, sc::SymbolCache, sym::Symbol)
+    idx = _timeseries_index(sc, sym)
+    idx === nothing || push!(acc, something(idx))
+    return acc
+end
 function get_all_timeseries_indexes(sc::SymbolCache, sym::AbstractArray)
-    return mapreduce(Base.Fix1(get_all_timeseries_indexes, sc), union, sym; init = Set())
+    acc = Set()
+    for s in sym
+        _accumulate_timeseries_indexes!(acc, sc, s)
+    end
+    return acc
 end
 function is_independent_variable(sc::SymbolCache, sym)
     sc.independent_variables === nothing && return false

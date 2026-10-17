@@ -76,6 +76,50 @@ sc = SymbolCache(
 @test isempty(get_all_timeseries_indexes(sc, :(2a)))
 @test isempty(get_all_timeseries_indexes(sc, [:(2a), :(3a)]))
 @test sort(collect(get_all_timeseries_indexes(sc, [:b, :c]))) == [1, 2]
+mixed = [:x, :b, :(x + a)]
+mixed_idxs = get_all_timeseries_indexes(sc, mixed)
+@test mixed_idxs isa Set{Any}
+@test mixed_idxs == Set(Any[ContinuousTimeseries(), 1])
+for s in [:x, :t, :a, :b, :c, :q, :(x + a), :(2a), :(b + c)]
+    @test get_all_timeseries_indexes(sc, [s]) == get_all_timeseries_indexes(sc, s)
+    @test get_all_timeseries_indexes(sc, [[s]]) == get_all_timeseries_indexes(sc, s)
+end
+
+struct WrappedTimeseriesExpression
+    expr::Expr
+end
+SymbolicIndexingInterface.symbolic_type(::Type{WrappedTimeseriesExpression}) = ScalarSymbolic()
+function SymbolicIndexingInterface.get_all_timeseries_indexes(
+        sc::SymbolCache, s::WrappedTimeseriesExpression
+    )
+    return get_all_timeseries_indexes(sc, s.expr)
+end
+wrapped = WrappedTimeseriesExpression(:(x + c))
+@test get_all_timeseries_indexes(sc, wrapped) == Set(Any[ContinuousTimeseries(), 2])
+@test get_all_timeseries_indexes(sc, [wrapped]) == get_all_timeseries_indexes(sc, wrapped)
+@test get_all_timeseries_indexes(sc, [:b, wrapped]) == Set(Any[ContinuousTimeseries(), 1, 2])
+
+sc_nothing_idx = SymbolCache(
+    [:x], [:p, :q], :t;
+    timeseries_parameters = Dict(:p => ParameterTimeseriesIndex(nothing, 1))
+)
+@test get_all_timeseries_indexes(sc_nothing_idx, :p) == Set([nothing])
+@test get_all_timeseries_indexes(sc_nothing_idx, [:p]) == Set([nothing])
+@test get_all_timeseries_indexes(sc_nothing_idx, [:x, :p, :q]) ==
+    Set(Any[ContinuousTimeseries(), nothing])
+@test isempty(get_all_timeseries_indexes(sc_nothing_idx, :q))
+@test isempty(get_all_timeseries_indexes(sc_nothing_idx, [:q]))
+
+@noinline _get_all_timeseries_indexes_alloc_barrier(sc, sym) = get_all_timeseries_indexes(
+    sc, sym
+)
+let
+    sc_alloc = SymbolCache([Symbol(:x, i) for i in 1:100], [:p1, :p2], :t)
+    vars = [Symbol(:x, i) for i in 1:100]
+    _get_all_timeseries_indexes_alloc_barrier(sc_alloc, vars)
+    allocs = @allocations _get_all_timeseries_indexes_alloc_barrier(sc_alloc, vars)
+    @test allocs <= 16
+end
 
 @test_throws ArgumentError SymbolCache(
     [:x, :y], [:a, :b], :t;
