@@ -114,7 +114,19 @@ end
 
 function _timeseries_value(ptc::ParameterTimeseriesCollection, ts_idx, t)
     ts_obj = ptc[ts_idx]
-    time_idx = searchsortedlast(current_time(ts_obj), t)
+    ts_times = current_time(ts_obj)
+    time_idx = searchsortedlast(ts_times, t)
+    if time_idx < firstindex(ts_times)
+        throw(
+            ArgumentError(
+                if isempty(ts_times)
+                    "Parameter timeseries $ts_idx has no saved values, so its value at time $t is unknown."
+                else
+                    "Parameter timeseries $ts_idx has no saved value at or before time $t; its first saved value is at time $(first(ts_times))."
+                end
+            )
+        )
+    end
     value = state_values(ts_obj, time_idx)
     return value
 end

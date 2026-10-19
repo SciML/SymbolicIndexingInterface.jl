@@ -584,4 +584,24 @@ SymbolicIndexingInterface.get_history_function(fs::MixedTSSolution) = t -> t .* 
         ParameterTimeseriesCollection([deepcopy(b_ts)], deepcopy(p0))
     )
     @test_throws MixedParameterTimeseriesIndexError o(Timeseries(), fs)
+
+    # a parameter timeseries without a saved value at the time of a state is an error,
+    # not an out-of-bounds index
+    for (b_ts, msg) in [
+            (MixedTSDiffEqArray(Float64[], Vector{Float64}[]), "has no saved values"),
+            (MixedTSDiffEqArray([0.5, 0.9], [[1.0], [2.0]]), "first saved value is at time 0.5"),
+        ]
+        fs = MixedTSSolution(
+            sc, [i * ones(3) for i in 1:5], [0.2i for i in 1:5], deepcopy(p0),
+            ParameterTimeseriesCollection([b_ts], deepcopy(p0))
+        )
+        err = try
+            getsym(sc, :(x + b))(fs)
+            nothing
+        catch e
+            e
+        end
+        @test err isa ArgumentError
+        @test occursin(msg, sprint(showerror, err))
+    end
 end
