@@ -704,7 +704,7 @@ for (t1, t2) in [
     end
 end
 
-function _getp(sys, ::ArraySymbolic, ::SymbolicTypeTrait, p)
+function _getp(sys, ::ArraySymbolic, element_type::SymbolicTypeTrait, p)
     if is_parameter(sys, p)
         idx = parameter_index(sys, p)
         if is_timeseries_parameter(sys, p)
@@ -715,6 +715,8 @@ function _getp(sys, ::ArraySymbolic, ::SymbolicTypeTrait, p)
         else
             return GetParameterIndex(idx)
         end
+    elseif is_observed(sys, p)
+        return _getp(sys, ScalarSymbolic(), element_type, p)
     end
     return getp(sys, collect(p))
 end

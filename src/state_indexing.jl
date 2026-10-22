@@ -393,7 +393,7 @@ for (t1, t2) in [
     end
 end
 
-function _getsym(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
+function _getsym(sys, ::ArraySymbolic, element_type::SymbolicTypeTrait, sym)
     if is_variable(sys, sym)
         idx = variable_index(sys, sym)
         # Directly create GetStateIndex instead of recursive getsym call
@@ -401,6 +401,8 @@ function _getsym(sys, ::ArraySymbolic, ::SymbolicTypeTrait, sym)
         return GetStateIndex(idx)
     elseif is_parameter(sys, sym)
         return getp(sys, sym)
+    elseif is_observed(sys, sym)
+        return _getsym(sys, ScalarSymbolic(), element_type, sym)
     end
     return getsym(sys, collect(sym))
 end
