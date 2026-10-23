@@ -585,3 +585,64 @@ SymbolicIndexingInterface.get_history_function(fs::MixedTSSolution) = t -> t .* 
     )
     @test_throws MixedParameterTimeseriesIndexError o(Timeseries(), fs)
 end
+
+# A parameter container that hides its concrete type behind an `Any` field, like
+# `SciMLBase.DespecializedParameters`. Whole-timeseries observed calls should cross
+# `with_concrete_parameters` once, so the observed function runs with the concrete
+# parameter object and the broadcast infers a concrete element type.
+struct OpaqueParameters
+    p::Any
+end
+Base.getindex(op::OpaqueParameters, i...) = op.p[i...]
+SymbolicIndexingInterface.parameter_values(op::OpaqueParameters) = op
+SymbolicIndexingInterface.parameter_values(op::OpaqueParameters, i) = op.p[i]
+Base.@noinline _opaque_barrier(f, p, args...) = f(p, args...)
+function SymbolicIndexingInterface.with_concrete_parameters(
+        f, op::OpaqueParameters, args...
+    )
+    return _opaque_barrier(f, op.p, args...)
+end
+
+struct ParameterTypeRecorder{S <: SymbolCache}
+    sys::S
+    seen::Base.RefValue{DataType}
+end
+SymbolicIndexingInterface.symbolic_container(ptr::ParameterTypeRecorder) = ptr.sys
+function SymbolicIndexingInterface.observed(ptr::ParameterTypeRecorder, sym)
+    return let inner = observed(ptr.sys, sym), seen = ptr.seen
+        function recording_observed(u, p, t)
+            seen[] = typeof(p)
+            return inner(u, p, t)
+        end
+    end
+end
+
+@testset "with_concrete_parameters" begin
+    @test with_concrete_parameters(+, 1, 2, 3) == 6
+
+    seen = Ref{DataType}(Nothing)
+    sys = ParameterTypeRecorder(SymbolCache([:x, :y, :z], [:a, :b, :c], :t), seen)
+    u = [[1.0, 2.0, 3.0] .* i for i in 1:11]
+    p = [10.0, 20.0, 30.0]
+    ts = collect(0.0:0.1:1.0)
+    fs = FakeSolution(sys, u, OpaqueParameters(p), ts)
+    getter = getsym(sys, :(x + a))
+    expected = [1.0i + 10.0 for i in 1:11]
+
+    @test getter(fs) == expected
+    @test getter(fs) isa Vector{Float64}
+    @test seen[] === Vector{Float64}
+
+    seen[] = Nothing
+    @test getter(fs, 2:4) == expected[2:4]
+    @test getter(fs, 2:4) isa Vector{Float64}
+    @test seen[] === Vector{Float64}
+
+    seen[] = Nothing
+    mask = ts .< 0.5
+    @test getter(fs, mask) == expected[mask]
+    @test getter(fs, mask) isa Vector{Float64}
+    @test seen[] === Vector{Float64}
+
+    @test getter(fs, 3) == expected[3]
+end
