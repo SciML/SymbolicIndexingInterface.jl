@@ -91,7 +91,8 @@ end
 # Bodies run below the despecialization barrier (see `with_concrete_parameters`), so
 # `p` is concrete there and the broadcast infers a concrete element type.
 _observed_timeseries(p, o::TimeDependentObservedFunction, u, t) = o.obsfn.(u, (p,), t)
-function _observed_timeseries(p, o::NonMarkovianObservedFunction, u, t, h)
+# `h` is only passed through, so a closure would compile as `h::Function` without `H`.
+function _observed_timeseries(p, o::NonMarkovianObservedFunction, u, t, h::H) where {H}
     return o.obsfn.(u, (h,), (p,), t)
 end
 _observed_at(p, o::TimeDependentObservedFunction, prob, i) = o.obsfn(

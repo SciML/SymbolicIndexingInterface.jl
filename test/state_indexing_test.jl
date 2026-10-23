@@ -646,3 +646,38 @@ end
 
     @test getter(fs, 3) == expected[3]
 end
+
+# A non-Markovian solution whose history function is a closure. Julia compiles a
+# `Function` argument that a method only passes through as `::Function`, so the
+# whole-timeseries observed call must explicitly specialize on the history function.
+struct ClosureHistorySolution{U, P, T, H}
+    u::U
+    p::P
+    t::T
+    h::H
+end
+SymbolicIndexingInterface.is_timeseries(::Type{<:ClosureHistorySolution}) = Timeseries()
+SymbolicIndexingInterface.state_values(fs::ClosureHistorySolution) = fs.u
+SymbolicIndexingInterface.parameter_values(fs::ClosureHistorySolution) = fs.p
+SymbolicIndexingInterface.current_time(fs::ClosureHistorySolution) = fs.t
+SymbolicIndexingInterface.get_history_function(fs::ClosureHistorySolution) = fs.h
+
+_timeseries_allocs(o, fs) = @allocated o(Timeseries(), fs)
+
+@testset "Non-Markovian whole-timeseries observed call with a closure history" begin
+    u = [[1.0, 2.0, 3.0] .* i for i in 1:11]
+    ts = collect(0.0:0.1:1.0)
+    delay = 0.1
+    fs = ClosureHistorySolution(u, [10.0, 20.0, 30.0], ts, t -> t - delay)
+    markovian = TimeDependentObservedFunction{true}(
+        ContinuousTimeseries(), (u, p, t) -> u[1] + p[1] + t
+    )
+    nonmarkovian = TimeDependentObservedFunction{false}(
+        ContinuousTimeseries(), (u, h, p, t) -> u[1] + p[1] + h(t)
+    )
+
+    @test nonmarkovian(Timeseries(), fs) ≈ [1.0i + 10.0 + ts[i] - delay for i in 1:11]
+    _timeseries_allocs(markovian, fs)
+    _timeseries_allocs(nonmarkovian, fs)
+    @test _timeseries_allocs(nonmarkovian, fs) == _timeseries_allocs(markovian, fs)
+end
