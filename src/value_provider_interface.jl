@@ -18,6 +18,19 @@ function parameter_values end
 
 parameter_values(arr::AbstractArray) = arr
 parameter_values(arr::Tuple) = arr
+
+"""
+    with_concrete_parameters(f, p, args...)
+
+Call `f(p, args...)`. Parameter containers that hide their concrete type behind a stable
+wrapper (a despecialization barrier) should overload this to call `f` with the wrapped
+concrete object across a single non-inlined dynamic dispatch. This lets whole-timeseries
+operations such as broadcasting an observed function cross the barrier once instead of
+once per element, so the operation below the barrier infers a concrete element type.
+Code above the barrier never sees the concrete parameter type. The default is a plain
+call.
+"""
+with_concrete_parameters(f, p, args...) = f(p, args...)
 parameter_values(arr::AbstractArray, i) = arr[i]
 parameter_values(arr::Tuple, i) = arr[i]
 parameter_values(prob, i) = parameter_values(parameter_values(prob), i)

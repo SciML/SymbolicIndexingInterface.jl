@@ -27,7 +27,8 @@ include("symbol_cache.jl")
 
 export parameter_values, set_parameter!, finalize_parameters_hook!,
     get_parameter_timeseries_collection, with_updated_parameter_timeseries_values,
-    state_values, set_state!, current_time, get_history_function
+    state_values, set_state!, current_time, get_history_function,
+    with_concrete_parameters
 include("value_provider_interface.jl")
 
 export ParameterTimeseriesCollection
