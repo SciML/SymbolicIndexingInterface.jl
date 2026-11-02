@@ -2,7 +2,7 @@
 
 julia_version = "1.13.3"
 manifest_format = "2.1"
-project_hash = "e8ef658e162a8ddd685bd75e07eb16e0d68f69a0"
+project_hash = "a2480982477c5b7e1c006c85815711be6ee7798d"
 
 [[deps.ADTypes]]
 deps = ["PrecompileTools"]
@@ -249,10 +249,10 @@ version = "0.7.9"
 
 [[deps.ColorSchemes]]
 deps = ["ColorTypes", "ColorVectorSpace", "Colors", "FixedPointNumbers", "PrecompileTools", "Random"]
-git-tree-sha1 = "b0fd3f56fa442f81e0a47815c92245acfaaa4e34"
+git-tree-sha1 = "060adaf7a5c2e14bca025edf0eea0206ffdebd87"
 registries = "General"
 uuid = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
-version = "3.31.0"
+version = "3.32.0"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -612,10 +612,10 @@ version = "0.0.20230411+1"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "d0f666deaf8099a7d7ac229a74402ada88898be1"
+git-tree-sha1 = "f2659a735f9360fedfa29925812380f322679e93"
 registries = "General"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
-version = "2.9.0+0"
+version = "2.10.0+0"
 
 [[deps.ExprTools]]
 git-tree-sha1 = "d2e49e7efd29719d6f28b891b0e0e159daa9d2b4"
@@ -2455,9 +2455,9 @@ version = "7.10.1+0"
 
 [[deps.SymbolicIndexingInterface]]
 deps = ["Accessors", "ArrayInterface", "PrecompileTools", "RuntimeGeneratedFunctions", "StaticArraysCore"]
-path = "/home/runner/work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl"
+path = "/home/runner/_work/SymbolicIndexingInterface.jl/SymbolicIndexingInterface.jl"
 uuid = "2efcf032-c050-4f8e-a9bb-153293bab1f5"
-version = "0.3.57"
+version = "0.3.56"
 weakdeps = ["PrettyTables"]
 
     [deps.SymbolicIndexingInterface.extensions]
