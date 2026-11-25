@@ -88,19 +88,33 @@ function (o::TimeDependentObservedFunction)(ts::IsTimeseriesTrait, prob, args...
     return o(ts, is_indexer_timeseries(o), prob, args...)
 end
 
+# Bodies run below the despecialization barrier (see `with_concrete_parameters`), so
+# `p` is concrete there and the broadcast infers a concrete element type.
+_observed_timeseries(p, o::TimeDependentObservedFunction, u, t) = o.obsfn.(u, (p,), t)
+# `h` is only passed through, so a closure would compile as `h::Function` without `H`.
+function _observed_timeseries(p, o::NonMarkovianObservedFunction, u, t, h::H) where {H}
+    return o.obsfn.(u, (h,), (p,), t)
+end
+_observed_at(p, o::TimeDependentObservedFunction, prob, i) = o.obsfn(
+    state_values(prob, i), p, current_time(prob, i)
+)
+function _observed_at(p, o::NonMarkovianObservedFunction, prob, i)
+    return o.obsfn(state_values(prob, i), get_history_function(prob), p, current_time(prob, i))
+end
+_observed_at_indices(p, o, prob, idxs) = _observed_at.((p,), (o,), (prob,), idxs)
+# `to_indices` of a boolean mask yields a `LogicalIndex`, which iterates but does not
+# support `getindex`, so this path maps instead of broadcasting.
+_observed_at_mask(p, o, prob, idxs) = map(i -> _observed_at(p, o, prob, i), idxs)
+
 function (o::TimeDependentObservedFunction)(::Timeseries, ::IndexerBoth, prob)
-    return o.obsfn.(
-        state_values(prob),
-        (parameter_values(prob),),
-        current_time(prob)
+    return with_concrete_parameters(
+        _observed_timeseries, parameter_values(prob), o, state_values(prob), current_time(prob)
     )
 end
 function (o::NonMarkovianObservedFunction)(::Timeseries, ::IndexerBoth, prob)
-    return o.obsfn.(
-        state_values(prob),
-        (get_history_function(prob),),
-        (parameter_values(prob),),
-        current_time(prob)
+    return with_concrete_parameters(
+        _observed_timeseries, parameter_values(prob), o, state_values(prob),
+        current_time(prob), get_history_function(prob)
     )
 end
 function (o::TimeDependentObservedFunction)(
@@ -122,12 +136,11 @@ end
 function (o::TimeDependentObservedFunction)(
         ts::Timeseries, ::IndexerBoth, prob, i::AbstractArray{Bool}
     )
-    return map(only(to_indices(current_time(prob), (i,)))) do idx
-        o(ts, prob, idx)
-    end
+    idxs = only(to_indices(current_time(prob), (i,)))
+    return with_concrete_parameters(_observed_at_mask, parameter_values(prob), o, prob, idxs)
 end
 function (o::TimeDependentObservedFunction)(ts::Timeseries, ::IndexerBoth, prob, i)
-    return o.((ts,), (prob,), i)
+    return with_concrete_parameters(_observed_at_indices, parameter_values(prob), o, prob, i)
 end
 function (o::TimeDependentObservedFunction)(::NotTimeseries, ::IndexerBoth, prob)
     return o.obsfn(state_values(prob), parameter_values(prob), current_time(prob))

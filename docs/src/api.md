@@ -88,6 +88,7 @@ get_history_function
 
 ```@docs
 parameter_values
+with_concrete_parameters
 set_parameter!
 finalize_parameters_hook!
 getp

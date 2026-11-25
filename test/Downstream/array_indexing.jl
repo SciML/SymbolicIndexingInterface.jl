@@ -6,7 +6,8 @@ using ModelingToolkit: t_nounits as t, D_nounits as D, SymbolicContinuousCallbac
 @discretes q(t)[1:2]
 
 ev = SymbolicContinuousCallback(
-    [x[1] ~ 2.0] => [q ~ -ones(2)], discrete_parameters = q, iv = t)
+    [x[1] ~ 2.0] => [q ~ -ones(2)], discrete_parameters = q, iv = t
+)
 @mtkbuild sys = ODESystem(
     [D(x) ~ p * x + q + r], t, [x], [p, q, r...]; continuous_events = [ev]
 )
