@@ -238,3 +238,12 @@ end
     )
     @test isbits_equal_peel == IsbitsRemakeBuffer(1.0, 8.0, 3.0)
 end
+
+@testset "`remake_buffer` replaces a non-integer value with an integer" begin
+    sys = SymbolCache([:x], [:a], :t)
+    for idx in [:x, :a]
+        newbuf = remake_buffer(sys, [7.1], [idx], [6])
+        @test newbuf == [6]
+        @test newbuf isa Vector{Int}
+    end
+end

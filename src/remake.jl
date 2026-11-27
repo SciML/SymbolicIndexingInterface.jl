@@ -40,8 +40,10 @@ function remake_buffer(sys, oldbuffer::AbstractArray, idxs, vals)
             elT = promote_type(elT, valT)
         end
 
-        newbuffer = similar(oldbuffer, elT)
-        copyto!(newbuffer, oldbuffer)
+        # A value that is being replaced need not be convertible to `elT`,
+        # so write the new values before converting.
+        tmpbuffer = similar(oldbuffer, Any)
+        copyto!(tmpbuffer, oldbuffer)
         for (k, v) in zip(idxs, vals)
             is_variable(sys, k) || is_parameter(sys, k) || continue
             if v isa AbstractArray
@@ -49,8 +51,10 @@ function remake_buffer(sys, oldbuffer::AbstractArray, idxs, vals)
             else
                 v = elT(v)
             end
-            setsym(sys, k)(newbuffer, v)
+            setsym(sys, k)(tmpbuffer, v)
         end
+        newbuffer = similar(oldbuffer, elT)
+        copyto!(newbuffer, tmpbuffer)
     else
         mutbuffer = remake_buffer(sys, collect(oldbuffer), idxs, vals)
         newbuffer = similar_type(oldbuffer, eltype(mutbuffer))(mutbuffer)
