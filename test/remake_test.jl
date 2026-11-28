@@ -1,5 +1,6 @@
 using SymbolicIndexingInterface
 using StaticArrays
+using SparseArrays
 
 sys = SymbolCache([:x, :y, :z], [:a, :b, :c], :t)
 
@@ -237,4 +238,54 @@ end
         sys, IsbitsRemakeBuffer(1.0, 2.0, 3.0), [:x, :y], [1.0, 8.0]
     )
     @test isbits_equal_peel == IsbitsRemakeBuffer(1.0, 8.0, 3.0)
+end
+
+@testset "`remake_buffer` replaces a non-integer value with an integer" begin
+    sys = SymbolCache([:x], [:a], :t)
+    for idx in [:x, :a]
+        newbuf = remake_buffer(sys, [7.1], [idx], [6])
+        @test newbuf == [6]
+        @test newbuf isa Vector{Int}
+    end
+end
+
+@testset "`remake_buffer` inserts into sparse buffers" begin
+    sys = SymbolCache([:x], [:a])
+    for (buf, val) in [
+            (sparsevec([2], [2.0], 3), 5.0),
+            (sparse([2], [1], [2.0], 2, 2), 5.0),
+            (sparse([2], [1], [2], 2, 2), 5.0f0),
+        ]
+        original = copy(buf)
+        newbuf = remake_buffer(sys, buf, (:x,), (val,))
+        @test newbuf isa Union{SparseVector, SparseMatrixCSC}
+        @test eltype(newbuf) == typeof(val)
+        @test newbuf[1] == 5
+        @test newbuf[2] == 2
+        @test nnz(newbuf) == 2
+        @test buf == original
+    end
+end
+
+mutable struct CountingBuffer{T} <: AbstractVector{T}
+    data::Vector{T}
+    updates::Int
+end
+Base.size(b::CountingBuffer) = size(b.data)
+Base.getindex(b::CountingBuffer, i::Int) = b.data[i]
+Base.setindex!(b::CountingBuffer, v, i::Int) = setindex!(b.data, v, i)
+Base.similar(b::CountingBuffer, ::Type{T}) where {T} = CountingBuffer(Vector{T}(undef, length(b)), 0)
+function SymbolicIndexingInterface.set_parameter!(b::CountingBuffer, val, idx)
+    b.data[idx] = val
+    return b.updates += 1
+end
+
+@testset "`remake_buffer` calls custom setters on the result" begin
+    sys = SymbolCache([:x], [:a])
+    buf = CountingBuffer([1.0, 2.0], 0)
+    newbuf = remake_buffer(sys, buf, (:a,), (3.0,))
+    @test newbuf isa CountingBuffer{Float64}
+    @test newbuf == [3.0, 2.0]
+    @test newbuf.updates == 1
+    @test buf.updates == 0
 end

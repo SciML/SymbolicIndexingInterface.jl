@@ -41,7 +41,14 @@ function remake_buffer(sys, oldbuffer::AbstractArray, idxs, vals)
         end
 
         newbuffer = similar(oldbuffer, elT)
-        copyto!(newbuffer, oldbuffer)
+        try
+            copyto!(newbuffer, oldbuffer)
+        catch err
+            err isa InexactError || rethrow()
+            # An old value does not fit in `elT`. That is fine if it is being replaced.
+            newbuffer = similar(oldbuffer, elT)
+            _copy_unreplaced!(newbuffer, oldbuffer, sys, idxs)
+        end
         for (k, v) in zip(idxs, vals)
             is_variable(sys, k) || is_parameter(sys, k) || continue
             if v isa AbstractArray
@@ -54,6 +61,28 @@ function remake_buffer(sys, oldbuffer::AbstractArray, idxs, vals)
     else
         mutbuffer = remake_buffer(sys, collect(oldbuffer), idxs, vals)
         newbuffer = similar_type(oldbuffer, eltype(mutbuffer))(mutbuffer)
+    end
+    return newbuffer
+end
+
+# Copy the elements of `oldbuffer` which `idxs` does not replace.
+function _copy_unreplaced!(newbuffer, oldbuffer, sys, idxs)
+    linear = LinearIndices(oldbuffer)
+    replaced = Set{Int}()
+    for k in idxs
+        i = if is_variable(sys, k)
+            variable_index(sys, k)
+        elseif is_parameter(sys, k)
+            parameter_index(sys, k)
+        else
+            continue
+        end
+        for j in (i isa AbstractArray ? i : (i,))
+            push!(replaced, linear[j])
+        end
+    end
+    for j in eachindex(IndexLinear(), oldbuffer)
+        j in replaced || (newbuffer[j] = oldbuffer[j])
     end
     return newbuffer
 end
